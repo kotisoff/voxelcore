@@ -1,0 +1,5 @@
+<model>
+    <box from="0,0,0" to="1,0.5,1" delete="top"/>
+    <box from="0,0.5,0.5" to="1,1,1" delete="bottom"/>
+    <rect from="0,0.5,0" right="1,0,0" up="0,0,0.5"/>
+</model>
