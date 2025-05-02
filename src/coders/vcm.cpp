@@ -10,12 +10,12 @@ using namespace vcm;
 using namespace xml;
 
 static const std::unordered_map<std::string, int> side_indices {
-    {"east", 0},
-    {"west", 1},
+    {"north", 0},
+    {"south", 1},
     {"top", 2},
     {"bottom", 3},
-    {"back", 4},
-    {"front", 5},
+    {"east", 4},
+    {"west", 5},
 };
 
 static void perform_rect(const xmlelement& root, model::Model& model) {
