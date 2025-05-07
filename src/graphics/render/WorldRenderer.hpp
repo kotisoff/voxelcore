@@ -30,6 +30,8 @@ class PostProcessing;
 class DrawContext;
 class ModelBatch;
 class Assets;
+class ShadowMap;
+class GBuffer;
 struct EngineSettings;
 
 class WorldRenderer {
@@ -44,11 +46,17 @@ class WorldRenderer {
     std::unique_ptr<GuidesRenderer> guides;
     std::unique_ptr<ChunksRenderer> chunks;
     std::unique_ptr<Skybox> skybox;
+    std::unique_ptr<ShadowMap> shadowMap;
     Weather weather {};
+
+    std::unique_ptr<Camera> shadowCamera;
     
     float timer = 0.0f;
     bool debug = false;
     bool lightsDebug = false;
+
+    std::unique_ptr<GBuffer> gbuffer;
+    bool gbufferPipeline = false;
 
     /// @brief Render block selection lines
     void renderBlockSelection();
