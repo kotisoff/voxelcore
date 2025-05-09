@@ -132,7 +132,7 @@ void WorldRenderer::setupWorldShader(
     shader.uniform1f("u_dayTime", level.getWorld()->getInfo().daytime);
     shader.uniform2f("u_lightDir", skybox->getLightDir());
     shader.uniform3f("u_cameraPos", camera.position);
-    shader.uniform1i("u_cubemap", 1);
+    shader.uniform1i("u_skybox", 1);
     shader.uniform1i("u_enableShadows", gbufferPipeline);
 
     if (gbufferPipeline) {
