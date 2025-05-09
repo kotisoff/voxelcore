@@ -375,30 +375,31 @@ void WorldRenderer::draw(
     auto& shadowsShader = assets.require<Shader>("shadows");
 
     if (gbufferPipeline) {
+        int resolution = shadowMap->getResolution();
         float shadowMapScale = 0.05f;
-        float shadowMapSize = shadowMap->getResolution() * shadowMapScale;
+        float shadowMapSize = resolution * shadowMapScale;
         *shadowCamera = Camera(camera.position, shadowMapSize);
         shadowCamera->near = 0.1f;
         shadowCamera->far = 800.0f;
         shadowCamera->perspective = false;
         shadowCamera->setAspectRatio(1.0f);
-        shadowCamera->rotate(glm::radians(-64.0f), glm::radians(-35.0f), glm::radians(-35.0f));
-        //shadowCamera.perspective = false;
-        // shadowCamera->rotation = glm::inverse(
-        //     glm::lookAt({}, glm::normalize(camera.position-shadowCamera->position), glm::vec3(0, 1, 0))
-        // );
+        shadowCamera->rotate(
+            glm::radians(90.0f - worldInfo.daytime * 360.0f),
+            glm::radians(-40.0f),
+            glm::radians(-0.0f)
+        );
         shadowCamera->updateVectors();
         //shadowCamera->position += camera.dir * shadowMapSize * 0.5f;
         shadowCamera->position -= shadowCamera->front * 200.0f;
-        shadowCamera->position -= shadowCamera->right * (shadowMap->getResolution() * shadowMapScale) * 0.5f;
-        shadowCamera->position -= shadowCamera->up * (shadowMap->getResolution() * shadowMapScale) * 0.5f;
+        shadowCamera->position -= shadowCamera->right * (resolution * shadowMapScale) * 0.5f;
+        shadowCamera->position -= shadowCamera->up * (resolution * shadowMapScale) * 0.5f;
         shadowCamera->position = glm::floor(shadowCamera->position * 0.25f) * 4.0f;
         {
             frustumCulling->update(shadowCamera->getProjView());
             auto sctx = pctx.sub();
             sctx.setDepthTest(true);
             sctx.setCullFace(true);
-            sctx.setViewport({shadowMap->getResolution(), shadowMap->getResolution()});
+            sctx.setViewport({resolution, resolution});
             shadowMap->bind();
             setupWorldShader(shadowsShader, *shadowCamera, settings, 0.0f);
             chunks->drawChunks(*shadowCamera, shadowsShader);
@@ -436,7 +437,6 @@ void WorldRenderer::draw(
             DrawContext ctx = wctx.sub();
             texts->render(ctx, camera, settings, hudVisible, true);
         }
-        renderBlockOverlay(wctx);
     }
 
     postProcessing.render(
@@ -446,7 +446,10 @@ void WorldRenderer::draw(
         camera,
         gbufferPipeline ? shadowMap->getDepthMap() : 0
     );
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    renderBlockOverlay(pctx);
 }
 
 void WorldRenderer::renderBlockOverlay(const DrawContext& wctx) {
