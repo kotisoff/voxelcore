@@ -117,7 +117,7 @@ void GBuffer::unbind() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GBuffer::bindBuffers() {
+void GBuffer::bindBuffers() const {
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, normalsBuffer);
 
@@ -175,6 +175,16 @@ void GBuffer::resize(uint width, uint height) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+std::unique_ptr<ImageData> GBuffer::toImage() const {
+    auto data = std::make_unique<ubyte[]>(width * height * 3);
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, data.get());
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return std::make_unique<ImageData>(
+        ImageFormat::rgb888, width, height, std::move(data)
+    );
 }
 
 uint GBuffer::getWidth() const {

@@ -7,7 +7,7 @@ uniform samplerCube u_cubemap;
 
 void main(){
     vec3 dir = normalize(v_coord);
-    f_position = vec4(100000.0);
+    f_position = vec4(0.0, 0.0, 0.0, 1e9);
     f_normal = vec4(0.0);
     f_color = texture(u_cubemap, dir);
 }

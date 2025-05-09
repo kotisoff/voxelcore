@@ -1,6 +1,7 @@
 #include "PostProcessing.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
+#include "GBuffer.hpp"
 #include "Texture.hpp"
 #include "Framebuffer.hpp"
 #include "DrawContext.hpp"
@@ -60,22 +61,65 @@ PostProcessing::PostProcessing(size_t effectSlotsCount)
 
 PostProcessing::~PostProcessing() = default;
 
-void PostProcessing::use(DrawContext& context) {
+void PostProcessing::use(DrawContext& context, bool gbufferPipeline) {
     const auto& vp = context.getViewport();
-    if (fbo) {
-        fbo->resize(vp.x, vp.y);
-        fboSecond->resize(vp.x, vp.y);
+
+    if (gbufferPipeline) {
+        if (gbuffer == nullptr) {
+            gbuffer = std::make_unique<GBuffer>(vp.x, vp.y);
+        } else {
+            gbuffer->resize(vp.x, vp.y);
+        }
+        context.setFramebuffer(gbuffer.get());
     } else {
-        fbo = std::make_unique<Framebuffer>(vp.x, vp.y);
-        fboSecond = std::make_unique<Framebuffer>(vp.x, vp.y);
+        if (fbo) {
+            fbo->resize(vp.x, vp.y);
+            fboSecond->resize(vp.x, vp.y);
+        } else {
+            fbo = std::make_unique<Framebuffer>(vp.x, vp.y);
+            fboSecond = std::make_unique<Framebuffer>(vp.x, vp.y);
+        }
+        context.setFramebuffer(fbo.get());
     }
-    context.setFramebuffer(fbo.get());
+}
+
+void PostProcessing::configureEffect(
+    const DrawContext& context,
+    Shader& shader,
+    float timer,
+    const Camera& camera,
+    uint shadowMap
+) {
+    const auto& viewport = context.getViewport();
+
+    if (!ssaoConfigured) {
+        for (unsigned int i = 0; i < 64; ++i) {
+            auto name = "u_ssaoSamples["+ std::to_string(i) + "]";
+            shader.uniform3f(name, ssaoKernel[i]);
+        }
+        ssaoConfigured = true;
+    }
+    shader.uniform1i("u_screen", 0);
+    if (gbuffer) {
+        shader.uniform1i("u_position", 1);
+        shader.uniform1i("u_normal", 2);
+    }
+    shader.uniform1i("u_noise", 3);
+    shader.uniform1i("u_shadows", 4);
+    shader.uniform2i("u_screenSize", viewport);
+    shader.uniform1f("u_timer", timer);
+    shader.uniform1i("u_enableShadows", shadowMap != 0);
+    shader.uniformMatrix("u_projection", camera.getProjection());
 }
 
 void PostProcessing::render(
-    const DrawContext& context, const Assets& assets, float timer, const Camera& camera, uint depthMap
+    const DrawContext& context,
+    const Assets& assets,
+    float timer,
+    const Camera& camera,
+    uint shadowMap
 ) {
-    if (fbo == nullptr) {
+    if (fbo == nullptr && gbuffer == nullptr) {
         throw std::runtime_error("'use(...)' was never called");
     }
     int totalPasses = 0;
@@ -83,40 +127,24 @@ void PostProcessing::render(
         totalPasses += (effect != nullptr && effect->isActive());
     }
 
-    if (totalPasses == 0) {
-        auto& effect = assets.require<PostEffect>("default");
-        fbo->getTexture()->bind();
-        fbo->bindBuffers();
+    if (gbuffer) {
+        gbuffer->bindBuffers();
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, noiseTexture);
-        glActiveTexture(GL_TEXTURE0);
-
+    
         glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
-        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, shadowMap);
+    } else {
+        fbo->getTexture()->bind();
+    }
 
-        const auto& viewport = context.getViewport();
+    glActiveTexture(GL_TEXTURE0);
 
+    if (totalPasses == 0) {
+        auto& effect = assets.require<PostEffect>("default");
         auto& shader = effect.use();
-        if (!ssaoConfigured) {
-            for (unsigned int i = 0; i < 64; ++i) {
-                auto name = "samples["+ std::to_string(i) + "]";
-                shader.uniform3f(name, ssaoKernel[i]);
-            }
-            ssaoConfigured = true;
-        }
-        shader.uniform1i("u_screen", 0);
-        shader.uniform1i("u_position", 1);
-        shader.uniform1i("u_normal", 2);
-        shader.uniform1i("u_noise", 3);
-        shader.uniform1i("u_shadows", 4);
-        shader.uniform2i("u_screenSize", viewport);
-        shader.uniform1f("u_timer", timer);
-        shader.uniform1f("near_plane", camera.near);
-        shader.uniform1f("far_plane", camera.far);
-        shader.uniformMatrix("u_projection", camera.getProjection());
-
+        configureEffect(context, shader, timer, camera, shadowMap);
         quadMesh->draw();
         return;
     }
@@ -127,21 +155,9 @@ void PostProcessing::render(
             continue;
         }
         auto& shader = effect->use();
+        configureEffect(context, shader, timer, camera, shadowMap);
 
-        for (unsigned int i = 0; i < 64; ++i) {
-            shader.uniform3f("samples["+ std::to_string(i) + "]", ssaoKernel[i]);
-        }
-
-        const auto& viewport = context.getViewport();
-        shader.uniform1i("u_screen", 0);
-        shader.uniform1i("u_position", 1);
-        shader.uniform1i("u_normal", 2);
-        shader.uniform1i("u_noise", 3);
-        shader.uniform2i("u_screenSize", viewport);
-        shader.uniform1f("u_timer", timer);
-        shader.uniformMatrix("u_projection", camera.getProjView(false));
         fbo->getTexture()->bind();
-        fbo->bindBuffers();
 
         if (currentPass < totalPasses) {
             fboSecond->bind();
@@ -165,6 +181,9 @@ PostEffect* PostProcessing::getEffect(size_t slot) {
 }
 
 std::unique_ptr<ImageData> PostProcessing::toImage() {
+    if (gbuffer) {
+        return gbuffer->toImage();
+    }
     return fbo->getTexture()->readData();
 }
 

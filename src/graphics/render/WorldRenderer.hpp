@@ -54,9 +54,7 @@ class WorldRenderer {
     float timer = 0.0f;
     bool debug = false;
     bool lightsDebug = false;
-
-    std::unique_ptr<GBuffer> gbuffer;
-    bool gbufferPipeline = false;
+    bool gbufferPipeline = true;
 
     /// @brief Render block selection lines
     void renderBlockSelection();

@@ -103,7 +103,7 @@ WorldRenderer::WorldRenderer(
         assets->require<Shader>("skybox_gen")
     );
 
-    shadowMap = std::make_unique<ShadowMap>(1024);
+    shadowMap = std::make_unique<ShadowMap>(1024 * 4);
 
     shadowCamera = std::make_unique<Camera>();
 }
@@ -373,18 +373,18 @@ void WorldRenderer::draw(
     auto& shadowsShader = assets.require<Shader>("shadows");
 
     if (gbufferPipeline) {
-        float shadowMapScale = 0.05f;
+        float shadowMapScale = 0.05f * 2;
         float shadowMapSize = shadowMap->getResolution() * shadowMapScale;
         *shadowCamera = Camera(camera.position, shadowMapSize);
         shadowCamera->near = 0.5f;
         shadowCamera->far = 600.0f;
         shadowCamera->perspective = false;
         shadowCamera->setAspectRatio(1.0f);
-        shadowCamera->rotate(glm::radians(-65.0f), glm::radians(-35.0f), glm::radians(-35.0f));
+        shadowCamera->rotate(glm::radians(-64.0f), glm::radians(-35.0f), glm::radians(-35.0f));
         //shadowCamera.perspective = false;
-        /*shadowCamera.rotation = //glm::inverse(
-            glm::lookAt({}, glm::normalize(shadowCamera.position-camera.position), glm::vec3(0, 1, 0));
-        //);*/
+        // shadowCamera->rotation = glm::inverse(
+        //     glm::lookAt({}, glm::normalize(camera.position-shadowCamera->position), glm::vec3(0, 1, 0))
+        // );
         shadowCamera->updateVectors();
         //shadowCamera->position += camera.dir * shadowMapSize * 0.5f;
         shadowCamera->position -= shadowCamera->front * 100.0f;
@@ -406,16 +406,7 @@ void WorldRenderer::draw(
 
     /* World render scope with diegetic HUD included */ {
         DrawContext wctx = pctx.sub();
-        if (gbufferPipeline) {
-            if (gbuffer == nullptr) {
-                gbuffer = std::make_unique<GBuffer>(vp.x, vp.y);
-            } else {
-                gbuffer->resize(vp.x, vp.y);
-            }
-            wctx.setFramebuffer(gbuffer.get());
-        } else {
-            postProcessing.use(wctx);
-        }
+        postProcessing.use(wctx, gbufferPipeline);
 
         display::clearDepth();
 
@@ -446,7 +437,13 @@ void WorldRenderer::draw(
         //renderBlockOverlay(wctx);
     }
 
-    postProcessing.render(pctx, assets, timer, camera, shadowMap->getDepthMap());
+    postProcessing.render(
+        pctx,
+        assets,
+        timer,
+        camera,
+        gbufferPipeline ? shadowMap->getDepthMap() : 0
+    );
 }
 
 void WorldRenderer::renderBlockOverlay(const DrawContext& wctx) {

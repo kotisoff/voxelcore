@@ -37,18 +37,17 @@ void main() {
         
         for (int i = 0; i < BLUR_SAMPLES; i++) {
             shadow += texture(u_shadows, projCoords.xyz + vec3(
-                -0.002*(i%2==0?1:0)*i/BLUR_SAMPLES,
-                -0.002*(i%2==0?0:1)*i/BLUR_SAMPLES,
+                -0.002*(i%2==0?1:0)*i/BLUR_SAMPLES / 4.0,
+                -0.002*(i%2==0?0:1)*i/BLUR_SAMPLES / 4.0,
                 -0.0005 * i/BLUR_SAMPLES));
         }
         shadow /= BLUR_SAMPLES;
-        shadow += 0.5;
-        shadow = shadow * 0.7 + 0.3;
+        shadow = shadow * 0.5 + 0.5;
     }
 
     vec3 fogColor = texture(u_cubemap, a_dir).rgb;
-    vec4 tex_color = texture(u_texture0, a_texCoord);
-    float alpha = a_color.a * tex_color.a;
+    vec4 texColor = texture(u_texture0, a_texCoord);
+    float alpha = a_color.a * texColor.a;
     if (u_alphaClip) {
         if (alpha < 0.2f)
             discard;
@@ -58,12 +57,13 @@ void main() {
             discard;
     }
     if (u_debugLights)
-        tex_color.rgb = u_debugNormals ? (a_normal * 0.5 + 0.5) : vec3(1.0);
+        texColor.rgb = u_debugNormals ? (a_normal * 0.5 + 0.5) : vec3(1.0);
     else if (u_debugNormals) {
-        tex_color.rgb *= a_normal * 0.5 + 0.5;
+        texColor.rgb *= a_normal * 0.5 + 0.5;
     }
-    f_color = mix(a_color * tex_color, vec4(fogColor,1.0), a_fog);
+    f_color = a_color * texColor;
     f_color.rgb *= shadow;
+    f_color = mix(f_color, vec4(fogColor,1.0), a_fog);
     f_color.a = alpha;
     f_position = vec4(a_position, 1.0);
     f_normal = vec4(a_normal, 1.0);

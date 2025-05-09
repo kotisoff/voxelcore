@@ -2,21 +2,24 @@
 
 #include "typedefs.hpp"
 #include "commons.hpp"
+#include "ImageData.hpp"
 
-class GBuffer : public Bindable{
+class GBuffer : public Bindable {
 public:
     GBuffer(uint width, uint height);
-    ~GBuffer();
+    ~GBuffer() override;
 
     void bind() override;
     void unbind() override;
 
-    void bindBuffers();
+    void bindBuffers() const;
 
     void resize(uint width, uint height);
 
     uint getWidth() const;
     uint getHeight() const;
+
+    std::unique_ptr<ImageData> toImage() const;
 private:
     uint width;
     uint height;

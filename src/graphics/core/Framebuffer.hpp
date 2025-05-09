@@ -10,8 +10,6 @@ class Texture;
 class Framebuffer : public Bindable {
     uint fbo;
     uint depth;
-    uint positions;
-    uint normals;
     uint width;
     uint height;
     uint format;
@@ -26,8 +24,6 @@ public:
 
     /// @brief Stop using framebuffer
     void unbind() override;
-
-    void bindBuffers();
 
     /// @brief Update framebuffer texture size
     /// @param width new width
