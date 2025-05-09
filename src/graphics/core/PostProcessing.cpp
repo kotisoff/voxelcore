@@ -72,14 +72,18 @@ void PostProcessing::use(DrawContext& context, bool gbufferPipeline) {
         }
         context.setFramebuffer(gbuffer.get());
     } else {
-        if (fbo) {
-            fbo->resize(vp.x, vp.y);
-            fboSecond->resize(vp.x, vp.y);
-        } else {
-            fbo = std::make_unique<Framebuffer>(vp.x, vp.y);
-            fboSecond = std::make_unique<Framebuffer>(vp.x, vp.y);
-        }
+        refreshFbos(vp.x, vp.y);
         context.setFramebuffer(fbo.get());
+    }
+}
+
+void PostProcessing::refreshFbos(uint width, uint height) {
+    if (fbo) {
+        fbo->resize(width, height);
+        fboSecond->resize(width, height);
+    } else {
+        fbo = std::make_unique<Framebuffer>(width, height);
+        fboSecond = std::make_unique<Framebuffer>(width, height);
     }
 }
 
@@ -127,6 +131,9 @@ void PostProcessing::render(
         totalPasses += (effect != nullptr && effect->isActive());
     }
 
+    const auto& vp = context.getViewport();
+    refreshFbos(vp.x, vp.y);
+
     if (gbuffer) {
         gbuffer->bindBuffers();
 
@@ -157,7 +164,9 @@ void PostProcessing::render(
         auto& shader = effect->use();
         configureEffect(context, shader, timer, camera, shadowMap);
 
-        fbo->getTexture()->bind();
+        if (currentPass > 1) {
+            fbo->getTexture()->bind();
+        }
 
         if (currentPass < totalPasses) {
             fboSecond->bind();

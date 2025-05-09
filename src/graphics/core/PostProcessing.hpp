@@ -64,6 +64,8 @@ private:
         uint shadowMap
     );
 
+    void refreshFbos(uint width, uint height);
+
     /// @brief Main framebuffer (lasy field)
     std::unique_ptr<Framebuffer> fbo;
     std::unique_ptr<Framebuffer> fboSecond;

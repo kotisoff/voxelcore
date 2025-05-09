@@ -37,11 +37,11 @@ void main() {
     vec3 pos3d = modelpos.xyz-u_cameraPos;
     modelpos.xyz = apply_planet_curvature(modelpos.xyz, pos3d);
 
-    a_realnormal = v_normal.xyz;
+    a_realnormal = v_normal.xyz * 2.0 - 1.0;
     mat3 normalMatrix = transpose(inverse(mat3(u_view * u_model)));
-    a_normal = v_normal.xyz * 2.0 - 1.0;
+    a_normal = a_realnormal;
     a_normal = normalMatrix * (false ? -a_normal : a_normal);
-    //a_normal = v_normal.xyz * 2.0 - 1.0;
+    //a_normal = a_realnormal;
 
     vec3 light = v_light.rgb;
     float torchlight = max(0.0, 1.0-distance(u_cameraPos, modelpos.xyz) /

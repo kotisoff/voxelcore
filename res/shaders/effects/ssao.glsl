@@ -1,6 +1,6 @@
 uniform vec3 u_ssaoSamples[64];
 
-int kernelSize = 32;
+int kernelSize = 16;
 float radius = 0.25;
 float bias = 0.025;
 
@@ -32,8 +32,10 @@ vec4 effect() {
             float rangeCheck = smoothstep(0.0, 1.0, radius / abs(position.z - sampleDepth));
             occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
         }
-        occlusion = 1.1 - (occlusion / kernelSize);
+        occlusion = min(1.0, 1.05 - (occlusion / kernelSize));
     }
 
-    return vec4(color * occlusion, 1.0);
+    float z = -position.z * 0.02;
+    z = max(0.0, 1.0 - z);
+    return vec4(color * mix(1.0, occlusion, z), 1.0);
 }

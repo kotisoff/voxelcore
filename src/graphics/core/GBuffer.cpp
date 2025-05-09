@@ -111,6 +111,7 @@ GBuffer::~GBuffer() {
 
 void GBuffer::bind() {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void GBuffer::unbind() {

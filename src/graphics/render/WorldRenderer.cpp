@@ -137,6 +137,8 @@ void WorldRenderer::setupWorldShader(
 
     if (gbufferPipeline) {
         shader.uniformMatrix("u_shadowsMatrix", shadowCamera->getProjView());
+        shader.uniform3f("u_sunDir", shadowCamera->front);
+        shader.uniform1i("u_shadowsRes", shadowMap->getResolution());
         glActiveTexture(GL_TEXTURE4);
         shader.uniform1i("u_shadows", 4);
         glBindTexture(GL_TEXTURE_2D, shadowMap->getDepthMap());
@@ -373,11 +375,11 @@ void WorldRenderer::draw(
     auto& shadowsShader = assets.require<Shader>("shadows");
 
     if (gbufferPipeline) {
-        float shadowMapScale = 0.05f * 2;
+        float shadowMapScale = 0.05f;
         float shadowMapSize = shadowMap->getResolution() * shadowMapScale;
         *shadowCamera = Camera(camera.position, shadowMapSize);
-        shadowCamera->near = 0.5f;
-        shadowCamera->far = 600.0f;
+        shadowCamera->near = 0.1f;
+        shadowCamera->far = 800.0f;
         shadowCamera->perspective = false;
         shadowCamera->setAspectRatio(1.0f);
         shadowCamera->rotate(glm::radians(-64.0f), glm::radians(-35.0f), glm::radians(-35.0f));
@@ -387,10 +389,10 @@ void WorldRenderer::draw(
         // );
         shadowCamera->updateVectors();
         //shadowCamera->position += camera.dir * shadowMapSize * 0.5f;
-        shadowCamera->position -= shadowCamera->front * 100.0f;
+        shadowCamera->position -= shadowCamera->front * 200.0f;
         shadowCamera->position -= shadowCamera->right * (shadowMap->getResolution() * shadowMapScale) * 0.5f;
         shadowCamera->position -= shadowCamera->up * (shadowMap->getResolution() * shadowMapScale) * 0.5f;
-        shadowCamera->position = glm::floor(shadowCamera->position);
+        shadowCamera->position = glm::floor(shadowCamera->position * 0.25f) * 4.0f;
         {
             frustumCulling->update(shadowCamera->getProjView());
             auto sctx = pctx.sub();
@@ -419,22 +421,22 @@ void WorldRenderer::draw(
             ctx.setCullFace(true);
             renderLevel(ctx, camera, settings, uiDelta, pause, hudVisible);
             // Debug lines
-            // if (hudVisible) {
-            //     if (debug) {
-            //         guides->renderDebugLines(
-            //             ctx, camera, *lineBatch, linesShader, showChunkBorders
-            //         );
-            //     }
-            //     if (player.currentCamera == player.fpCamera) {
-            //         renderHands(camera, delta);
-            //     }
-            // }
+            if (hudVisible) {
+                if (debug) {
+                    guides->renderDebugLines(
+                        ctx, camera, *lineBatch, linesShader, showChunkBorders
+                    );
+                }
+                if (player.currentCamera == player.fpCamera) {
+                    renderHands(camera, delta);
+                }
+            }
         }
-        // {
-        //     DrawContext ctx = wctx.sub();
-        //     texts->render(ctx, camera, settings, hudVisible, true);
-        // }
-        //renderBlockOverlay(wctx);
+        {
+            DrawContext ctx = wctx.sub();
+            texts->render(ctx, camera, settings, hudVisible, true);
+        }
+        renderBlockOverlay(wctx);
     }
 
     postProcessing.render(
@@ -444,6 +446,7 @@ void WorldRenderer::draw(
         camera,
         gbufferPipeline ? shadowMap->getDepthMap() : 0
     );
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void WorldRenderer::renderBlockOverlay(const DrawContext& wctx) {
