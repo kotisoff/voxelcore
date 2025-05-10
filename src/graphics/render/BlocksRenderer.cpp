@@ -10,7 +10,7 @@
 #include "frontend/ContentGfxCache.hpp"
 
 const glm::vec3 BlocksRenderer::SUN_VECTOR(0.528265f, 0.833149f, -0.163704f);
-const float DIRECTIONAL_LIGHT_FACTOR = 0.2f;
+const float DIRECTIONAL_LIGHT_FACTOR = 0.3f;
 
 BlocksRenderer::BlocksRenderer(
     size_t capacity,

@@ -9,6 +9,7 @@
 
 #include "presets/WeatherPreset.hpp"
 #include "world/Weather.hpp"
+#include "window/Camera.hpp"
 
 class Level;
 class Player;
@@ -48,14 +49,13 @@ class WorldRenderer {
     std::unique_ptr<Skybox> skybox;
     std::unique_ptr<ShadowMap> shadowMap;
     Weather weather {};
-
-    std::unique_ptr<Camera> shadowCamera;
+    Camera shadowCamera;
     
     float timer = 0.0f;
     bool debug = false;
     bool lightsDebug = false;
     bool gbufferPipeline = false;
-    bool shadows = true;
+    bool shadows = false;
 
     /// @brief Render block selection lines
     void renderBlockSelection();
@@ -77,6 +77,8 @@ class WorldRenderer {
         const EngineSettings& settings,
         float fogFactor
     );
+
+    void generateShadowsMap(const Camera& camera, const DrawContext& pctx);
 public:
     std::unique_ptr<ParticlesRenderer> particles;
     std::unique_ptr<TextsRenderer> texts;

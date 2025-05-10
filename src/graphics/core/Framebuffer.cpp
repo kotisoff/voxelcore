@@ -42,9 +42,6 @@ Framebuffer::Framebuffer(uint width, uint height, bool alpha)
     // Setup color attachment (texture)
     texture = create_texture(width, height, format);
 
-    unsigned int attachments[1] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, attachments);
-
     // Setup depth attachment
     glGenRenderbuffers(1, &depth);
     glBindRenderbuffer(GL_RENDERBUFFER, depth);
@@ -60,7 +57,7 @@ Framebuffer::Framebuffer(uint width, uint height, bool alpha)
 
 Framebuffer::~Framebuffer() {
     glDeleteFramebuffers(1, &fbo);
-    glDeleteTextures(1, &depth);
+    glDeleteRenderbuffers(1, &depth);
 }
 
 void Framebuffer::bind() {
