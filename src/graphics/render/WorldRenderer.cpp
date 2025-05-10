@@ -345,7 +345,7 @@ void WorldRenderer::generateShadowsMap(const Camera& camera, const DrawContext& 
 
     const auto& settings = engine.getSettings();
     int resolution = shadowMap->getResolution();
-    float shadowMapScale = 0.05f;
+    float shadowMapScale = 0.2f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get()));
     float shadowMapSize = resolution * shadowMapScale;
     shadowCamera = Camera(camera.position, shadowMapSize);
     shadowCamera.near = 0.1f;
@@ -393,6 +393,20 @@ void WorldRenderer::draw(
     camera.setAspectRatio(vp.x / static_cast<float>(vp.y));
 
     const auto& settings = engine.getSettings();
+    gbufferPipeline = settings.graphics.advancedRender.get();
+    int shadowsQuality = settings.graphics.shadowsQuality.get();
+    int resolution = 1024 << shadowsQuality;
+    if (shadowsQuality > 0 && !shadows) {
+        shadowMap = std::make_unique<ShadowMap>(resolution);
+        shadows = true;
+    } else if (shadowsQuality == 0) {
+        shadowMap.reset();
+        shadows = false;
+    }
+    if (shadows && shadowMap->getResolution() != resolution) {
+        shadowMap = std::make_unique<ShadowMap>(resolution);
+    }
+
     const auto& worldInfo = world->getInfo();
     
     float sqrtT = glm::sqrt(weather.t);
@@ -403,10 +417,9 @@ void WorldRenderer::draw(
 
     skybox->refresh(pctx, worldInfo.daytime, mie, 4);
 
+    chunks->update();
+
     if (shadows) {
-        if (shadowMap == nullptr) {
-            shadowMap = std::make_unique<ShadowMap>(1024 * 8);
-        }
         generateShadowsMap(camera, pctx);
     }
 
