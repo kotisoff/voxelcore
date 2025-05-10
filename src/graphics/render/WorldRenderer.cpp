@@ -131,9 +131,6 @@ void WorldRenderer::setupWorldShader(
     shader.uniform1i("u_enableShadows", shadows);
 
     if (shadows) {
-        if (shadowMap == nullptr) {
-            shadowMap = std::make_unique<ShadowMap>(1024 * 8);
-        }
         shader.uniformMatrix("u_shadowsMatrix", shadowCamera.getProjView());
         shader.uniform3f("u_sunDir", shadowCamera.front);
         shader.uniform1i("u_shadowsRes", shadowMap->getResolution());
@@ -407,6 +404,9 @@ void WorldRenderer::draw(
     skybox->refresh(pctx, worldInfo.daytime, mie, 4);
 
     if (shadows) {
+        if (shadowMap == nullptr) {
+            shadowMap = std::make_unique<ShadowMap>(1024 * 8);
+        }
         generateShadowsMap(camera, pctx);
     }
 

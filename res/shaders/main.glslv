@@ -46,7 +46,6 @@ void main() {
     a_dir = a_modelpos.xyz - u_cameraPos;
     vec3 skyLightColor = pick_sky_color(u_skybox);
     a_skyLight = skyLightColor.rgb*v_light.a;
-    //a_color.rgb = max(a_color.rgb, skyLightColor.rgb*v_light.a);
 
     a_distance = length(u_view * u_model * vec4(pos3d * FOG_POS_SCALE, 0.0));
     a_fog = calc_fog(a_distance / 256.0);
