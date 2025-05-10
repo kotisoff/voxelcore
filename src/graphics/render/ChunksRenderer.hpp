@@ -72,6 +72,9 @@ public:
     const Mesh<ChunkVertex>* getOrRender(
         const std::shared_ptr<Chunk>& chunk, bool important
     );
+
+    void drawChunksShadowsPass(const Camera& camera, Shader& shader);
+
     void drawChunks(const Camera& camera, Shader& shader);
 
     void drawSortedMeshes(const Camera& camera, Shader& shader);

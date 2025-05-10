@@ -182,6 +182,34 @@ const Mesh<ChunkVertex>* ChunksRenderer::retrieveChunk(
     return mesh;
 }
 
+void ChunksRenderer::drawChunksShadowsPass(
+    const Camera& camera, Shader& shader
+) {
+    const auto& atlas = assets.require<Atlas>("blocks");
+
+    atlas.getTexture()->bind();
+
+    for (int i = indices.size()-1; i >= 0; i--) {
+        auto& chunk = chunks.getChunks()[indices[i].index];
+        if (chunk == nullptr) {
+            continue;
+        }
+        const auto& found = meshes.find({chunk->x, chunk->z});
+        if (found == meshes.end()) {
+            continue;
+        }
+        auto mesh = found->second.mesh.get();
+        if (mesh) {
+            glm::vec3 coord(
+                chunk->x * CHUNK_W + 0.5f, 0.5f, chunk->z * CHUNK_D + 0.5f
+            );
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), coord);
+            shader.uniformMatrix("u_model", model);
+            mesh->draw();
+        }
+    }
+}
+
 void ChunksRenderer::drawChunks(
     const Camera& camera, Shader& shader
 ) {

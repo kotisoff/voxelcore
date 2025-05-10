@@ -103,7 +103,7 @@ WorldRenderer::WorldRenderer(
         assets->require<Shader>("skybox_gen")
     );
 
-    shadowMap = std::make_unique<ShadowMap>(1024 * 4);
+    shadowMap = std::make_unique<ShadowMap>(1024 * 8);
 
     shadowCamera = std::make_unique<Camera>();
 }
@@ -133,9 +133,9 @@ void WorldRenderer::setupWorldShader(
     shader.uniform2f("u_lightDir", skybox->getLightDir());
     shader.uniform3f("u_cameraPos", camera.position);
     shader.uniform1i("u_skybox", 1);
-    shader.uniform1i("u_enableShadows", gbufferPipeline);
+    shader.uniform1i("u_enableShadows", shadows);
 
-    if (gbufferPipeline) {
+    if (shadows) {
         shader.uniformMatrix("u_shadowsMatrix", shadowCamera->getProjView());
         shader.uniform3f("u_sunDir", shadowCamera->front);
         shader.uniform1i("u_shadowsRes", shadowMap->getResolution());
@@ -374,7 +374,7 @@ void WorldRenderer::draw(
     auto& linesShader = assets.require<Shader>("lines");
     auto& shadowsShader = assets.require<Shader>("shadows");
 
-    if (gbufferPipeline) {
+    if (shadows) {
         int resolution = shadowMap->getResolution();
         float shadowMapScale = 0.05f;
         float shadowMapSize = resolution * shadowMapScale;
@@ -384,7 +384,7 @@ void WorldRenderer::draw(
         shadowCamera->perspective = false;
         shadowCamera->setAspectRatio(1.0f);
         shadowCamera->rotate(
-            glm::radians(90.0f - worldInfo.daytime * 360.0f),
+            glm::radians(fmod(90.0f - worldInfo.daytime * 360.0f, 180.0f)),
             glm::radians(-40.0f),
             glm::radians(-0.0f)
         );
@@ -402,7 +402,7 @@ void WorldRenderer::draw(
             sctx.setViewport({resolution, resolution});
             shadowMap->bind();
             setupWorldShader(shadowsShader, *shadowCamera, settings, 0.0f);
-            chunks->drawChunks(*shadowCamera, shadowsShader);
+            chunks->drawChunksShadowsPass(*shadowCamera, shadowsShader);
             shadowMap->unbind();
         }
     }
@@ -444,7 +444,7 @@ void WorldRenderer::draw(
         assets,
         timer,
         camera,
-        gbufferPipeline ? shadowMap->getDepthMap() : 0
+        shadows ? shadowMap->getDepthMap() : 0
     );
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);

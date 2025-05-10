@@ -54,7 +54,8 @@ class WorldRenderer {
     float timer = 0.0f;
     bool debug = false;
     bool lightsDebug = false;
-    bool gbufferPipeline = true;
+    bool gbufferPipeline = false;
+    bool shadows = true;
 
     /// @brief Render block selection lines
     void renderBlockSelection();
