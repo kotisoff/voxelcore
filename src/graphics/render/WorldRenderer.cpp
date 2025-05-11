@@ -132,11 +132,18 @@ void WorldRenderer::setupWorldShader(
 
     if (shadows) {
         shader.uniformMatrix("u_shadowsMatrix", shadowCamera.getProjView());
+        shader.uniformMatrix("u_wideShadowsMatrix", wideShadowCamera.getProjView());
         shader.uniform3f("u_sunDir", shadowCamera.front);
         shader.uniform1i("u_shadowsRes", shadowMap->getResolution());
+
         glActiveTexture(GL_TEXTURE4);
         shader.uniform1i("u_shadows", 4);
         glBindTexture(GL_TEXTURE_2D, shadowMap->getDepthMap());
+
+        glActiveTexture(GL_TEXTURE5);
+        shader.uniform1i("u_wideShadows", 5);
+        glBindTexture(GL_TEXTURE_2D, wideShadowMap->getDepthMap());
+
         glActiveTexture(GL_TEXTURE0);
     }
 
@@ -337,15 +344,21 @@ void WorldRenderer::renderHands(
     skybox->unbind();
 }
 
-void WorldRenderer::generateShadowsMap(const Camera& camera, const DrawContext& pctx) {
+void WorldRenderer::generateShadowsMap(
+    const Camera& camera,
+    const DrawContext& pctx,
+    ShadowMap& shadowMap,
+    Camera& shadowCamera,
+    float scale
+) {
     auto& shadowsShader = assets.require<Shader>("shadows");
 
     auto world = level.getWorld();
     const auto& worldInfo = world->getInfo();
 
     const auto& settings = engine.getSettings();
-    int resolution = shadowMap->getResolution();
-    float shadowMapScale = 0.1f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get()));
+    int resolution = shadowMap.getResolution();
+    float shadowMapScale = 0.1f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get())) * scale;
     float shadowMapSize = resolution * shadowMapScale;
 
     glm::vec3 basePos = glm::floor(camera.position / 500.0f) * 500.0f;
@@ -386,10 +399,10 @@ void WorldRenderer::generateShadowsMap(const Camera& camera, const DrawContext& 
         sctx.setDepthTest(true);
         sctx.setCullFace(true);
         sctx.setViewport({resolution, resolution});
-        shadowMap->bind();
+        shadowMap.bind();
         setupWorldShader(shadowsShader, shadowCamera, settings, 0.0f);
         chunks->drawChunksShadowsPass(shadowCamera, shadowsShader);
-        shadowMap->unbind();
+        shadowMap.unbind();
     }
 }
 
@@ -413,16 +426,19 @@ void WorldRenderer::draw(
     const auto& settings = engine.getSettings();
     gbufferPipeline = settings.graphics.advancedRender.get();
     int shadowsQuality = settings.graphics.shadowsQuality.get();
-    int resolution = 1024 << shadowsQuality;
+    int resolution = 512 << shadowsQuality;
     if (shadowsQuality > 0 && !shadows) {
         shadowMap = std::make_unique<ShadowMap>(resolution);
+        wideShadowMap = std::make_unique<ShadowMap>(resolution);
         shadows = true;
     } else if (shadowsQuality == 0) {
         shadowMap.reset();
+        wideShadowMap.reset();
         shadows = false;
     }
     if (shadows && shadowMap->getResolution() != resolution) {
         shadowMap = std::make_unique<ShadowMap>(resolution);
+        wideShadowMap = std::make_unique<ShadowMap>(resolution);
     }
 
     const auto& worldInfo = world->getInfo();
@@ -438,8 +454,12 @@ void WorldRenderer::draw(
     chunks->update();
 
     static int frameid = 0;
-    if (shadows && frameid % 2 == 0) {
-        generateShadowsMap(camera, pctx);
+    if (shadows) {
+        if (frameid % 2 == 0) {
+            generateShadowsMap(camera, pctx, *shadowMap, shadowCamera, 1.0f);
+        } else {
+            generateShadowsMap(camera, pctx, *wideShadowMap, wideShadowCamera, 8.0f);
+        }
     }
     frameid++;
 

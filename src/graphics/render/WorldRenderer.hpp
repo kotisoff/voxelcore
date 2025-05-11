@@ -48,8 +48,10 @@ class WorldRenderer {
     std::unique_ptr<ChunksRenderer> chunks;
     std::unique_ptr<Skybox> skybox;
     std::unique_ptr<ShadowMap> shadowMap;
+    std::unique_ptr<ShadowMap> wideShadowMap;
     Weather weather {};
     Camera shadowCamera;
+    Camera wideShadowCamera;
     
     float timer = 0.0f;
     bool debug = false;
@@ -78,7 +80,13 @@ class WorldRenderer {
         float fogFactor
     );
 
-    void generateShadowsMap(const Camera& camera, const DrawContext& pctx);
+    void generateShadowsMap(
+        const Camera& camera,
+        const DrawContext& pctx,
+        ShadowMap& shadowMap,
+        Camera& shadowCamera,
+        float scale
+    );
 public:
     std::unique_ptr<ParticlesRenderer> particles;
     std::unique_ptr<TextsRenderer> texts;
