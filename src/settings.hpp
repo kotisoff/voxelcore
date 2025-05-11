@@ -78,7 +78,7 @@ struct GraphicsSettings {
     /// @brief Advanced render pipeline
     FlagSetting advancedRender {true};
     /// @brief Shadows quality
-    IntegerSetting shadowsQuality {0, 0, 2};
+    IntegerSetting shadowsQuality {0, 0, 3};
 };
 
 struct DebugSettings {

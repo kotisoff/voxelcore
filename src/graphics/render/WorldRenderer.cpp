@@ -345,23 +345,41 @@ void WorldRenderer::generateShadowsMap(const Camera& camera, const DrawContext& 
 
     const auto& settings = engine.getSettings();
     int resolution = shadowMap->getResolution();
-    float shadowMapScale = 0.2f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get()));
+    float shadowMapScale = 0.1f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get()));
     float shadowMapSize = resolution * shadowMapScale;
-    shadowCamera = Camera(camera.position, shadowMapSize);
+
+    glm::vec3 basePos = glm::floor(camera.position / 500.0f) * 500.0f;
+    shadowCamera = Camera(basePos + glm::mod(camera.position, 500.0f), shadowMapSize);
     shadowCamera.near = 0.1f;
     shadowCamera.far = 800.0f;
     shadowCamera.perspective = false;
     shadowCamera.setAspectRatio(1.0f);
+
+    float sunAngle = glm::radians(fmod(90.0f - worldInfo.daytime * 360.0f, 180.0f));
     shadowCamera.rotate(
-        glm::radians(fmod(90.0f - worldInfo.daytime * 360.0f, 180.0f)),
-        glm::radians(-40.0f),
+        sunAngle,
+        glm::radians(-45.0f),
         glm::radians(-0.0f)
     );
     shadowCamera.updateVectors();
+
     shadowCamera.position -= shadowCamera.front * 200.0f;
-    shadowCamera.position -= shadowCamera.right * (resolution * shadowMapScale) * 0.5f;
-    shadowCamera.position -= shadowCamera.up * (resolution * shadowMapScale) * 0.5f;
-    shadowCamera.position = glm::floor(shadowCamera.position * 0.25f) * 4.0f;
+    shadowCamera.position += shadowCamera.up * 10.0f;
+
+    auto view = shadowCamera.getView();
+
+    auto currentPos = shadowCamera.position;
+    auto min = view * glm::dvec4(currentPos - (shadowCamera.right + shadowCamera.up) * (shadowMapSize * 0.5f), 1.0f);
+    auto max = view * glm::dvec4(currentPos + (shadowCamera.right + shadowCamera.up) * (shadowMapSize * 0.5f), 1.0f);
+
+    float texelSize = (max.x - min.x) / shadowMapSize;
+    float snappedLeft = glm::round(min.x / texelSize) * texelSize;
+    float snappedBottom = glm::round(min.y / texelSize) * texelSize;
+    float snappedRight = snappedLeft + shadowMapSize * texelSize;
+    float snappedTop = snappedBottom + shadowMapSize * texelSize;
+
+    shadowCamera.setProjection(glm::ortho(snappedLeft, snappedRight, snappedBottom, snappedTop, 0.1f, 800.0f));
+
     {
         frustumCulling->update(shadowCamera.getProjView());
         auto sctx = pctx.sub();
@@ -419,9 +437,11 @@ void WorldRenderer::draw(
 
     chunks->update();
 
-    if (shadows) {
+    static int frameid = 0;
+    if (shadows && frameid % 2 == 0) {
         generateShadowsMap(camera, pctx);
     }
+    frameid++;
 
     auto& linesShader = assets.require<Shader>("lines");
     /* World render scope with diegetic HUD included */ {

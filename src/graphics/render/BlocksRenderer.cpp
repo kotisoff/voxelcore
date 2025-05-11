@@ -203,14 +203,21 @@ void BlocksRenderer::blockXSprite(
     const float w = size.x / 1.41f;
     const glm::vec4 tint (0.8f);
 
-    face({x + xs, y, z + zs}, w, size.y, 0, {-1, 0, 1}, {0, 1, 0}, glm::vec3(),
+    glm::vec3 n;
+    float bias = 0.05f;
+
+    n = glm::vec3(-0.7f, 0, -0.7f);
+    face(glm::vec3(x + xs, y, z + zs) + n * bias, w, size.y, 0, {-1, 0, 1}, {0, 1, 0}, n,
         texface1, lights2, tint);
-    face({x + xs, y, z + zs}, w, size.y, 0, {1, 0, 1}, {0, 1, 0}, glm::vec3(),
+    n = glm::vec3(-0.7f, 0, 0.7f);
+    face(glm::vec3(x + xs, y, z + zs) + n * bias, w, size.y, 0, {1, 0, 1}, {0, 1, 0}, n,
         texface1, lights1, tint);
 
-    face({x + xs, y, z + zs}, w, size.y, 0, {-1, 0, -1}, {0, 1, 0}, glm::vec3(),
+    n = glm::vec3(0.7f, 0, -0.7f);
+    face(glm::vec3(x + xs, y, z + zs) + n * bias, w, size.y, 0, {-1, 0, -1}, {0, 1, 0}, n,
         texface2, lights2, tint);
-    face({x + xs, y, z + zs}, w, size.y, 0, {1, 0, -1}, {0, 1, 0}, glm::vec3(),
+    n = glm::vec3(0.7f, 0, 0.7f);
+    face(glm::vec3(x + xs, y, z + zs) + n * bias, w, size.y, 0, {1, 0, -1}, {0, 1, 0}, n,
         texface2, lights1, tint);
 }
 

@@ -28,6 +28,9 @@ void Camera::rotate(float x, float y, float z) {
 }
 
 glm::mat4 Camera::getProjection() const {
+    if (projset) {
+        return projection;
+    }
     if (perspective) {
         return glm::perspective(fov * zoom, ar, near, far);
     } else if (flipped) {
@@ -60,6 +63,11 @@ void Camera::setFov(float fov) {
 
 float Camera::getFov() const {
     return fov;
+}
+
+void Camera::setProjection(const glm::mat4& matrix) {
+    projection = matrix;
+    projset = true;
 }
 
 float Camera::getAspectRatio() const {
