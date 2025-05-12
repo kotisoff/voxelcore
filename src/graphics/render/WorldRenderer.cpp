@@ -358,7 +358,7 @@ void WorldRenderer::generateShadowsMap(
 
     const auto& settings = engine.getSettings();
     int resolution = shadowMap.getResolution();
-    float shadowMapScale = 0.1f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get())) * scale;
+    float shadowMapScale = 0.2f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get())) * scale;
     float shadowMapSize = resolution * shadowMapScale;
 
     glm::vec3 basePos = glm::floor(camera.position / 500.0f) * 500.0f;
