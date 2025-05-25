@@ -2,8 +2,10 @@
 
 #include "assets/Assets.hpp"
 #include "coders/png.hpp"
+#include "coders/vcm.hpp"
 #include "debug/Logger.hpp"
 #include "engine/Engine.hpp"
+#include "graphics/commons/Model.hpp"
 #include "graphics/core/Texture.hpp"
 #include "util/Buffer.hpp"
 
@@ -44,7 +46,21 @@ static int l_load_texture(lua::State* L) {
     return 0;
 }
 
+static int l_parse_model(lua::State* L) {
+    auto format = lua::require_lstring(L, 1);
+    auto string = lua::require_lstring(L, 2);
+    auto name = lua::require_string(L, 3);
+    
+    if (format == "xml") {
+        engine->getAssets()->store(vcm::parse(name, string), name);
+    } else {
+        throw std::runtime_error("unknown format " + util::quote(std::string(format)));
+    }
+    return 0;
+}
+
 const luaL_Reg assetslib[] = {
     {"load_texture", lua::wrap<l_load_texture>},
+    {"parse_model", lua::wrap<l_parse_model>},
     {NULL, NULL}
 };
