@@ -95,6 +95,7 @@ void ModelViewer::draw(const DrawContext& pctx, const Assets& assets) {
         ctx.setFramebuffer(fbo.get());
         ctx.setViewport({size.x, size.y});
         ctx.setDepthTest(true);
+        ctx.setCullFace(true);
         display::clear();
         
         auto& ui3dShader = assets.require<Shader>("ui3d");
@@ -111,8 +112,8 @@ void ModelViewer::draw(const DrawContext& pctx, const Assets& assets) {
                     "blocks:dbg_south",
                     "blocks:dbg_top",
                     "blocks:dbg_bottom",
-                    "blocks:dbg_east",
                     "blocks:dbg_west",
+                    "blocks:dbg_east",
                 };
                 region = util::get_texture_region(
                     assets,
