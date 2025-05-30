@@ -1,6 +1,5 @@
 local writeables = {}
 local registry
-local filenames
 
 local current_file = {
     filename = "",
@@ -49,6 +48,10 @@ events.on("core:error", function (msg, traceback)
     table.insert(errors_all, full)
 end)
 
+events.on("core:open_in_editor", function(filename, linenum)
+    open_file_in_editor(filename, linenum)
+end)
+
 local function find_mutable(filename)
     local packid = file.prefix(filename)
     if packid == "core" then
@@ -78,16 +81,6 @@ local function refresh_file_title()
     document.saveIcon.enabled = edited
     document.title.text = gui.str('File')..' - '..current_file.filename
         ..(edited and ' *' or '')
-end
-
-function filter_files(text)
-    local filtered = {}
-    for _, filename in ipairs(filenames) do
-        if filename:find(text) then
-            table.insert(filtered, filename)
-        end
-    end
-    build_files_list(filtered, text)
 end
 
 function on_control_combination(keycode)
@@ -229,43 +222,11 @@ function open_file_in_editor(filename, line, mutable)
     document.saveIcon.enabled = current_file.modified
 end
 
-function build_files_list(filenames, selected)
-    local files_list = document.filesList
-    files_list.scroll = 0
-    files_list:clear()
-
-    for _, actual_filename in ipairs(filenames) do
-        local filename = actual_filename
-        if selected then
-            filename = filename:gsub(selected, "**"..selected.."**")
-        end
-        local parent = file.parent(filename)
-        local info = registry.get_info(actual_filename)
-        local icon = "file"
-        if info then
-            icon = info.type == "component" and "entity" or info.type
-        end
-        files_list:add(gui.template("script_file", {
-            path = parent .. (parent[#parent] == ':' and '' or '/'), 
-            name = file.name(filename),
-            icon = icon,
-            unit = info and info.unit or '',
-            filename = actual_filename
-        }))
-    end
-end
-
 function on_open(mode)
     registry = require "core:internal/scripts_registry"
-    
-    local files_list = document.filesList
 
     document.editorContainer:setInterval(200, refresh_file_title)
 
     clear_traceback()
     clear_output()
-
-    filenames = registry.filenames
-    table.sort(filenames)
-    build_files_list(filenames)
 end
