@@ -98,7 +98,7 @@ model::Model ModelsGenerator::fromCustom(
     for (size_t i = 0; i < modelBoxes.size(); i++) {
         auto& mesh = model.addMesh("blocks:");
         mesh.lighting = lighting;
-        const UVRegion boxtexfaces[6] = {
+        UVRegion boxtexfaces[6] = {
             get_region_for(modelTextures[i * 6 + 5], assets),
             get_region_for(modelTextures[i * 6 + 4], assets),
             get_region_for(modelTextures[i * 6 + 3], assets),
@@ -106,6 +106,9 @@ model::Model ModelsGenerator::fromCustom(
             get_region_for(modelTextures[i * 6 + 1], assets),
             get_region_for(modelTextures[i * 6 + 0], assets)
         };
+        boxtexfaces[2].scale(glm::vec2(-1));
+        boxtexfaces[5].scale(glm::vec2(-1, 1));
+
         bool enabled[6] {1,1,1,1,1,1};
         mesh.addBox(
             modelBoxes[i].center(),

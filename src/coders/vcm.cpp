@@ -5,6 +5,7 @@
 #include "xml.hpp"
 #include "util/stringutil.hpp"
 #include "graphics/commons/Model.hpp"
+#include "io/io.hpp"
 
 using namespace vcm;
 using namespace xml;
@@ -14,8 +15,8 @@ static const std::unordered_map<std::string, int> side_indices {
     {"south", 1},
     {"top", 2},
     {"bottom", 3},
-    {"east", 4},
-    {"west", 5},
+    {"west", 4},
+    {"east", 5},
 };
 
 static void perform_rect(const xmlelement& root, model::Model& model) {
@@ -143,12 +144,18 @@ static std::unique_ptr<model::Model> load_model(const xmlelement& root) {
 std::unique_ptr<model::Model> vcm::parse(
     std::string_view file, std::string_view src
 ) {
-    auto doc = xml::parse(file, src);
-    const auto& root = *doc->getRoot();
-    if (root.getTag() != "model") {
-        throw std::runtime_error(
-            "'model' tag expected as root, got '" + root.getTag() + "'"
-        );
+    try {
+        auto doc = io::path(std::string(file)).extension() == ".xml" 
+                    ? xml::parse(file, src) : xml::parse_vcm(file, src, "model");
+        const auto& root = *doc->getRoot();
+        if (root.getTag() != "model") {
+            throw std::runtime_error(
+                "'model' tag expected as root, got '" + root.getTag() + "'"
+            );
+        }
+        std::cout << xml::stringify(*doc) << std::endl;
+        return load_model(root);
+    } catch (const parsing_error& err) {
+        throw std::runtime_error(err.errorLog());
     }
-    return load_model(root);
 }
