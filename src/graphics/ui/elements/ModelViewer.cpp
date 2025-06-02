@@ -1,3 +1,4 @@
+#include <array>
 #include <glm/ext.hpp>
 #include "ModelViewer.hpp"
 

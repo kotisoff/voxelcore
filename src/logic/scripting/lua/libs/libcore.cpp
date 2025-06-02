@@ -1,5 +1,6 @@
 #include <memory>
 #include <vector>
+#include <sstream>
 
 #include "api_lua.hpp"
 #include "constants.hpp"
