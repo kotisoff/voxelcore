@@ -1,5 +1,6 @@
 #include "assetload_funcs.hpp"
 
+#include <array>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
