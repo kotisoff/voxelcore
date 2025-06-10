@@ -5,7 +5,6 @@ uniform sampler2DShadow u_shadows[2];
 uniform mat4 u_shadowsMatrix[2];
 
 uniform int u_shadowsRes;
-uniform bool u_blurShadows;
 
 float calc_shadow() {
     float shadow = 1.0;
@@ -22,39 +21,32 @@ float calc_shadow() {
 
         shadow = 0.0;
         
+        // TODO: optimize
         if (dot(a_realnormal, u_sunDir) < 0.0) {
-            if (u_blurShadows || true) {
-                if (a_distance > 64) {
-                    for (int y = -1; y <= 1; y++) {
-                        for (int x = -1; x <= 1; x++) {
-                            shadow += texture(
-                                u_shadows[1],
-                                wprojCoords.xyz +
-                                    vec3(x, y, -(abs(x) + abs(y))) /
-                                        u_shadowsRes
-                            );
-                        }
+            if (a_distance > 128) {
+                for (int y = -1; y <= 1; y++) {
+                    for (int x = -1; x <= 1; x++) {
+                        shadow += texture(
+                            u_shadows[1],
+                            wprojCoords.xyz +
+                                vec3(x, y, -(abs(x) + abs(y))) /
+                                    u_shadowsRes
+                        );
                     }
-                    shadow /= 9;
-                } else {
-                    for (int y = -2; y <= 2; y++) {
-                        for (int x = -2; x <= 2; x++) {
-                            shadow += texture(
-                                u_shadows[0],
-                                projCoords.xyz +
-                                    vec3(x, y, -(abs(x) + abs(y))) /
-                                        u_shadowsRes * 1.0
-                            );
-                        }
-                    }
-                    shadow /= 25;
                 }
+                shadow /= 9;
             } else {
-                if (a_distance > 32.0) {
-                    shadow = texture(u_shadows[1], wprojCoords.xyz);
-                } else {
-                    shadow = texture(u_shadows[0], projCoords.xyz);
+                for (int y = -2; y <= 2; y++) {
+                    for (int x = -2; x <= 2; x++) {
+                        shadow += texture(
+                            u_shadows[0],
+                            projCoords.xyz +
+                                vec3(x, y, -(abs(x) + abs(y))) /
+                                    u_shadowsRes * 1.0
+                        );
+                    }
                 }
+                shadow /= 25;
             }
             shadow = shadow * 0.5 + 0.5;
         } else {
