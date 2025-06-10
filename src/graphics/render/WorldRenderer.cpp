@@ -370,7 +370,12 @@ void WorldRenderer::generateShadowsMap(
     shadowCamera.perspective = false;
     shadowCamera.setAspectRatio(1.0f);
 
-    float sunAngle = glm::radians(fmod(90.0f - worldInfo.daytime * 360.0f, 180.0f));
+    float t = worldInfo.daytime - 0.25f;
+    if (t < 0.0f) {
+        t += 1.0f;
+    }
+    t = fmod(t, 0.5f);
+    float sunAngle = glm::radians(90.0f - (t + 0.25f) * 360.0f);
     shadowCamera.rotate(
         sunAngle,
         glm::radians(-45.0f),

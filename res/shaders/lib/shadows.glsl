@@ -3,6 +3,7 @@
 
 uniform sampler2DShadow u_shadows[2];
 uniform mat4 u_shadowsMatrix[2];
+uniform float u_dayTime;
 
 uniform int u_shadowsRes;
 
@@ -22,7 +23,7 @@ float calc_shadow() {
         shadow = 0.0;
         
         // TODO: optimize
-        if (dot(a_realnormal, u_sunDir) < 0.0) {
+        if (dot(a_realnormal, u_sunDir) < 0.0 || true) {
             if (a_distance > 128) {
                 for (int y = -1; y <= 1; y++) {
                     for (int x = -1; x <= 1; x++) {
@@ -48,7 +49,9 @@ float calc_shadow() {
                 }
                 shadow /= 25;
             }
-            shadow = shadow * 0.5 + 0.5;
+            float s = abs(cos(u_dayTime * 3.141592 * 2.0));
+            s = pow(s, 0.7);
+            shadow = mix(0.5, shadow * 0.5 + 0.5, s);
         } else {
             shadow = 0.5;
         }
