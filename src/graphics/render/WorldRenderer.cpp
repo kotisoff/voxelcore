@@ -482,9 +482,6 @@ void WorldRenderer::draw(
                         ctx, camera, *lineBatch, linesShader, showChunkBorders
                     );
                 }
-                if (player.currentCamera == player.fpCamera) {
-                    renderHands(camera, delta);
-                }
             }
         }
         {
@@ -500,6 +497,12 @@ void WorldRenderer::draw(
         camera,
         shadows ? shadowMap->getDepthMap() : 0
     );
+    if (player.currentCamera == player.fpCamera) {
+        DrawContext ctx = pctx.sub();
+        ctx.setDepthTest(true);
+        ctx.setCullFace(true);
+        renderHands(camera, delta);
+    }
     renderBlockOverlay(pctx);
 
     glActiveTexture(GL_TEXTURE0);
