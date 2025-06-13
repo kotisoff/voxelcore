@@ -97,6 +97,7 @@ void PostProcessing::configureEffect(
 ) {
     const auto& viewport = context.getViewport();
 
+    bool ssaoConfigured = false;
     if (!ssaoConfigured) {
         for (unsigned int i = 0; i < 64; ++i) {
             auto name = "u_ssaoSamples["+ std::to_string(i) + "]";
@@ -129,7 +130,9 @@ void PostProcessing::render(
     }
     int totalPasses = 0;
     for (const auto& effect : effectSlots) {
-        totalPasses += (effect != nullptr && effect->isActive());
+        totalPasses +=
+            (effect != nullptr && effect->isActive() &&
+             !(effect->isAdvanced() && gbuffer == nullptr));
     }
 
     const auto& vp = context.getViewport();
@@ -161,6 +164,9 @@ void PostProcessing::render(
     int currentPass = 1;
     for (const auto& effect : effectSlots) {
         if (effect == nullptr || !effect->isActive()) {
+            continue;
+        }
+        if (effect->isAdvanced() && gbuffer == nullptr) {
             continue;
         }
         auto& shader = effect->use();

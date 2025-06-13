@@ -35,6 +35,7 @@ public:
     };
 
     PostEffect(
+        bool advanced,
         std::shared_ptr<Shader> shader,
         std::unordered_map<std::string, Param> params
     );
@@ -48,10 +49,15 @@ public:
 
     void setParam(const std::string& name, const dv::value& value);
 
+    bool isAdvanced() const {
+        return advanced;
+    }
+
     bool isActive() {
         return intensity > 1e-4f;
     }
 private:
+    bool advanced = false;
     std::shared_ptr<Shader> shader;
     std::unordered_map<std::string, Param> params;
     float intensity = 0.0f;

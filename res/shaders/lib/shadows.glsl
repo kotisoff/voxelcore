@@ -12,7 +12,7 @@ float calc_shadow() {
     }
 
     float step = 1.0 / float(u_shadowsRes);
-    float s = pow(abs(cos(u_dayTime * 6.283185)), 0.7); // 2*PI precomputed
+    float s = pow(abs(cos(u_dayTime * 6.283185)), 0.5); // 2*PI precomputed
     vec3 normalOffset = a_realnormal * (a_distance > 128.0 ? 0.2 : 0.04);
     int shadowIdx = a_distance > 128.0 ? 1 : 0;
 

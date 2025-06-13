@@ -10,10 +10,11 @@ PostEffect::Param::Param(Type type, Value defValue)
 }
 
 PostEffect::PostEffect(
+    bool advanced,
     std::shared_ptr<Shader> shader,
     std::unordered_map<std::string, Param> params
 )
-    : shader(std::move(shader)), params(std::move(params)) {
+    : advanced(advanced), shader(std::move(shader)), params(std::move(params)) {
 }
 
 Shader& PostEffect::use() {

@@ -76,5 +76,4 @@ private:
 
     std::vector<glm::vec3> ssaoKernel;
     uint noiseTexture;
-    bool ssaoConfigured = false;
 };

@@ -366,7 +366,7 @@ void WorldRenderer::generateShadowsMap(
     glm::vec3 basePos = glm::floor(camera.position);
     shadowCamera = Camera(basePos, shadowMapSize);
     shadowCamera.near = 0.1f;
-    shadowCamera.far = 800.0f;
+    shadowCamera.far = 1000.0f;
     shadowCamera.perspective = false;
     shadowCamera.setAspectRatio(1.0f);
 
@@ -375,7 +375,7 @@ void WorldRenderer::generateShadowsMap(
         t += 1.0f;
     }
     t = fmod(t, 0.5f);
-    float sunAngle = glm::radians(90.0f - (t + 0.25f) * 360.0f);
+    float sunAngle = glm::radians(90.0f - (((int)(t*1000)) / 1000.0f + 0.25f) * 360.0f);
     shadowCamera.rotate(
         sunAngle,
         glm::radians(-45.0f),
@@ -383,7 +383,7 @@ void WorldRenderer::generateShadowsMap(
     );
     shadowCamera.updateVectors();
 
-    shadowCamera.position -= shadowCamera.front * 200.0f;
+    shadowCamera.position -= shadowCamera.front * 300.0f;
     shadowCamera.position += shadowCamera.up * 10.0f;
     shadowCamera.position += camera.front * 100.0f;
 
@@ -393,7 +393,7 @@ void WorldRenderer::generateShadowsMap(
     auto min = view * glm::vec4(currentPos - (shadowCamera.right + shadowCamera.up) * (shadowMapSize * 0.5f), 1.0f);
     auto max = view * glm::vec4(currentPos + (shadowCamera.right + shadowCamera.up) * (shadowMapSize * 0.5f), 1.0f);
 
-    shadowCamera.setProjection(glm::ortho(min.x, max.x, min.y, max.y, 0.1f, 800.0f));
+    shadowCamera.setProjection(glm::ortho(min.x, max.x, min.y, max.y, 0.1f, 1000.0f));
 
     {
         frustumCulling->update(shadowCamera.getProjView());
@@ -456,7 +456,7 @@ void WorldRenderer::draw(
     chunks->update();
 
     static int frameid = 0;
-    if (shadows && frameid % 3 == 0) {
+    if (shadows) {
         if (frameid % 2 == 0) {
             generateShadowsMap(camera, pctx, *shadowMap, shadowCamera, 1.0f);
         } else {
