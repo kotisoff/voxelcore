@@ -69,8 +69,8 @@ static int l_set_array(lua::State* L) {
         return 0;
     }
     std::vector<ubyte> buffer(
-        reinterpret_cast<const ubyte*>(data.begin()),
-        reinterpret_cast<const ubyte*>(data.end())
+        reinterpret_cast<const ubyte*>(data.data()),
+        reinterpret_cast<const ubyte*>(data.data() + data.size())
     );
     effect->setArray(key, std::move(buffer));
     return 0;
