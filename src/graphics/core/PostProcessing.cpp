@@ -43,20 +43,6 @@ PostProcessing::PostProcessing(size_t effectSlotsCount)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    std::uniform_real_distribution<float> randomFloats(0.0, 1.0); 
-    std::default_random_engine generator;
-    for (unsigned int i = 0; i < 64; ++i)
-    {
-        glm::vec3 sample(
-            randomFloats(generator) * 2.0 - 1.0, 
-            randomFloats(generator) * 2.0 - 1.0, 
-            randomFloats(generator)
-        );
-        sample  = glm::normalize(sample);
-        sample *= randomFloats(generator);
-        ssaoKernel.push_back(sample);  
-    }
 }
 
 PostProcessing::~PostProcessing() = default;
@@ -90,21 +76,13 @@ void PostProcessing::refreshFbos(uint width, uint height) {
 
 void PostProcessing::configureEffect(
     const DrawContext& context,
+    PostEffect& effect,
     Shader& shader,
     float timer,
     const Camera& camera,
     uint shadowMap
 ) {
     const auto& viewport = context.getViewport();
-
-    bool ssaoConfigured = false;
-    if (!ssaoConfigured) {
-        for (unsigned int i = 0; i < 64; ++i) {
-            auto name = "u_ssaoSamples["+ std::to_string(i) + "]";
-            shader.uniform3f(name, ssaoKernel[i]);
-        }
-        ssaoConfigured = true;
-    }
     shader.uniform1i("u_screen", 0);
     if (gbuffer) {
         shader.uniform1i("u_position", 1);
@@ -156,7 +134,7 @@ void PostProcessing::render(
     if (totalPasses == 0) {
         auto& effect = assets.require<PostEffect>("default");
         auto& shader = effect.use();
-        configureEffect(context, shader, timer, camera, shadowMap);
+        configureEffect(context, effect, shader, timer, camera, shadowMap);
         quadMesh->draw();
         return;
     }
@@ -170,7 +148,7 @@ void PostProcessing::render(
             continue;
         }
         auto& shader = effect->use();
-        configureEffect(context, shader, timer, camera, shadowMap);
+        configureEffect(context, *effect, shader, timer, camera, shadowMap);
 
         if (currentPass > 1) {
             fbo->getTexture()->bind();

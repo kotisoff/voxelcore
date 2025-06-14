@@ -131,10 +131,14 @@ void WorldRenderer::setupWorldShader(
     shader.uniform1i("u_enableShadows", shadows);
 
     if (shadows) {
+        const auto& worldInfo = level.getWorld()->getInfo();
+        float cloudsIntensity = glm::max(worldInfo.fog, weather.clouds());
         shader.uniformMatrix("u_shadowsMatrix[0]", shadowCamera.getProjView());
         shader.uniformMatrix("u_shadowsMatrix[1]", wideShadowCamera.getProjView());
         shader.uniform3f("u_sunDir", shadowCamera.front);
         shader.uniform1i("u_shadowsRes", shadowMap->getResolution());
+        shader.uniform1f("u_shadowsOpacity", 1.0f - cloudsIntensity); // TODO: make it configurable
+        shader.uniform1f("u_shadowsSoftness", 1.0f + cloudsIntensity * 4); // TODO: make it configurable
 
         glActiveTexture(GL_TEXTURE4);
         shader.uniform1i("u_shadows[0]", 4);
@@ -359,7 +363,7 @@ void WorldRenderer::generateShadowsMap(
     const auto& settings = engine.getSettings();
     int resolution = shadowMap.getResolution();
     float shadowMapScale =
-        0.2f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get())) *
+        0.16f / (1 << glm::max(0L, settings.graphics.shadowsQuality.get())) *
         scale;
     float shadowMapSize = resolution * shadowMapScale;
 
@@ -383,9 +387,9 @@ void WorldRenderer::generateShadowsMap(
     );
     shadowCamera.updateVectors();
 
-    shadowCamera.position -= shadowCamera.front * 300.0f;
-    shadowCamera.position += shadowCamera.up * 10.0f;
-    shadowCamera.position += camera.front * 100.0f;
+    shadowCamera.position -= shadowCamera.front * 500.0f;
+    shadowCamera.position += shadowCamera.up * 0.0f;
+    shadowCamera.position += camera.front * 0.0f;
 
     auto view = shadowCamera.getView();
 
@@ -445,9 +449,7 @@ void WorldRenderer::draw(
 
     const auto& worldInfo = world->getInfo();
     
-    float sqrtT = glm::sqrt(weather.t);
-    float clouds = weather.b.clouds * sqrtT +
-                   weather.a.clouds * (1.0f - sqrtT);
+    float clouds = weather.clouds();
     clouds = glm::max(worldInfo.fog, clouds);
     float mie = 1.0f + glm::max(worldInfo.fog, clouds * 0.5f) * 2.0f;
 

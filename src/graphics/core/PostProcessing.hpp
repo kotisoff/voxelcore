@@ -58,6 +58,7 @@ public:
 private:
     void configureEffect(
         const DrawContext& context,
+        PostEffect& effect,
         Shader& shader,
         float timer,
         const Camera& camera,
@@ -73,7 +74,5 @@ private:
     std::unique_ptr<Mesh<PostProcessingVertex>> quadMesh;
     std::vector<std::shared_ptr<PostEffect>> effectSlots;
     std::unique_ptr<GBuffer> gbuffer;
-
-    std::vector<glm::vec3> ssaoKernel;
     uint noiseTexture;
 };
