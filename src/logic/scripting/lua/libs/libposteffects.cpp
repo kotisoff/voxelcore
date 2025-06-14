@@ -17,7 +17,10 @@ static int l_set_effect(lua::State* L) {
     size_t index = static_cast<size_t>(lua::tointeger(L, 1));
     auto name = lua::require_string(L, 2);
     auto& assets = *engine->getAssets();
-    auto effect = std::make_shared<PostEffect>(assets.require<PostEffect>(name));
+    auto effect = assets.getShared<PostEffect>(name);
+    if (effect == nullptr) {
+        throw std::runtime_error(std::string("post-effect '") + name + "' not found");
+    }
     post_processing->setEffect(index, std::move(effect));
     return 0;
 }

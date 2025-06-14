@@ -88,7 +88,9 @@ void PostProcessing::configureEffect(
         shader.uniform1i("u_position", 1);
         shader.uniform1i("u_normal", 2);
     }
-    shader.uniform1i("u_noise", 3);
+    shader.uniform1i("u_noise", 3); // used in SSAO pass
+    shader.uniform1i("u_ssao", 3);
+
     shader.uniform1i("u_shadows", 4);
     shader.uniform2i("u_screenSize", viewport);
     shader.uniform1f("u_timer", timer);
@@ -126,13 +128,25 @@ void PostProcessing::render(
         glBindTexture(GL_TEXTURE_2D, noiseTexture);
 
         glActiveTexture(GL_TEXTURE0);
+
+        auto& ssaoEffect = assets.require<PostEffect>("ssao");
+        auto& shader = ssaoEffect.use();
+        configureEffect(context, ssaoEffect, shader, timer, camera, shadowMap);
+        gbuffer->bindSSAO();
+        quadMesh->draw();
+        gbuffer->unbind();
+
+        glActiveTexture(GL_TEXTURE3);
+        gbuffer->bindSSAOBuffer();
     } else {
         glActiveTexture(GL_TEXTURE0);
         fbo->getTexture()->bind();
     }
 
     if (totalPasses == 0) {
-        auto& effect = assets.require<PostEffect>("default");
+        auto& effect = assets.require<PostEffect>(
+            gbuffer ? "deferred_lighting" : "default"
+        );
         auto& shader = effect.use();
         configureEffect(context, effect, shader, timer, camera, shadowMap);
         quadMesh->draw();
