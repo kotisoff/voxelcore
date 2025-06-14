@@ -20,6 +20,65 @@ PostEffect::PostEffect(
     : advanced(advanced), shader(std::move(shader)), params(std::move(params)) {
 }
 
+static void apply_uniform_value(
+    const PostEffect::Param& param,
+    Shader& shader,
+    const std::string& name
+) {
+    using Type = PostEffect::Param::Type;
+    switch (param.type) {
+        case Type::INT:
+            shader.uniform1i(name, std::get<int>(param.value));
+            break;
+        case Type::FLOAT:
+            shader.uniform1f(name, std::get<float>(param.value));
+            break;
+        case Type::VEC2:
+            shader.uniform2f(name, std::get<glm::vec2>(param.value));
+            break;
+        case Type::VEC3:
+            shader.uniform3f(name, std::get<glm::vec3>(param.value));
+            break;
+        case Type::VEC4:
+            shader.uniform4f(name, std::get<glm::vec4>(param.value));
+            break;
+        default:
+            assert(false);
+    }
+}
+
+static void apply_uniform_array(
+    const PostEffect::Param& param,
+    Shader& shader,
+    const std::string& name,
+    const std::vector<ubyte>& values
+) {
+    size_t size = values.size();
+    auto ibuffer = reinterpret_cast<const int*>(values.data());
+    auto fbuffer = reinterpret_cast<const float*>(values.data());
+
+    using Type = PostEffect::Param::Type;
+    switch (param.type) {
+        case Type::INT:
+            shader.uniform1v(name, size / sizeof(int), ibuffer);
+            break;
+        case Type::FLOAT:
+            shader.uniform1v(name, size / sizeof(float), fbuffer);
+            break;
+        case Type::VEC2:
+            shader.uniform2v(name, size / sizeof(glm::vec2), fbuffer);
+            break;
+        case Type::VEC3:
+            shader.uniform3v(name, size / sizeof(glm::vec3), fbuffer);
+            break;
+        case Type::VEC4:
+            shader.uniform4v(name, size / sizeof(glm::vec4), fbuffer);
+            break;
+        default:
+            assert(false);
+    }
+}
+
 Shader& PostEffect::use() {
     shader->use();
     shader->uniform1f("u_intensity", intensity);
@@ -32,48 +91,9 @@ Shader& PostEffect::use() {
             if (found == arrayValues.end()) {
                 continue;
             }
-            size_t size = found->second.size();
-            auto ibuffer = reinterpret_cast<const int*>(found->second.data());
-            auto fbuffer = reinterpret_cast<const float*>(found->second.data());
-            switch (param.type) {
-                case Param::Type::INT:
-                    shader->uniform1v(name, size / sizeof(int), ibuffer);
-                    break;
-                case Param::Type::FLOAT:
-                    shader->uniform1v(name, size / sizeof(float), fbuffer);
-                    break;
-                case Param::Type::VEC2:
-                    shader->uniform2v(name, size / sizeof(glm::vec2), fbuffer);
-                    break;
-                case Param::Type::VEC3:
-                    shader->uniform3v(name, size / sizeof(glm::vec3), fbuffer);
-                    break;
-                case Param::Type::VEC4:
-                    shader->uniform4v(name, size / sizeof(glm::vec4), fbuffer);
-                    break;
-                default:
-                    assert(false);
-            }
+            apply_uniform_array(param, *shader, name, found->second);
         } else {
-            switch (param.type) {
-                case Param::Type::INT:
-                    shader->uniform1i(name, std::get<int>(param.value));
-                    break;
-                case Param::Type::FLOAT:
-                    shader->uniform1f(name, std::get<float>(param.value));
-                    break;
-                case Param::Type::VEC2:
-                    shader->uniform2f(name, std::get<glm::vec2>(param.value));
-                    break;
-                case Param::Type::VEC3:
-                    shader->uniform3f(name, std::get<glm::vec3>(param.value));
-                    break;
-                case Param::Type::VEC4:
-                    shader->uniform4f(name, std::get<glm::vec4>(param.value));
-                    break;
-                default:
-                    assert(false);
-            }
+            apply_uniform_value(param, *shader, name);
         }
         param.dirty = false;
     }
