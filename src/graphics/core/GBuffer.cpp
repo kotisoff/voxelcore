@@ -155,7 +155,6 @@ void GBuffer::bind() {
 
 void GBuffer::bindSSAO() const {
     glBindFramebuffer(GL_FRAMEBUFFER, ssaoFbo);
-    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void GBuffer::unbind() {

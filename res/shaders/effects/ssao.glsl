@@ -1,6 +1,6 @@
 #param vec3 u_ssaoSamples[64]
 #param int u_kernelSize = 16
-#param float u_radius = 0.2
+#param float u_radius = 0.4
 #param float u_bias = 0.006
 
 vec4 effect() {
@@ -32,5 +32,5 @@ vec4 effect() {
 
     float z = -position.z * 0.01;
     z = max(0.0, 1.0 - z);
-    return vec4(occlusion, 0.0, 0.0, 1.0);
+    return vec4(mix(1.0, occlusion, z), 0.0, 0.0, 1.0);
 }
