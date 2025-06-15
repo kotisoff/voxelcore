@@ -15,6 +15,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
 
 #ifndef M_PI
@@ -46,18 +47,28 @@ Skybox::Skybox(uint size, Shader& shader)
 
     mesh = std::make_unique<Mesh<SkyboxVertex>>(vertices, 6);
 
-    sprites.push_back(skysprite {
-        "misc/moon",
-        glm::pi<float>()*0.5f,
-        4.0f,
-        false
+    sprites.push_back(SkySprite {
+        "misc/moon_flare",
+        glm::pi<float>() * 0.5f,
+        0.5f,
+        false,
+        glm::pi<float>() * 0.25f,
     });
 
-    sprites.push_back(skysprite {
-        "misc/sun",
-        glm::pi<float>()*1.5f,
+    sprites.push_back(SkySprite {
+        "misc/moon",
+        glm::pi<float>() * 0.5f,
         4.0f,
-        true
+        false,
+        glm::pi<float>() * 0.25f,
+    });
+
+    sprites.push_back(SkySprite {
+        "misc/sun",
+        glm::pi<float>() * 1.5f,
+        4.0f,
+        true,
+        glm::pi<float>() * 0.25f,
     });
 }
 
@@ -124,16 +135,19 @@ void Skybox::draw(
     for (auto& sprite : sprites) {
         batch3d->texture(assets.get<Texture>(sprite.texture));
 
-        float sangle = daytime * glm::pi<float>()*2.0 + sprite.phase;
+        float sangle = daytime * glm::pi<float>() * 2.0 + sprite.phase;
         float distance = sprite.distance;
 
-        glm::vec3 pos(-std::cos(sangle)*distance, std::sin(sangle)*distance, 0);
-        glm::vec3 up(-std::sin(-sangle), std::cos(-sangle), 0.0f);
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), -sangle + glm::pi<float>() * 0.5f, glm::vec3(0, 0, -1));
+        rotation = glm::rotate(rotation, sprite.altitude, glm::vec3(1, 0, 0));
+        glm::vec3 pos = glm::vec4(0, distance, 0, 1) * rotation;
+        glm::vec3 up = glm::vec4(1, 0, 0, 1) * rotation;
+        glm::vec3 right = glm::vec4(0, 0, 1, 1) * rotation;
         glm::vec4 tint (1,1,1, opacity);
         if (!sprite.emissive) {
             tint *= 0.6f+std::cos(angle)*0.4;
         }
-        batch3d->sprite(pos, glm::vec3(0, 0, 1),
+        batch3d->sprite(pos, right,
                         up, 1, 1, UVRegion(), tint);
     }
     batch3d->flush();

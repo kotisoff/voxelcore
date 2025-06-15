@@ -384,10 +384,11 @@ void WorldRenderer::generateShadowsMap(
         90.0f -
         ((static_cast<int>(t / sunCycleStep)) * sunCycleStep + 0.25f) * 360.0f
     );
+    float sunAltitude = glm::pi<float>() * 0.25f;
     shadowCamera.rotate(
-        sunAngle,
-        glm::radians(-45.0f),
-        glm::radians(-0.0f)
+        -glm::cos(sunAngle + glm::pi<float>() * 0.5f) * sunAltitude,
+        sunAngle - glm::pi<float>() * 0.5f,
+        glm::radians(0.0f)
     );
     shadowCamera.updateVectors();
 
