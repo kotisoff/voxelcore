@@ -22,5 +22,9 @@ namespace gui {
             int contentWidth,
             const glm::vec4& padding
         );
+
+        void setSelected(const Element& selected);
+
+        void drawBackground(const DrawContext& pctx, const Assets&) override;
     };
 }
