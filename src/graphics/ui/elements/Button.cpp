@@ -49,7 +49,7 @@ Button::Button(
     label = std::make_shared<Label>(gui, text);
     label->setAlign(Align::center);
     label->setSize(getContentSize());
-    label->setInteractive(true);
+    label->setInteractive(false);
     add(label);
     
     setHoverColor({0.05f, 0.1f, 0.15f, 0.75f});

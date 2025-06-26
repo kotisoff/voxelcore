@@ -11,6 +11,7 @@
 #include "elements/TextBox.hpp"
 #include "elements/SplitBox.hpp"
 #include "elements/TrackBar.hpp"
+#include "elements/SelectBox.hpp"
 #include "elements/Image.hpp"
 #include "elements/InlineFrame.hpp"
 #include "elements/InputBindBox.hpp"
@@ -30,7 +31,7 @@
 
 using namespace gui;
 
-static Align align_from_string(const std::string& str, Align def) {
+static Align align_from_string(std::string_view str, Align def) {
     if (str == "left") return Align::left;
     if (str == "center") return Align::center;
     if (str == "right") return Align::right;
@@ -151,7 +152,7 @@ static void read_uinode(
     if (element.has("pressed-color")) {
         node.setPressedColor(element.attr("pressed-color").asColor());
     }
-    std::string alignName = element.attr("align", "").getText();
+    const auto& alignName = element.attr("align", "").getText();
     node.setAlign(align_from_string(alignName, node.getAlign()));
 
     if (element.has("gravity")) {
@@ -424,6 +425,50 @@ static std::shared_ptr<UINode> read_button(
         ));
     }
     return button;
+}
+
+static std::shared_ptr<UINode> read_select(
+    UiXmlReader& reader, const xml::xmlelement& element
+) {
+    auto& gui = reader.getGUI();
+    glm::vec4 padding = element.attr("padding", "10").asVec4();
+    int contentWidth = element.attr("width", "100").asInt();
+
+    auto& elements = element.getElements();
+    std::vector<SelectBox::Element> options;
+    SelectBox::Element selected;
+    for (const auto& elem : elements) {
+        const auto& tag = elem->getTag();
+        if (tag == "option") {
+            auto value = elem->attr("value").getText();
+            auto text = parse_inner_text(*elem, reader.getContext());
+            SelectBox::Element option {
+                std::move(value),
+                std::move(text)
+            };
+            if (elem->attr("selected", "false").asBool()) {
+                selected = option;
+            }
+            options.push_back(std::move(option));
+        } else if (tag == "default") {
+            auto value = elem->attr("value").getText();
+            auto text = parse_inner_text(*elem, reader.getContext());
+            selected = SelectBox::Element {
+                std::move(value),
+                std::move(text)
+            };
+        }
+    }
+
+    auto selectBox = std::make_shared<SelectBox>(
+        gui,
+        std::move(options),
+        std::move(selected),
+        contentWidth,
+        std::move(padding)
+    );
+    read_panel_impl(reader, element, *selectBox, false);
+    return selectBox;
 }
 
 static std::shared_ptr<UINode> read_check_box(
@@ -796,6 +841,7 @@ UiXmlReader::UiXmlReader(gui::GUI& gui, scriptenv&& env) : gui(gui), env(std::mo
     add("label", read_label);
     add("panel", read_panel);
     add("button", read_button);
+    add("select", read_select);
     add("textbox", read_text_box);
     add("pagebox", read_page_box);
     add("splitbox", read_split_box);
