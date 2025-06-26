@@ -69,13 +69,6 @@ std::wstring Button::getText() const {
     return L"";
 }
 
-Button* Button::textSupplier(wstringsupplier supplier) {
-    if (label) {
-        label->textSupplier(std::move(supplier));
-    }
-    return this;
-}
-
 void Button::refresh() {
     Panel::refresh();
     if (label) {
