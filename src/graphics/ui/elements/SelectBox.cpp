@@ -31,7 +31,7 @@ SelectBox::SelectBox(
             });
             panel->add(button);
         }
-        panel->setZIndex(999);
+        panel->setZIndex(GUI::CONTEXT_MENU_ZINDEX);
         gui.setFocus(panel);
         panel->listenDefocus([panel=panel.get()](GUI& gui) {
             gui.remove(panel);
@@ -48,13 +48,20 @@ void SelectBox::setSelected(const Element& selected) {
 void SelectBox::drawBackground(const DrawContext& pctx, const Assets&) {
     glm::vec2 pos = calcPos();
     auto batch = pctx.getBatch2D();
-    batch->texture(nullptr);
+    batch->untexture();
     batch->setColor(calcColor());
     batch->rect(pos.x, pos.y, size.x, size.y);
     batch->setColor({1.0f, 1.0f, 1.0f, 0.333f});
+
+    int paddingRight = padding.w;
+    int widthHalf = 8;
+    int heightHalf = 4;
     batch->triangle(
-        pos.x + size.x - 32, pos.y + size.y / 2.0f - 4,
-        pos.x + size.x - 32 + 16, pos.y + size.y / 2.0f - 4,
-        pos.x + size.x - 32 + 8, pos.y + size.y / 2.0f + 4
+        pos.x + size.x - paddingRight - widthHalf * 2,
+        pos.y + size.y / 2.0f - heightHalf,
+        pos.x + size.x - paddingRight,
+        pos.y + size.y / 2.0f - heightHalf,
+        pos.x + size.x - paddingRight - widthHalf,
+        pos.y + size.y / 2.0f + heightHalf
     );
 }
