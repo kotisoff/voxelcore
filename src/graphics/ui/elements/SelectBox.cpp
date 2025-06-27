@@ -11,18 +11,18 @@ using namespace gui;
 
 SelectBox::SelectBox(
     GUI& gui,
-    std::vector<Element>&& elements,
-    Element selected,
+    std::vector<Option>&& options,
+    Option selected,
     int contentWidth,
     const glm::vec4& padding
 )
     : Button(gui, selected.text, padding, nullptr, glm::vec2(contentWidth, -1)),
-      elements(std::move(elements)) {
+      options(std::move(options)) {
 
     listenAction([this](GUI& gui) {
         auto panel = std::make_shared<Panel>(gui, getSize());
         panel->setPos(calcPos() + glm::vec2(0, size.y));
-        for (const auto& option : this->elements) {
+        for (const auto& option : this->options) {
             auto button = std::make_shared<Button>(
                 gui, option.text, glm::vec4(10.0f), nullptr, glm::vec2(-1.0f)
             );
@@ -40,9 +40,17 @@ SelectBox::SelectBox(
     });
 }
 
-void SelectBox::setSelected(const Element& selected) {
+void SelectBox::setSelected(const Option& selected) {
     this->selected = selected;
     this->label->setText(selected.text);
+}
+
+const SelectBox::Option& SelectBox::getSelected() const {
+    return selected;
+}
+
+const std::vector<SelectBox::Option>& SelectBox::getOptions() const {
+    return options;
 }
 
 void SelectBox::drawBackground(const DrawContext& pctx, const Assets&) {

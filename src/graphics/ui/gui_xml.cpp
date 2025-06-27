@@ -435,17 +435,14 @@ static std::shared_ptr<UINode> read_select(
     int contentWidth = element.attr("width", "100").asInt();
 
     auto& elements = element.getElements();
-    std::vector<SelectBox::Element> options;
-    SelectBox::Element selected;
+    std::vector<SelectBox::Option> options;
+    SelectBox::Option selected;
     for (const auto& elem : elements) {
         const auto& tag = elem->getTag();
         if (tag == "option") {
             auto value = elem->attr("value").getText();
             auto text = parse_inner_text(*elem, reader.getContext());
-            SelectBox::Element option {
-                std::move(value),
-                std::move(text)
-            };
+            SelectBox::Option option {std::move(value), std::move(text)};
             if (elem->attr("selected", "false").asBool()) {
                 selected = option;
             }
@@ -453,10 +450,7 @@ static std::shared_ptr<UINode> read_select(
         } else if (tag == "default") {
             auto value = elem->attr("value").getText();
             auto text = parse_inner_text(*elem, reader.getContext());
-            selected = SelectBox::Element {
-                std::move(value),
-                std::move(text)
-            };
+            selected = SelectBox::Option {std::move(value), std::move(text)};
         }
     }
 

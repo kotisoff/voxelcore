@@ -7,23 +7,27 @@ namespace gui {
 
     class SelectBox : public Button {
     public:
-        struct Element {
+        struct Option {
             std::string value;
             std::wstring text;
         };
     private:
-        std::vector<Element> elements;
-        Element selected {};
+        std::vector<Option> options;
+        Option selected {};
     public:
         SelectBox(
             GUI& gui,
-            std::vector<Element>&& elements,
-            Element selected,
+            std::vector<Option>&& elements,
+            Option selected,
             int contentWidth,
             const glm::vec4& padding
         );
 
-        void setSelected(const Element& selected);
+        void setSelected(const Option& selected);
+
+        const Option& getSelected() const;
+
+        const std::vector<Option>& getOptions() const;
 
         void drawBackground(const DrawContext& pctx, const Assets&) override;
     };

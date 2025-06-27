@@ -8,6 +8,7 @@
 #include "graphics/ui/elements/Canvas.hpp"
 #include "graphics/ui/elements/CheckBox.hpp"
 #include "graphics/ui/elements/Image.hpp"
+#include "graphics/ui/elements/SelectBox.hpp"
 #include "graphics/ui/elements/InventoryView.hpp"
 #include "graphics/ui/elements/Menu.hpp"
 #include "graphics/ui/elements/Panel.hpp"
@@ -225,6 +226,8 @@ static int p_is_checked(UINode* node, lua::State* L) {
 static int p_get_value(UINode* node, lua::State* L) {
     if (auto bar = dynamic_cast<TrackBar*>(node)) {
         return lua::pushnumber(L, bar->getValue());
+    } else if (auto box = dynamic_cast<SelectBox*>(node)) {
+        return lua::pushstring(L, box->getSelected().value);
     }
     return 0;
 }
@@ -709,6 +712,17 @@ static void p_set_region(UINode* node, lua::State* L, int idx) {
 static void p_set_value(UINode* node, lua::State* L, int idx) {
     if (auto bar = dynamic_cast<TrackBar*>(node)) {
         bar->setValue(lua::tonumber(L, idx));
+    } else if (auto selectbox = dynamic_cast<SelectBox*>(node)) {
+        auto value = lua::require_lstring(L, idx);
+        const auto& options = selectbox->getOptions();
+        for (const auto& option : options) {
+            if (option.value == value) {
+                selectbox->setSelected(option);
+                return;
+            }
+        }
+        selectbox->setSelected(SelectBox::Option {
+            std::string(value), util::str2wstr_utf8(value)});
     }
 }
 static void p_set_min(UINode* node, lua::State* L, int idx) {
