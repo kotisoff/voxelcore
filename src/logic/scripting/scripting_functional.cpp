@@ -69,6 +69,17 @@ wstringconsumer scripting::create_wstring_consumer(
     };
 }
 
+stringconsumer scripting::create_string_consumer(
+    const scriptenv& env, const std::string& src, const std::string& file
+) {
+    return [=](const std::string& x) {
+        if (auto L = process_callback(env, src, file)) {
+            lua::pushstring(L, x);
+            lua::call_nothrow(L, 1);
+        }
+    };
+}
+
 wstringsupplier scripting::create_wstring_supplier(
     const scriptenv& env, const std::string& src, const std::string& file
 ) {

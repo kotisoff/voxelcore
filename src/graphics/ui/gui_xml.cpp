@@ -439,19 +439,16 @@ static std::shared_ptr<UINode> read_select(
     SelectBox::Option selected;
     for (const auto& elem : elements) {
         const auto& tag = elem->getTag();
-        if (tag == "option") {
-            auto value = elem->attr("value").getText();
-            auto text = parse_inner_text(*elem, reader.getContext());
-            SelectBox::Option option {std::move(value), std::move(text)};
-            if (elem->attr("selected", "false").asBool()) {
-                selected = option;
-            }
-            options.push_back(std::move(option));
-        } else if (tag == "default") {
-            auto value = elem->attr("value").getText();
-            auto text = parse_inner_text(*elem, reader.getContext());
-            selected = SelectBox::Option {std::move(value), std::move(text)};
+        if (tag != "option") {
+            continue;
         }
+        auto value = elem->attr("value").getText();
+        auto text = parse_inner_text(*elem, reader.getContext());
+        SelectBox::Option option {std::move(value), std::move(text)};
+        if (elem->attr("selected", "false").asBool()) {
+            selected = option;
+        }
+        options.push_back(std::move(option));
     }
 
     auto selectBox = std::make_shared<SelectBox>(
@@ -461,6 +458,17 @@ static std::shared_ptr<UINode> read_select(
         contentWidth,
         std::move(padding)
     );
+    if (element.has("onselect")) {
+        auto callback = scripting::create_string_consumer(
+            reader.getEnvironment(),
+            element.attr("onselect").getText(),
+            reader.getFilename()
+        );
+        selectBox->listenChange(
+        [callback=std::move(callback)](GUI&, const std::string& value) {
+            callback(value);
+        });
+    }
     read_panel_impl(reader, element, *selectBox, false);
     return selectBox;
 }

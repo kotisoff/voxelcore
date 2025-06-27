@@ -14,6 +14,7 @@ namespace gui {
     private:
         std::vector<Option> options;
         Option selected {};
+        StringCallbacksSet changeCallbacks;
     public:
         SelectBox(
             GUI& gui,
@@ -22,6 +23,8 @@ namespace gui {
             int contentWidth,
             const glm::vec4& padding
         );
+
+        void listenChange(onstringchange&& callback);
 
         void setSelected(const Option& selected);
 

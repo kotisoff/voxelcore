@@ -26,8 +26,9 @@ SelectBox::SelectBox(
             auto button = std::make_shared<Button>(
                 gui, option.text, glm::vec4(10.0f), nullptr, glm::vec2(-1.0f)
             );
-            button->listenFocus([this, option](GUI&) {
+            button->listenFocus([this, option](GUI& gui) {
                 setSelected(option);
+                changeCallbacks.notify(gui, option.value);
             });
             panel->add(button);
         }
@@ -38,6 +39,10 @@ SelectBox::SelectBox(
         });
         gui.add(panel);
     });
+}
+
+void SelectBox::listenChange(onstringchange&& callback) {
+    changeCallbacks.listen(std::move(callback));
 }
 
 void SelectBox::setSelected(const Option& selected) {
