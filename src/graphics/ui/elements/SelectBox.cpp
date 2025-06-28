@@ -58,6 +58,10 @@ const std::vector<SelectBox::Option>& SelectBox::getOptions() const {
     return options;
 }
 
+void SelectBox::setOptions(std::vector<Option>&& options) {
+    this->options = std::move(options);
+}
+
 void SelectBox::drawBackground(const DrawContext& pctx, const Assets&) {
     glm::vec2 pos = calcPos();
     auto batch = pctx.getBatch2D();

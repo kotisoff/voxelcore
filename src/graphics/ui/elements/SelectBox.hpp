@@ -32,6 +32,8 @@ namespace gui {
 
         const std::vector<Option>& getOptions() const;
 
+        void setOptions(std::vector<Option>&& options);
+
         void drawBackground(const DrawContext& pctx, const Assets&) override;
     };
 }
