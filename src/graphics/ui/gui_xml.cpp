@@ -288,8 +288,11 @@ static std::wstring parse_inner_text(
     const xml::xmlelement& element, const std::string& context
 ) {
     std::wstring text = L"";
-    if (element.size() == 1) {
-        std::string source = element.sub(0).getInnerText();
+    for (const auto& elem : element.getElements()) {
+        if (!elem->isText()) {
+            continue;
+        }
+        std::string source = elem->getInnerText();
         util::trim(source);
         text = util::str2wstr_utf8(source);
         if (text[0] == '@') {
@@ -299,6 +302,7 @@ static std::wstring parse_inner_text(
                 text = langs::get(text.substr(1), util::str2wstr_utf8(context));
             }
         }
+        break;
     }
     return text;
 }
@@ -437,6 +441,7 @@ static std::shared_ptr<UINode> read_select(
     auto& elements = element.getElements();
     std::vector<SelectBox::Option> options;
     SelectBox::Option selected;
+
     for (const auto& elem : elements) {
         const auto& tag = elem->getTag();
         if (tag != "option") {
@@ -444,11 +449,26 @@ static std::shared_ptr<UINode> read_select(
         }
         auto value = elem->attr("value").getText();
         auto text = parse_inner_text(*elem, reader.getContext());
-        SelectBox::Option option {std::move(value), std::move(text)};
-        if (elem->attr("selected", "false").asBool()) {
-            selected = option;
+        options.push_back(SelectBox::Option {std::move(value), std::move(text)});
+    }
+
+    if (element.has("selected")) {
+        auto selectedValue = element.attr("selected").getText();
+        selected.value = selectedValue;
+        selected.text = L"";
+        for (const auto& option : options) {
+            if (option.value == selectedValue) {
+                selected.text = option.text;
+            }
         }
-        options.push_back(std::move(option));
+        if (selected.text.empty()) {
+            selected.text = util::str2wstr_utf8(selected.value);
+        }
+    }
+
+    auto innerText = parse_inner_text(element, "");
+    if (!innerText.empty()) {
+        selected.text = innerText;
     }
 
     auto selectBox = std::make_shared<SelectBox>(
