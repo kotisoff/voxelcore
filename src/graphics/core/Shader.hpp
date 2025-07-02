@@ -10,15 +10,25 @@
 class GLSLExtension;
 
 class Shader {
+public:
+    struct Source {
+        std::string file;
+        std::string code;
+    };
+private:
     static Shader* used;
     uint id;
     std::unordered_map<std::string, uint> uniformLocations;
+    
+    // source code used for re-compiling shaders after updating defines
+    Source vertexSource;
+    Source fragmentSource;
     
     uint getUniformLocation(const std::string& name);
 public:
     static GLSLExtension* preprocessor;
 
-    Shader(uint id);
+    Shader(uint id, Source&& vertexSource, Source&& fragmentSource);
     ~Shader();
 
     void use();
@@ -38,17 +48,13 @@ public:
     void uniform3v(const std::string& name, int length, const float* v);
     void uniform4v(const std::string& name, int length, const float* v);
 
+    /// @brief Re-preprocess source code and re-compile shader program
+    void recompile();
+
     /// @brief Create shader program using vertex and fragment shaders source.
-    /// @param vertexFile vertex shader file name
-    /// @param fragmentFile fragment shader file name
-    /// @param vertexSource vertex shader source code
-    /// @param fragmentSource fragment shader source code
     /// @return linked shader program containing vertex and fragment shaders
     static std::unique_ptr<Shader> create(
-        const std::string& vertexFile, 
-        const std::string& fragmentFile,
-        const std::string& vertexSource, 
-        const std::string& fragmentSource
+        Source&& vertexSource, Source&& fragmentSource
     );
 
     static Shader& getUsed();

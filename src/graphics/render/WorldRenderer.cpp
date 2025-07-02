@@ -11,6 +11,7 @@
 #include "assets/assets_util.hpp"
 #include "content/Content.hpp"
 #include "engine/Engine.hpp"
+#include "coders/GLSLExtension.hpp"
 #include "frontend/LevelFrontend.hpp"
 #include "frontend/ContentGfxCache.hpp"
 #include "items/Inventory.hpp"
@@ -434,6 +435,7 @@ void WorldRenderer::draw(
     const auto& vp = pctx.getViewport();
     camera.setAspectRatio(vp.x / static_cast<float>(vp.y));
 
+    auto& mainShader = assets.require<Shader>("main");
     const auto& settings = engine.getSettings();
     gbufferPipeline = settings.graphics.advancedRender.get();
     int shadowsQuality = settings.graphics.shadowsQuality.get();
@@ -442,10 +444,14 @@ void WorldRenderer::draw(
         shadowMap = std::make_unique<ShadowMap>(resolution);
         wideShadowMap = std::make_unique<ShadowMap>(resolution);
         shadows = true;
-    } else if (shadowsQuality == 0) {
+        Shader::preprocessor->define("ENABLE_SHADOWS", "true");
+        mainShader.recompile();
+    } else if (shadowsQuality == 0 && shadows) {
         shadowMap.reset();
         wideShadowMap.reset();
         shadows = false;
+        Shader::preprocessor->undefine("ENABLE_SHADOWS");
+        mainShader.recompile();
     }
     if (shadows && shadowMap->getResolution() != resolution) {
         shadowMap = std::make_unique<ShadowMap>(resolution);

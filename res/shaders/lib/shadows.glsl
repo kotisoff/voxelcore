@@ -11,10 +11,7 @@ uniform float u_shadowsOpacity;
 uniform float u_shadowsSoftness;
 
 float calc_shadow() {
-    if (!u_enableShadows) {
-        return 1.0;
-    }
-
+#ifdef ENABLE_SHADOWS
     float step = 1.0 / float(u_shadowsRes);
     float s = pow(abs(cos(u_dayTime * PI2)), 0.25) * u_shadowsOpacity;
     vec3 normalOffset = a_realnormal * (a_distance > 64.0 ? 0.2 : 0.04);
@@ -39,6 +36,9 @@ float calc_shadow() {
         shadow = 0.5;
     }
     return 0.5 * (1.0 + s * shadow);
+#else
+    return 1.0;
+#endif
 }
 
 #endif // SHADOWS_GLSL_

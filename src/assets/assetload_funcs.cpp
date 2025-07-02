@@ -76,6 +76,14 @@ static auto process_program(const ResPaths& paths, const std::string& filename) 
     return std::make_pair(vertex, fragment);
 }
 
+static auto read_program(const ResPaths& paths, const std::string& filename) {
+    io::path vertexFile = paths.find(filename + ".glslv");
+    io::path fragmentFile = paths.find(filename + ".glslf");
+    return std::make_pair(
+        io::read_string(vertexFile), io::read_string(fragmentFile)
+    );
+}
+
 assetload::postfunc assetload::shader(
     AssetsLoader*,
     const ResPaths& paths,
@@ -83,21 +91,18 @@ assetload::postfunc assetload::shader(
     const std::string& name,
     const std::shared_ptr<AssetCfg>&
 ) {
-    auto [vertex, fragment] = process_program(paths, filename);
+    auto result = read_program(paths, filename);
+    auto vertex = result.first;
+    auto fragment = result.second;
 
     io::path vertexFile = paths.find(filename + ".glslv");
     io::path fragmentFile = paths.find(filename + ".glslf");
 
-    std::string vertexSource = std::move(vertex.code);
-    std::string fragmentSource = std::move(fragment.code);
-
     return [=](auto assets) {
         assets->store(
             Shader::create(
-                vertexFile.string(),
-                fragmentFile.string(),
-                vertexSource,
-                fragmentSource
+                {vertexFile.string(), vertex},
+                {fragmentFile.string(), fragment}
             ),
             name
         );
@@ -127,10 +132,8 @@ assetload::postfunc assetload::posteffect(
 
     return [=](auto assets) {
         auto program = Shader::create(
-            effectFile.string(),
-            effectFile.string(),
-            vertexSource,
-            fragmentSource
+            {effectFile.string(), vertexSource},
+            {effectFile.string(), fragmentSource}
         );
         bool advanced = false;
         if (settings) {
