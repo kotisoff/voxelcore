@@ -364,7 +364,7 @@ void WorldRenderer::generateShadowsMap(
     const auto& settings = engine.getSettings();
     int resolution = shadowMap.getResolution();
     int quality = settings.graphics.shadowsQuality.get();
-    float shadowMapScale = 0.16f / (1 << glm::max(0, quality)) * scale;
+    float shadowMapScale = 0.32f / (1 << glm::max(0, quality)) * scale;
     float shadowMapSize = resolution * shadowMapScale;
 
     glm::vec3 basePos = glm::floor(camera.position);
@@ -380,7 +380,7 @@ void WorldRenderer::generateShadowsMap(
     }
     t = fmod(t, 0.5f);
 
-    float sunCycleStep = 1.0f / 1000.0f;
+    float sunCycleStep = 1.0f / 500.0f;
     float sunAngle = glm::radians(
         90.0f -
         ((static_cast<int>(t / sunCycleStep)) * sunCycleStep + 0.25f) * 360.0f
@@ -439,7 +439,7 @@ void WorldRenderer::draw(
     const auto& settings = engine.getSettings();
     gbufferPipeline = settings.graphics.advancedRender.get();
     int shadowsQuality = settings.graphics.shadowsQuality.get();
-    int resolution = 1024 << shadowsQuality;
+    int resolution = 512 << shadowsQuality;
     if (shadowsQuality > 0 && !shadows) {
         shadowMap = std::make_unique<ShadowMap>(resolution);
         wideShadowMap = std::make_unique<ShadowMap>(resolution);
@@ -473,7 +473,7 @@ void WorldRenderer::draw(
         if (frameid % 2 == 0) {
             generateShadowsMap(camera, pctx, *shadowMap, shadowCamera, 1.0f);
         } else {
-            generateShadowsMap(camera, pctx, *wideShadowMap, wideShadowCamera, 4.0f);
+            generateShadowsMap(camera, pctx, *wideShadowMap, wideShadowCamera, 3.0f);
         }
     }
     frameid++;
