@@ -367,7 +367,7 @@ void WorldRenderer::generateShadowsMap(
     float shadowMapScale = 0.32f / (1 << glm::max(0, quality)) * scale;
     float shadowMapSize = resolution * shadowMapScale;
 
-    glm::vec3 basePos = glm::floor(camera.position);
+    glm::vec3 basePos = glm::floor(camera.position / 4.0f) * 4.0f;
     shadowCamera = Camera(basePos, shadowMapSize);
     shadowCamera.near = 0.1f;
     shadowCamera.far = 1000.0f;
@@ -400,8 +400,9 @@ void WorldRenderer::generateShadowsMap(
     auto view = shadowCamera.getView();
 
     auto currentPos = shadowCamera.position;
-    auto min = view * glm::vec4(currentPos - (shadowCamera.right + shadowCamera.up) * (shadowMapSize * 0.5f), 1.0f);
-    auto max = view * glm::vec4(currentPos + (shadowCamera.right + shadowCamera.up) * (shadowMapSize * 0.5f), 1.0f);
+    auto topRight = shadowCamera.right + shadowCamera.up;
+    auto min = view * glm::vec4(currentPos - topRight * shadowMapSize * 0.5f, 1.0f);
+    auto max = view * glm::vec4(currentPos + topRight * shadowMapSize * 0.5f, 1.0f);
 
     shadowCamera.setProjection(glm::ortho(min.x, max.x, min.y, max.y, 0.1f, 1000.0f));
 
@@ -436,6 +437,7 @@ void WorldRenderer::draw(
     camera.setAspectRatio(vp.x / static_cast<float>(vp.y));
 
     auto& mainShader = assets.require<Shader>("main");
+    auto& entityShader = assets.require<Shader>("entity");
     const auto& settings = engine.getSettings();
     gbufferPipeline = settings.graphics.advancedRender.get();
     int shadowsQuality = settings.graphics.shadowsQuality.get();
@@ -446,12 +448,14 @@ void WorldRenderer::draw(
         shadows = true;
         Shader::preprocessor->define("ENABLE_SHADOWS", "true");
         mainShader.recompile();
+        entityShader.recompile();
     } else if (shadowsQuality == 0 && shadows) {
         shadowMap.reset();
         wideShadowMap.reset();
         shadows = false;
         Shader::preprocessor->undefine("ENABLE_SHADOWS");
         mainShader.recompile();
+        entityShader.recompile();
     }
     if (shadows && shadowMap->getResolution() != resolution) {
         shadowMap = std::make_unique<ShadowMap>(resolution);
