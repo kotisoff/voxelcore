@@ -86,6 +86,7 @@ public:
         const glm::vec3& pos,
         const glm::vec3& right,
         const glm::vec3& up,
+        const glm::vec3& normal,
         const glm::vec2& size,
         const glm::vec4& light,
         const glm::vec3& tint,
@@ -97,21 +98,21 @@ public:
             {subregion.u1, subregion.v1},
             light,
             tint,
-            glm::cross(up, right)
+            normal
         );
         vertex(
             pos + right * size.x * 0.5f - up * size.y * 0.5f,
             {subregion.u2, subregion.v1},
             light,
             tint,
-            glm::cross(up, right)
+            normal
         );
         vertex(
             pos + right * size.x * 0.5f + up * size.y * 0.5f,
             {subregion.u2, subregion.v2},
             light,
             tint,
-            glm::cross(up, right)
+            normal
         );
 
         vertex(
@@ -119,21 +120,21 @@ public:
             {subregion.u1, subregion.v1},
             light,
             tint,
-            glm::cross(up, right)
+            normal
         );
         vertex(
             pos + right * size.x * 0.5f + up * size.y * 0.5f,
             {subregion.u2, subregion.v2},
             light,
             tint,
-            glm::cross(up, right)
+            normal
         );
         vertex(
             pos - right * size.x * 0.5f + up * size.y * 0.5f,
             {subregion.u1, subregion.v2},
             light,
             tint,
-            glm::cross(up, right)
+            normal
         );
     }
 

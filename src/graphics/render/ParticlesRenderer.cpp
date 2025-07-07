@@ -134,6 +134,7 @@ void ParticlesRenderer::renderParticles(const Camera& camera, float delta) {
                 particle.position,
                 localRight,
                 localUp,
+                -camera.front,
                 preset.size * scale,
                 light,
                 glm::vec3(1.0f),
