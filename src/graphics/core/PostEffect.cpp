@@ -100,6 +100,10 @@ Shader& PostEffect::use() {
     return *shader;
 }
 
+Shader& PostEffect::getShader() {
+    return *shader;
+}
+
 float PostEffect::getIntensity() const {
     return intensity;
 }

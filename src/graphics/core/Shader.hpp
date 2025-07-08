@@ -33,6 +33,7 @@ public:
 
     void use();
     void uniformMatrix(const std::string&, const glm::mat4& matrix);
+    void uniformMatrix(const std::string&, const glm::mat3& matrix);
     void uniform1i(const std::string& name, int x);
     void uniform1f(const std::string& name, float x);
     void uniform2f(const std::string& name, float x, float y);

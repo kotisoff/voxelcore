@@ -4,6 +4,8 @@
 
 #include "debug/Logger.hpp"
 
+using namespace advanced_pipeline;
+
 static debug::Logger logger("gl-gbuffer");
 
 void GBuffer::createColorBuffer() {
@@ -162,18 +164,28 @@ void GBuffer::unbind() {
 }
 
 void GBuffer::bindBuffers() const {
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE0 + TARGET_NORMALS);
     glBindTexture(GL_TEXTURE_2D, normalsBuffer);
 
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE0 + TARGET_POSITIONS);
     glBindTexture(GL_TEXTURE_2D, positionsBuffer);
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0 + TARGET_COLOR);
     glBindTexture(GL_TEXTURE_2D, colorBuffer);
+
+    if (TARGET_COLOR != 0)
+        glActiveTexture(GL_TEXTURE0);
 }
 
 void GBuffer::bindSSAOBuffer() const {
     glBindTexture(GL_TEXTURE_2D, ssaoBuffer);
+}
+
+void GBuffer::bindDepthBuffer() {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, 
+                    GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
 void GBuffer::resize(uint width, uint height) {

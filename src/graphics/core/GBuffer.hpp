@@ -16,6 +16,8 @@ public:
     void bindBuffers() const;
     void bindSSAOBuffer() const;
 
+    void bindDepthBuffer();
+
     void resize(uint width, uint height);
 
     uint getWidth() const;

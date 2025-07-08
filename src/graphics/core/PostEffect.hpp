@@ -48,6 +48,8 @@ public:
 
     Shader& use();
 
+    Shader& getShader();
+
     float getIntensity() const;
     void setIntensity(float value);
 

@@ -44,7 +44,11 @@ public:
         const Assets& assets,
         float timer,
         const Camera& camera,
-        uint shadowMap
+        uint shadowMap,
+        uint shadowMap2,
+        const glm::mat4& shadowMatrix,
+        const glm::mat4& shadowMatrix2,
+        uint shadowMapResolution
     );
 
     void setEffect(size_t slot, std::shared_ptr<PostEffect> effect);
@@ -55,6 +59,7 @@ public:
     std::unique_ptr<ImageData> toImage();
 
     Framebuffer* getFramebuffer() const;
+    void bindDepthBuffer();
 private:
     void configureEffect(
         const DrawContext& context,
@@ -62,7 +67,11 @@ private:
         Shader& shader,
         float timer,
         const Camera& camera,
-        uint shadowMap
+        uint shadowMap,
+        uint shadowMap2,
+        const glm::mat4& shadowMatrix,
+        const glm::mat4& shadowMatrix2,
+        uint shadowMapResolution
     );
 
     void refreshFbos(uint width, uint height);

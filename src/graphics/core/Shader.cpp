@@ -51,6 +51,12 @@ void Shader::uniformMatrix(const std::string& name, const glm::mat4& matrix) {
     );
 }
 
+void Shader::uniformMatrix(const std::string& name, const glm::mat3& matrix) {
+    glUniformMatrix3fv(
+        getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix)
+    );
+}
+
 void Shader::uniform1i(const std::string& name, int x){
     glUniform1i(getUniformLocation(name), x);
 }
