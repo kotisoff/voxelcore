@@ -78,7 +78,9 @@ void Skybox::drawBackground(
     auto backShader = assets.get<Shader>("background");
     backShader->use();
     backShader->uniformMatrix("u_view", camera.getView(false));
-    backShader->uniform1f("u_zoom", camera.zoom*camera.getFov()/(M_PI*0.5f));
+    backShader->uniform1f(
+        "u_zoom", camera.zoom * camera.getFov() / glm::half_pi<float>()
+    );
     backShader->uniform1f("u_ar", float(width)/float(height));
     backShader->uniform1i("u_skybox", 1);
     bind();
@@ -139,7 +141,11 @@ void Skybox::draw(
         float sangle = daytime * glm::pi<float>() * 2.0 + sprite.phase;
         float distance = sprite.distance * depthScale;
 
-        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), -sangle + glm::pi<float>() * 0.5f, glm::vec3(0, 0, -1));
+        glm::mat4 rotation = glm::rotate(
+            glm::mat4(1.0f),
+            -sangle + glm::pi<float>() * 0.5f,
+            glm::vec3(0, 0, -1)
+        );
         rotation = glm::rotate(rotation, sprite.altitude, glm::vec3(1, 0, 0));
         glm::vec3 pos = glm::vec4(0, distance, 0, 1) * rotation;
         glm::vec3 up = glm::vec4(depthScale, 0, 0, 1) * rotation;
