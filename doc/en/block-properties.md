@@ -62,6 +62,7 @@ Rotation profile (set of available block rotations and behaviour of placing bloc
 - "none" - no rotation available (default profile)
 - "pipe" - wood logs, pipes, pillars
 - "pane" - panels, doors, signs
+- "stairs" - "pane" + flipped variants
 
 ## Lighting
 
