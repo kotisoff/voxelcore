@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 namespace util {
     template<typename T, int capacity>
     class stack_vector {
