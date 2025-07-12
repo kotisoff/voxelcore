@@ -39,12 +39,7 @@ public:
         const DrawContext& context,
         const Assets& assets,
         float timer,
-        const Camera& camera,
-        uint shadowMap,
-        uint shadowMap2,
-        const glm::mat4& shadowMatrix,
-        const glm::mat4& shadowMatrix2,
-        uint shadowMapResolution
+        const Camera& camera
     );
 
     /// @brief Render fullscreen quad using the passed shader 
@@ -55,12 +50,7 @@ public:
         const DrawContext& context,
         const Assets& assets,
         float timer,
-        const Camera& camera,
-        uint shadowMap,
-        uint shadowMap2,
-        const glm::mat4& shadowMatrix,
-        const glm::mat4& shadowMatrix2,
-        uint shadowMapResolution
+        const Camera& camera
     );
 
     void setEffect(size_t slot, std::shared_ptr<PostEffect> effect);
@@ -78,12 +68,7 @@ private:
         PostEffect& effect,
         Shader& shader,
         float timer,
-        const Camera& camera,
-        uint shadowMap,
-        uint shadowMap2,
-        const glm::mat4& shadowMatrix,
-        const glm::mat4& shadowMatrix2,
-        uint shadowMapResolution
+        const Camera& camera
     );
 
     void refreshFbos(uint width, uint height);

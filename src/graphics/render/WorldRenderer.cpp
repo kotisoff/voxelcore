@@ -517,17 +517,7 @@ void WorldRenderer::draw(
     if (gbufferPipeline) {
         deferredShader.use();
         setupWorldShader(deferredShader, camera, settings, fogFactor);
-        postProcessing.renderDeferredShading(
-            pctx, 
-            assets, 
-            timer, 
-            camera,
-            shadows ? shadowMap->getDepthMap() : 0,
-            shadows ? wideShadowMap->getDepthMap() : 0,
-            shadowCamera.getProjView(),
-            wideShadowCamera.getProjView(),
-            shadows ? shadowMap->getResolution() : 0
-        );
+        postProcessing.renderDeferredShading(pctx, assets, timer, camera);
     }
     {
         DrawContext ctx = pctx.sub();
@@ -558,17 +548,7 @@ void WorldRenderer::draw(
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    postProcessing.render(
-        pctx,
-        assets,
-        timer,
-        camera,
-        shadows ? shadowMap->getDepthMap() : 0,
-        shadows ? wideShadowMap->getDepthMap() : 0,
-        shadowCamera.getProjView(),
-        wideShadowCamera.getProjView(),
-        shadows ? shadowMap->getResolution() : 0
-    );
+    postProcessing.render(pctx, assets, timer, camera);
 
     skybox->unbind();
     if (player.currentCamera == player.fpCamera) {

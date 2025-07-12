@@ -31,6 +31,8 @@ uniform float u_torchlightDistance;
 #include <lighting>
 #include <fog>
 
+#define SKY_LIGHT_BRIGHTNESS_COMPENSATION 0.1
+
 void main() {
     a_modelpos = u_model * vec4(v_position, 1.0);
     vec3 pos3d = a_modelpos.xyz - u_cameraPos;
@@ -42,12 +44,12 @@ void main() {
     vec3 light = v_light.rgb;
     float torchlight = calc_torch_light(a_realnormal, a_modelpos.xyz);
     light += torchlight * u_torchlightColor;
-    a_color = vec4(pow(light, vec3(u_gamma)),1.0f);
+    a_color = vec4(pow(light, vec3(u_gamma)), 1.0f);
     a_texCoord = v_texCoord;
 
     a_dir = a_modelpos.xyz - u_cameraPos;
-    vec3 skyLightColor = pick_sky_color(u_skybox);
-    a_color.rgb = max(a_color.rgb, skyLightColor.rgb*v_light.a) * v_color;
+    vec3 skyLightColor = pick_sky_color(u_skybox) + SKY_LIGHT_BRIGHTNESS_COMPENSATION;
+    a_color.rgb = max(a_color.rgb, skyLightColor.rgb * v_light.a) * v_color;
     a_color.a = u_opacity;
 
     mat4 viewmodel = u_view * u_model;

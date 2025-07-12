@@ -89,12 +89,7 @@ void PostProcessing::configureEffect(
     PostEffect& effect,
     Shader& shader,
     float timer,
-    const Camera& camera,
-    uint shadowMap,
-    uint shadowMap2,
-    const glm::mat4& shadowMatrix,
-    const glm::mat4& shadowMatrix2,
-    uint shadowMapResolution
+    const Camera& camera
 ) {
     const auto& viewport = context.getViewport();
     shader.uniform1i("u_screen", TARGET_COLOR);
@@ -106,18 +101,9 @@ void PostProcessing::configureEffect(
     }
     shader.uniform1i("u_noise", TARGET_SSAO); // used in SSAO pass
     shader.uniform1i("u_ssao", TARGET_SSAO);
-
-    shader.uniform1i("u_shadows[0]", TARGET_SHADOWS0);
-    shader.uniform1i("u_shadows[1]", TARGET_SHADOWS1);
-    shader.uniformMatrix("u_shadowsMatrix[0]", shadowMatrix);
-    shader.uniformMatrix("u_shadowsMatrix[1]", shadowMatrix2);
-    shader.uniform1f("u_shadowsOpacity", 1.0f);
-    shader.uniform1f("u_shadowsSoftness", 1.0f);
-    shader.uniform1i("u_shadowsRes", shadowMapResolution);
     shader.uniform2i("u_screenSize", viewport);
     shader.uniform3f("u_cameraPos", camera.position);
     shader.uniform1f("u_timer", timer);
-    shader.uniform1i("u_enableShadows", shadowMap != 0);
     shader.uniformMatrix("u_projection", camera.getProjection());
     shader.uniformMatrix("u_view", camera.getView());
     shader.uniformMatrix("u_inverseView", glm::inverse(camera.getView()));
@@ -127,23 +113,11 @@ void PostProcessing::renderDeferredShading(
     const DrawContext& context,
     const Assets& assets,
     float timer,
-    const Camera& camera,
-    uint shadowMap,
-    uint shadowMap2,
-    const glm::mat4& shadowMatrix,
-    const glm::mat4& shadowMatrix2,
-    uint shadowMapResolution
+    const Camera& camera
 ) {
     if (gbuffer == nullptr) {
         throw std::runtime_error("gbuffer is not initialized");
     }
-
-    glActiveTexture(GL_TEXTURE0 + TARGET_SHADOWS0);
-    glBindTexture(GL_TEXTURE_2D, shadowMap);
-
-    glActiveTexture(GL_TEXTURE0 + TARGET_SHADOWS1);
-    glBindTexture(GL_TEXTURE_2D, shadowMap2);
-
     // Generating ssao
     gbuffer->bindBuffers();
 
@@ -159,12 +133,7 @@ void PostProcessing::renderDeferredShading(
         ssaoEffect,
         shader,
         timer,
-        camera,
-        shadowMap,
-        shadowMap2,
-        shadowMatrix,
-        shadowMatrix2,
-        shadowMapResolution
+        camera
     );
     gbuffer->bindSSAO();
     quadMesh->draw();
@@ -184,7 +153,6 @@ void PostProcessing::renderDeferredShading(
         
         gbuffer->bindBuffers();
 
-        // TODO: move upper & move skybox->draw(...) here
         auto& effect = assets.require<PostEffect>("deferred_lighting");
         auto& shader = effect.use();
         configureEffect(
@@ -192,12 +160,7 @@ void PostProcessing::renderDeferredShading(
             effect,
             shader,
             timer,
-            camera,
-            shadowMap,
-            shadowMap2,
-            shadowMatrix,
-            shadowMatrix2,
-            shadowMapResolution
+            camera
         );
         quadMesh->draw();
     }
@@ -207,12 +170,7 @@ void PostProcessing::render(
     const DrawContext& context,
     const Assets& assets,
     float timer,
-    const Camera& camera,
-    uint shadowMap,
-    uint shadowMap2,
-    const glm::mat4& shadowMatrix,
-    const glm::mat4& shadowMatrix2,
-    uint shadowMapResolution
+    const Camera& camera
 ) {
     if (fbo == nullptr) {
         throw std::runtime_error("'use(...)' was never called");
@@ -231,11 +189,11 @@ void PostProcessing::render(
     fbo->getTexture()->bind();
 
     if (totalPasses == 0) {
-        // TODO: move upper & move skybox->draw(...) here
+        // replace 'default' blit shader with glBlitFramebuffer?
         auto& effect = assets.require<PostEffect>("default");
         auto& shader = effect.use();
         configureEffect(
-            context, effect, shader, timer, camera, 0, 0, {}, {}, 0
+            context, effect, shader, timer, camera
         );
         quadMesh->draw();
         return;
@@ -255,12 +213,7 @@ void PostProcessing::render(
             *effect,
             shader,
             timer,
-            camera,
-            shadowMap,
-            shadowMap2,
-            shadowMatrix,
-            shadowMatrix2,
-            shadowMapResolution
+            camera
         );
 
         if (currentPass > 1) {
