@@ -64,7 +64,8 @@ public:
         const glm::vec2& uv,
         const glm::vec4& light,
         const glm::vec3& tint,
-        const glm::vec3& normal
+        const glm::vec3& normal,
+        float emission
     ) {
         MainBatchVertex* buffer = this->buffer.get();
         buffer[index].position = pos;
@@ -79,6 +80,7 @@ public:
         buffer[index].normal[0] = static_cast<uint8_t>(normal.x * 128 + 127);
         buffer[index].normal[1] = static_cast<uint8_t>(normal.y * 128 + 127);
         buffer[index].normal[2] = static_cast<uint8_t>(normal.z * 128 + 127);
+        buffer[index].normal[3] = static_cast<uint8_t>(emission * 255);
         index++;
     }
 
@@ -90,7 +92,8 @@ public:
         const glm::vec2& size,
         const glm::vec4& light,
         const glm::vec3& tint,
-        const UVRegion& subregion
+        const UVRegion& subregion,
+        float emission = 0.0f
     ) {
         prepare(6);
         vertex(
@@ -98,21 +101,24 @@ public:
             {subregion.u1, subregion.v1},
             light,
             tint,
-            normal
+            normal,
+            emission
         );
         vertex(
             pos + right * size.x * 0.5f - up * size.y * 0.5f,
             {subregion.u2, subregion.v1},
             light,
             tint,
-            normal
+            normal,
+            emission
         );
         vertex(
             pos + right * size.x * 0.5f + up * size.y * 0.5f,
             {subregion.u2, subregion.v2},
             light,
             tint,
-            normal
+            normal,
+            emission
         );
 
         vertex(
@@ -120,21 +126,24 @@ public:
             {subregion.u1, subregion.v1},
             light,
             tint,
-            normal
+            normal,
+            emission
         );
         vertex(
             pos + right * size.x * 0.5f + up * size.y * 0.5f,
             {subregion.u2, subregion.v2},
             light,
             tint,
-            normal
+            normal,
+            emission
         );
         vertex(
             pos - right * size.x * 0.5f + up * size.y * 0.5f,
             {subregion.u1, subregion.v2},
             light,
             tint,
-            normal
+            normal,
+            emission
         );
     }
 

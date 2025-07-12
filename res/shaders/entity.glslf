@@ -12,6 +12,7 @@ in vec3 a_position;
 in vec3 a_realnormal;
 in vec4 a_color;
 in vec4 a_modelpos;
+in float a_emission;
 
 uniform sampler2D u_texture0;
 uniform samplerCube u_skybox;
@@ -24,14 +25,13 @@ uniform vec3 u_sunDir;
 #include <shadows>
 
 void main() {
-    float shadow = calc_shadow(a_modelpos, a_realnormal, a_distance);
     vec4 texColor = texture(u_texture0, a_texCoord);
     float alpha = a_color.a * texColor.a;
     // anyway it's any alpha-test alternative required
     if (alpha < (u_alphaClip ? 0.5f : 0.15f)) {
         discard;
     }
-    f_color = a_color * texColor * shadow;
+    f_color = a_color * texColor;
 
 #ifndef ADVANCED_RENDER
     vec3 fogColor = texture(u_skybox, a_dir).rgb;
@@ -41,5 +41,5 @@ void main() {
     f_color.a = alpha;
     f_position = vec4(a_position, 1.0);
     f_normal = vec4(a_normal, 1.0);
-    f_emission = vec4(0.0);
+    f_emission = vec4(vec3(a_emission), 1.0);
 }

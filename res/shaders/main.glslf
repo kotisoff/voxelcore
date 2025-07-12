@@ -52,5 +52,5 @@ void main() {
     f_color.a = alpha;
     f_position = vec4(a_position, 1.0);
     f_normal = vec4(a_normal, 1.0);
-    f_emission = vec4(a_emission);
+    f_emission = vec4(vec3(a_emission), 1.0);
 }

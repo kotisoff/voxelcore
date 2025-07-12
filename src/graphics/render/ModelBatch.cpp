@@ -85,7 +85,14 @@ void ModelBatch::draw(
                 d = glm::dot(norm, SUN_VECTOR);
                 d = 0.8f + d * 0.2f;
             }
-            batch->vertex(matrix * glm::vec4(vert.coord, 1.0f), vert.uv, lights*d, tint, norm);
+            batch->vertex(
+                matrix * glm::vec4(vert.coord, 1.0f),
+                vert.uv,
+                lights * d,
+                tint,
+                norm,
+                mesh.lighting ? 0.0f : 1.0f
+            );
         }
     }
 }
