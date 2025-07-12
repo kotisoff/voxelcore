@@ -38,6 +38,7 @@
 #include "graphics/core/LineBatch.hpp"
 #include "graphics/core/Mesh.hpp"
 #include "graphics/core/PostProcessing.hpp"
+#include "graphics/core/Framebuffer.hpp"
 #include "graphics/core/Shader.hpp"
 #include "graphics/core/Texture.hpp"
 #include "graphics/core/Font.hpp"
@@ -137,6 +138,7 @@ void WorldRenderer::setupWorldShader(
     if (shadows) {
         const auto& worldInfo = level.getWorld()->getInfo();
         float cloudsIntensity = glm::max(worldInfo.fog, weather.clouds());
+        shader.uniform1i("u_screen", 0);
         shader.uniformMatrix("u_shadowsMatrix[0]", shadowCamera.getProjView());
         shader.uniformMatrix("u_shadowsMatrix[1]", wideShadowCamera.getProjView());
         shader.uniform3f("u_sunDir", shadowCamera.front);
@@ -223,22 +225,6 @@ void WorldRenderer::renderLevel(
     if (!pause) {
         scripting::on_frontend_render();
     }
-
-    setupWorldShader(entityShader, camera, settings, fogFactor);
-
-    std::array<const WeatherPreset*, 2> weatherInstances {&weather.a, &weather.b};
-    for (const auto& weather : weatherInstances) {
-        float maxIntensity = weather->fall.maxIntensity;
-        float zero = weather->fall.minOpacity;
-        float one = weather->fall.maxOpacity;
-        float t = (weather->intensity * (one - zero)) * maxIntensity + zero;
-        entityShader.uniform1i("u_alphaClip", weather->fall.opaque);
-        entityShader.uniform1f("u_opacity", weather->fall.opaque ? t * t : t);
-        if (weather->intensity > 1.e-3f && !weather->fall.texture.empty()) {
-            precipitation->render(camera, pause ? 0.0f : delta, *weather);
-        }
-    }
-
     skybox->unbind();
 }
 
@@ -430,6 +416,7 @@ void WorldRenderer::draw(
     float uiDelta,
     PostProcessing& postProcessing
 ) {
+    // TODO: REFACTOR WHOLE RENDER ENGINE
     float delta = uiDelta * !pause;
     timer += delta;
     weather.update(delta);
@@ -451,19 +438,37 @@ void WorldRenderer::draw(
         shadowMap = std::make_unique<ShadowMap>(resolution);
         wideShadowMap = std::make_unique<ShadowMap>(resolution);
         shadows = true;
-        Shader::preprocessor->define("ENABLE_SHADOWS", "true");
-        mainShader.recompile();
-        entityShader.recompile();
-        deferredShader.recompile();
     } else if (shadowsQuality == 0 && shadows) {
         shadowMap.reset();
         wideShadowMap.reset();
         shadows = false;
-        Shader::preprocessor->undefine("ENABLE_SHADOWS");
+    }
+
+    CompileTimeShaderSettings currentSettings {
+        gbufferPipeline, shadows
+    };
+    if (
+        prevCTShaderSettings.advancedRender != currentSettings.advancedRender ||
+        prevCTShaderSettings.shadows != currentSettings.shadows
+    ) {
+        if (shadows) {
+            Shader::preprocessor->define("ENABLE_SHADOWS", "true");
+        } else {
+            Shader::preprocessor->undefine("ENABLE_SHADOWS");
+        }
+
+        if (gbufferPipeline) {
+            Shader::preprocessor->define("ADVANCED_RENDER", "true");
+        } else {
+            Shader::preprocessor->undefine("ADVANCED_RENDER");
+        }
+
         mainShader.recompile();
         entityShader.recompile();
         deferredShader.recompile();
+        prevCTShaderSettings = currentSettings;
     }
+
     if (shadows && shadowMap->getResolution() != resolution) {
         shadowMap = std::make_unique<ShadowMap>(resolution);
         wideShadowMap = std::make_unique<ShadowMap>(resolution);
@@ -513,10 +518,52 @@ void WorldRenderer::draw(
         texts->render(pctx, camera, settings, hudVisible, true);
     }
     skybox->bind();
-    deferredShader.use();
     float fogFactor =
         15.0f / static_cast<float>(settings.chunks.loadDistance.get() - 2);
-    setupWorldShader(deferredShader, camera, settings, fogFactor);
+    if (gbufferPipeline) {
+        deferredShader.use();
+        setupWorldShader(deferredShader, camera, settings, fogFactor);
+        postProcessing.renderDeferredShading(
+            pctx, 
+            assets, 
+            timer, 
+            camera,
+            shadows ? shadowMap->getDepthMap() : 0,
+            shadows ? wideShadowMap->getDepthMap() : 0,
+            shadowCamera.getProjView(),
+            wideShadowCamera.getProjView(),
+            shadows ? shadowMap->getResolution() : 0
+        );
+    }
+    {
+        DrawContext ctx = pctx.sub();
+        ctx.setDepthTest(true);
+        if (gbufferPipeline) {
+            postProcessing.bindDepthBuffer();
+        } else {
+            postProcessing.getFramebuffer()->bind();
+        }
+        // Drawing background sky plane
+        skybox->draw(ctx, camera, assets, worldInfo.daytime, clouds);
+
+        entityShader.use();
+        setupWorldShader(entityShader, camera, settings, fogFactor);
+
+        std::array<const WeatherPreset*, 2> weatherInstances {&weather.a, &weather.b};
+        for (const auto& weather : weatherInstances) {
+            float maxIntensity = weather->fall.maxIntensity;
+            float zero = weather->fall.minOpacity;
+            float one = weather->fall.maxOpacity;
+            float t = (weather->intensity * (one - zero)) * maxIntensity + zero;
+            entityShader.uniform1i("u_alphaClip", weather->fall.opaque);
+            entityShader.uniform1f("u_opacity", weather->fall.opaque ? t * t : t);
+            if (weather->intensity > 1.e-3f && !weather->fall.texture.empty()) {
+                precipitation->render(camera, pause ? 0.0f : delta, *weather);
+            }
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
     postProcessing.render(
         pctx,
         assets,
@@ -528,13 +575,7 @@ void WorldRenderer::draw(
         wideShadowCamera.getProjView(),
         shadows ? shadowMap->getResolution() : 0
     );
-    {
-        DrawContext ctx = pctx.sub();
-        ctx.setDepthTest(true);
-        postProcessing.bindDepthBuffer();
-        // Drawing background sky plane
-        skybox->draw(ctx, camera, assets, worldInfo.daytime, clouds);
-    }
+
     skybox->unbind();
     if (player.currentCamera == player.fpCamera) {
         DrawContext ctx = pctx.sub();

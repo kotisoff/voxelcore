@@ -35,6 +35,11 @@ class ShadowMap;
 class GBuffer;
 struct EngineSettings;
 
+struct CompileTimeShaderSettings {
+    bool advancedRender = false;
+    bool shadows = false;
+};
+
 class WorldRenderer {
     Engine& engine;
     const Level& level;
@@ -58,6 +63,8 @@ class WorldRenderer {
     bool lightsDebug = false;
     bool gbufferPipeline = false;
     bool shadows = false;
+
+    CompileTimeShaderSettings prevCTShaderSettings {};
 
     /// @brief Render block selection lines
     void renderBlockSelection();

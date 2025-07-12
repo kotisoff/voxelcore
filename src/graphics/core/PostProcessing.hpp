@@ -35,6 +35,18 @@ public:
     /// @param context graphics context will be modified
     void use(DrawContext& context, bool gbufferPipeline);
 
+    void renderDeferredShading(
+        const DrawContext& context,
+        const Assets& assets,
+        float timer,
+        const Camera& camera,
+        uint shadowMap,
+        uint shadowMap2,
+        const glm::mat4& shadowMatrix,
+        const glm::mat4& shadowMatrix2,
+        uint shadowMapResolution
+    );
+
     /// @brief Render fullscreen quad using the passed shader 
     /// with framebuffer texture bound
     /// @param context graphics context

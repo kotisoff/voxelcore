@@ -96,3 +96,7 @@ uint Framebuffer::getWidth() const {
 uint Framebuffer::getHeight() const {
     return height;
 }
+
+uint Framebuffer::getFBO() const {
+    return fbo;   
+}

@@ -16,7 +16,7 @@ public:
     void bindBuffers() const;
     void bindSSAOBuffer() const;
 
-    void bindDepthBuffer();
+    void bindDepthBuffer(int drawFbo);
 
     void resize(uint width, uint height);
 

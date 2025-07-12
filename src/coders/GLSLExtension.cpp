@@ -158,7 +158,6 @@ public:
     }
 
     bool processVersionDirective() {
-        parsing_warning(filename, line, "removed #version directive");
         source_line(ss, line);
         skipLine();
         return false;

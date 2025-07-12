@@ -25,7 +25,6 @@ uniform bool u_debugNormals;
 #include <shadows>
 
 void main() {
-    //vec3 fogColor = texture(u_skybox, a_dir).rgb;
     vec4 texColor = texture(u_texture0, a_texCoord);
     float alpha = texColor.a;
     if (u_alphaClip) {
@@ -43,7 +42,12 @@ void main() {
     }
     f_color = texColor;
     f_color.rgb *= min(vec3(1.0), a_torchLight.rgb + a_skyLight);
-    //f_color = mix(f_color, vec4(fogColor, 1.0), a_fog * 0.0);
+
+#ifndef ADVANCED_RENDER
+    vec3 fogColor = texture(u_skybox, a_dir).rgb;
+    f_color = mix(f_color, vec4(fogColor, 1.0), a_fog);
+#endif
+
     f_color.a = alpha;
     f_position = vec4(a_position, 1.0);
     f_normal = vec4(a_normal, 1.0);

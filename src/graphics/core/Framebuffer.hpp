@@ -37,4 +37,6 @@ public:
     uint getWidth() const;
     /// @brief Get framebuffer height
     uint getHeight() const;
+
+    uint getFBO() const;
 };
