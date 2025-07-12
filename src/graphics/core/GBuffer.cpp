@@ -8,6 +8,8 @@ using namespace advanced_pipeline;
 
 static debug::Logger logger("gl-gbuffer");
 
+// TODO: REFACTOR
+
 void GBuffer::createColorBuffer() {
     glGenTextures(1, &colorBuffer);
     glBindTexture(GL_TEXTURE_2D, colorBuffer);
@@ -64,7 +66,7 @@ void GBuffer::createNormalsBuffer() {
         width,
         height,
         0,
-        GL_RGBA,
+        GL_RGB,
         GL_FLOAT,
         nullptr
     );
@@ -74,6 +76,29 @@ void GBuffer::createNormalsBuffer() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, normalsBuffer, 0
+    );
+}
+
+void GBuffer::createEmissionBuffer() {
+    glGenTextures(1, &emissionBuffer);
+    glBindTexture(GL_TEXTURE_2D, emissionBuffer);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_R8,
+        width,
+        height,
+        0,
+        GL_RED,
+        GL_FLOAT,
+        nullptr
+    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, emissionBuffer, 0
     );
 }
 
@@ -113,16 +138,21 @@ GBuffer::GBuffer(uint width, uint height) : width(width), height(height) {
     createColorBuffer();
     createPositionsBuffer();
     createNormalsBuffer();
+    createEmissionBuffer();
 
-    GLenum attachments[3] = {
-        GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2
+    GLenum attachments[4] = {
+        GL_COLOR_ATTACHMENT0,
+        GL_COLOR_ATTACHMENT1,
+        GL_COLOR_ATTACHMENT2,
+        GL_COLOR_ATTACHMENT3,
     };
-    glDrawBuffers(3, attachments);
+    glDrawBuffers(4, attachments);
 
     createDepthBuffer();
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        logger.error() << "gbuffer is not complete!";
+    int status;
+    if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
+        logger.error() << "gbuffer is not complete! (" << status << ")";
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -134,8 +164,10 @@ GBuffer::GBuffer(uint width, uint height) : width(width), height(height) {
     );
     GLenum ssaoAttachments[1] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, ssaoAttachments);
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        logger.error() << "SSAO framebuffer is not complete!";
+
+
+    if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
+        logger.error() << "SSAO framebuffer is not complete! (" << status << ")";
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -144,6 +176,7 @@ GBuffer::~GBuffer() {
     glDeleteTextures(1, &colorBuffer);
     glDeleteTextures(1, &positionsBuffer);
     glDeleteTextures(1, &normalsBuffer);
+    glDeleteTextures(1, &emissionBuffer);
     glDeleteTextures(1, &ssaoBuffer);
     glDeleteRenderbuffers(1, &depthBuffer);
     glDeleteFramebuffers(1, &fbo);
@@ -164,6 +197,9 @@ void GBuffer::unbind() {
 }
 
 void GBuffer::bindBuffers() const {
+    glActiveTexture(GL_TEXTURE0 + TARGET_EMISSION);
+    glBindTexture(GL_TEXTURE_2D, emissionBuffer);
+
     glActiveTexture(GL_TEXTURE0 + TARGET_NORMALS);
     glBindTexture(GL_TEXTURE_2D, normalsBuffer);
 
@@ -227,10 +263,18 @@ void GBuffer::resize(uint width, uint height) {
 
     glBindTexture(GL_TEXTURE_2D, normalsBuffer);
     glTexImage2D(
-        GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr
+        GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr
     );
     glFramebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, normalsBuffer, 0
+    );
+
+    glBindTexture(GL_TEXTURE_2D, emissionBuffer);
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, GL_INTENSITY, width, height, 0, GL_LUMINANCE, GL_FLOAT, nullptr
+    );
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, emissionBuffer, 0
     );
 
     glBindTexture(GL_TEXTURE_2D, 0);

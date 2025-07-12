@@ -102,6 +102,7 @@ void PostProcessing::configureEffect(
     if (gbuffer) {
         shader.uniform1i("u_position", TARGET_POSITIONS);
         shader.uniform1i("u_normal", TARGET_NORMALS);
+        shader.uniform1i("u_emission", TARGET_EMISSION);
     }
     shader.uniform1i("u_noise", TARGET_SSAO); // used in SSAO pass
     shader.uniform1i("u_ssao", TARGET_SSAO);

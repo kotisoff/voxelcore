@@ -1,6 +1,7 @@
 layout (location = 0) out vec4 f_color;
 layout (location = 1) out vec4 f_position;
 layout (location = 2) out vec4 f_normal;
+layout (location = 3) out vec4 f_emission;
 
 in float a_distance;
 in float a_fog;
@@ -40,4 +41,5 @@ void main() {
     f_color.a = alpha;
     f_position = vec4(a_position, 1.0);
     f_normal = vec4(a_normal, 1.0);
+    f_emission = vec4(0.0);
 }

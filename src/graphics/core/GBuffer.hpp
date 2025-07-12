@@ -32,6 +32,7 @@ private:
     uint colorBuffer;
     uint positionsBuffer;
     uint normalsBuffer;
+    uint emissionBuffer;
     uint depthBuffer;
     uint ssaoFbo;
     uint ssaoBuffer;
@@ -39,6 +40,7 @@ private:
     void createColorBuffer();
     void createPositionsBuffer();
     void createNormalsBuffer();
+    void createEmissionBuffer();
     void createDepthBuffer();
     void createSSAOBuffer();
 };
