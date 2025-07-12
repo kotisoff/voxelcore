@@ -60,6 +60,7 @@ using namespace advanced_pipeline;
 inline constexpr size_t BATCH3D_CAPACITY = 4096;
 inline constexpr size_t MODEL_BATCH_CAPACITY = 20'000;
 inline constexpr GLenum TEXTURE_MAIN = GL_TEXTURE0;
+inline constexpr int MIN_SHADOW_MAP_RES = 512;
 
 bool WorldRenderer::showChunkBorders = false;
 bool WorldRenderer::showEntitiesDebug = false;
@@ -246,7 +247,7 @@ void WorldRenderer::renderBlockSelection() {
         const glm::vec3 center = glm::vec3(pos) + hitbox.center();
         const glm::vec3 size = hitbox.size();
         lineBatch->box(
-            center, size + glm::vec3(0.01), glm::vec4(0.f, 0.f, 0.f, 0.5f)
+            center, size + glm::vec3(0.01), glm::vec4(0.f, 0.f, 0.f, 1.0f)
         );
         if (debug) {
             lineBatch->line(
@@ -380,7 +381,6 @@ void WorldRenderer::generateShadowsMap(
         sunAngle - glm::pi<float>() * 0.5f,
         glm::radians(0.0f)
     );
-    shadowCamera.updateVectors();
 
     shadowCamera.position -= shadowCamera.front * 500.0f;
     shadowCamera.position += shadowCamera.up * 0.0f;
@@ -433,7 +433,7 @@ void WorldRenderer::draw(
 
     gbufferPipeline = settings.graphics.advancedRender.get();
     int shadowsQuality = settings.graphics.shadowsQuality.get() * gbufferPipeline;
-    int resolution = 512 << shadowsQuality;
+    int resolution = MIN_SHADOW_MAP_RES << shadowsQuality;
     if (shadowsQuality > 0 && !shadows) {
         shadowMap = std::make_unique<ShadowMap>(resolution);
         wideShadowMap = std::make_unique<ShadowMap>(resolution);

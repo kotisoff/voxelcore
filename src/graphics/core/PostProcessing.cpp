@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <random>
 
+// TODO: REFACTOR WHOLE RENDER ENGINE
+
 using namespace advanced_pipeline;
 
 PostProcessing::PostProcessing(size_t effectSlotsCount)
