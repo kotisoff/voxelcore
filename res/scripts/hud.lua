@@ -1,7 +1,7 @@
 local function configure_SSAO()
+    -- Temporary using slot to configure built-in SSAO effect
     local slot = gfx.posteffects.index("core:default")
     gfx.posteffects.set_effect(slot, "ssao")
-    -- gfx.posteffects.set_intensity(slot, 1.0)
 
     -- Generating random SSAO samples
     local buffer = Bytearray(0)
@@ -18,6 +18,8 @@ local function configure_SSAO()
         Bytearray.append(buffer, byteutil.pack("fff", x, y, z))
     end
     gfx.posteffects.set_array(slot, "u_ssaoSamples", Bytearray_as_string(buffer))
+    -- SSAO effect configured, so 'core:default' slot may be reused now 
+    -- for test purposes
 end
 
 function on_hud_open()
