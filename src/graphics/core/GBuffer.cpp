@@ -11,7 +11,8 @@ static debug::Logger logger("gl-gbuffer");
 // TODO: REFACTOR
 
 void GBuffer::createColorBuffer() {
-    glGenTextures(1, &colorBuffer);
+    if (colorBuffer == 0)
+        glGenTextures(1, &colorBuffer);
     glBindTexture(GL_TEXTURE_2D, colorBuffer);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -34,7 +35,8 @@ void GBuffer::createColorBuffer() {
 }
 
 void GBuffer::createPositionsBuffer() {
-    glGenTextures(1, &positionsBuffer);
+    if (positionsBuffer == 0)
+        glGenTextures(1, &positionsBuffer);
     glBindTexture(GL_TEXTURE_2D, positionsBuffer);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -57,7 +59,8 @@ void GBuffer::createPositionsBuffer() {
 }
 
 void GBuffer::createNormalsBuffer() {
-    glGenTextures(1, &normalsBuffer);
+    if (normalsBuffer == 0)
+        glGenTextures(1, &normalsBuffer);
     glBindTexture(GL_TEXTURE_2D, normalsBuffer);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -80,7 +83,8 @@ void GBuffer::createNormalsBuffer() {
 }
 
 void GBuffer::createEmissionBuffer() {
-    glGenTextures(1, &emissionBuffer);
+    if (emissionBuffer == 0)
+        glGenTextures(1, &emissionBuffer);
     glBindTexture(GL_TEXTURE_2D, emissionBuffer);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -103,7 +107,8 @@ void GBuffer::createEmissionBuffer() {
 }
 
 void GBuffer::createDepthBuffer() {
-    glGenRenderbuffers(1, &depthBuffer);
+    if (depthBuffer == 0)
+        glGenRenderbuffers(1, &depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
     glFramebufferRenderbuffer(
@@ -112,7 +117,8 @@ void GBuffer::createDepthBuffer() {
 }
 
 void GBuffer::createSSAOBuffer() {
-    glGenTextures(1, &ssaoBuffer);
+    if (ssaoBuffer == 0)
+        glGenTextures(1, &ssaoBuffer);
     glBindTexture(GL_TEXTURE_2D, ssaoBuffer);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -233,61 +239,17 @@ void GBuffer::resize(uint width, uint height) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-    glBindTexture(GL_TEXTURE_2D, colorBuffer);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGB,
-        width,
-        height,
-        0,
-        GL_RGB,
-        GL_UNSIGNED_BYTE,
-        nullptr
-    );
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0
-    );
-
-    glBindTexture(GL_TEXTURE_2D, positionsBuffer);
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr
-    );
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, positionsBuffer, 0
-    );
-
-    glBindTexture(GL_TEXTURE_2D, normalsBuffer);
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr
-    );
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, normalsBuffer, 0
-    );
-
-    glBindTexture(GL_TEXTURE_2D, emissionBuffer);
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, GL_INTENSITY, width, height, 0, GL_LUMINANCE, GL_FLOAT, nullptr
-    );
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, emissionBuffer, 0
-    );
+    createDepthBuffer();
+    createColorBuffer();
+    createPositionsBuffer();
+    createNormalsBuffer();
+    createEmissionBuffer();
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, ssaoFbo);
-    glBindTexture(GL_TEXTURE_2D, ssaoBuffer);
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, GL_R16F, width, height, 0, GL_RED, GL_FLOAT, nullptr
-    );
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoBuffer, 0
-    );
+    createSSAOBuffer();
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
