@@ -57,12 +57,14 @@ ModelBatch::ModelBatch(
 
 ModelBatch::~ModelBatch() = default;
 
-void ModelBatch::draw(const model::Mesh& mesh, const glm::mat4& matrix, 
-                      const glm::mat3& rotation, glm::vec3 tint,
-                      const texture_names_map* varTextures,
-                      bool backlight) {
-
-
+void ModelBatch::draw(
+    const model::Mesh& mesh,
+    const glm::mat4& matrix,
+    const glm::mat3& rotation,
+    glm::vec3 tint,
+    const texture_names_map* varTextures,
+    bool backlight
+) {
     setTexture(mesh.texture, varTextures);
     size_t vcount = mesh.vertices.size();
     const auto& vertexData = mesh.vertices.data();
@@ -78,12 +80,19 @@ void ModelBatch::draw(const model::Mesh& mesh, const glm::mat4& matrix,
         for (size_t j = 0; j < 3; j++) {
             const auto vert = vertexData[i * 3 + j];
             float d = 1.0f;
+            auto norm = rotation * vert.normal;
             if (mesh.lighting) {
-                auto norm = rotation * vert.normal;
                 d = glm::dot(norm, SUN_VECTOR);
                 d = 0.8f + d * 0.2f;
             }
-            batch->vertex(matrix * glm::vec4(vert.coord, 1.0f), vert.uv, lights*d, tint);
+            batch->vertex(
+                matrix * glm::vec4(vert.coord, 1.0f),
+                vert.uv,
+                lights * d,
+                tint,
+                norm,
+                mesh.lighting ? 0.0f : 1.0f
+            );
         }
     }
 }
