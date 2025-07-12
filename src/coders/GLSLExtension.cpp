@@ -76,6 +76,14 @@ void GLSLExtension::undefine(const std::string& name) {
     }
 }
 
+void GLSLExtension::setDefined(const std::string& name, bool defined) {
+    if (defined) {
+        define(name, "TRUE");
+    } else {
+        undefine(name);
+    }
+}
+
 inline std::runtime_error parsing_error(
     const io::path& file, uint linenum, const std::string& message
 ) {

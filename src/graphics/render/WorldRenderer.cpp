@@ -447,30 +447,16 @@ void WorldRenderer::draw(
     CompileTimeShaderSettings currentSettings {
         gbufferPipeline,
         shadows,
-        settings.graphics.ssao.get() && gbufferPipeline};
+        settings.graphics.ssao.get() && gbufferPipeline
+    };
     if (
         prevCTShaderSettings.advancedRender != currentSettings.advancedRender ||
         prevCTShaderSettings.shadows != currentSettings.shadows ||
         prevCTShaderSettings.ssao != currentSettings.ssao
     ) {
-        if (shadows) {
-            Shader::preprocessor->define("ENABLE_SHADOWS", "true");
-        } else {
-            Shader::preprocessor->undefine("ENABLE_SHADOWS");
-        }
-
-        if (currentSettings.ssao) {
-            Shader::preprocessor->define("ENABLE_SSAO", "true");
-        } else {
-            Shader::preprocessor->undefine("ENABLE_SSAO");
-        }
-
-        if (gbufferPipeline) {
-            Shader::preprocessor->define("ADVANCED_RENDER", "true");
-        } else {
-            Shader::preprocessor->undefine("ADVANCED_RENDER");
-        }
-
+        Shader::preprocessor->setDefined("ENABLE_SHADOWS", currentSettings.shadows);
+        Shader::preprocessor->setDefined("ENABLE_SSAO", currentSettings.ssao);
+        Shader::preprocessor->setDefined("ADVANCED_RENDER", currentSettings.advancedRender);
         mainShader.recompile();
         entityShader.recompile();
         deferredShader.recompile();
