@@ -358,7 +358,11 @@ void WorldRenderer::generateShadowsMap(
     float shadowMapSize = resolution * shadowMapScale;
 
     glm::vec3 basePos = glm::floor(camera.position / 4.0f) * 4.0f;
-    shadowCamera = Camera(basePos, shadowMapSize);
+    glm::vec3 prevPos = shadowCamera.position;
+    shadowCamera = Camera(
+        glm::distance2(prevPos, basePos) > 25.0f ? basePos : prevPos,
+        shadowMapSize
+    );
     shadowCamera.near = 0.1f;
     shadowCamera.far = 1000.0f;
     shadowCamera.perspective = false;
