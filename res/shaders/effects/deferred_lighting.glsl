@@ -21,9 +21,13 @@ vec4 effect() {
     vec3 normal = transpose(mat3(u_view)) * texture(u_normal, v_uv).xyz;
     vec3 dir = modelpos.xyz - u_cameraPos;
 
+    float emission = texture(u_emission, v_uv).r;
+
 #ifdef ENABLE_SHADOWS
-    light *= max(calc_shadow(modelpos, normal, length(pos)), texture(u_emission, v_uv).r);
+    light *= calc_shadow(modelpos, normal, length(pos));
 #endif
+
+    light = max(light, emission);
 
     vec3 fogColor = texture(u_skybox, dir).rgb;
     float fog = calc_fog(length(u_view * vec4((modelpos.xyz - u_cameraPos) * FOG_POS_SCALE, 0.0)) / 256.0);
