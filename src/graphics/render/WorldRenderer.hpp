@@ -38,6 +38,7 @@ struct EngineSettings;
 struct CompileTimeShaderSettings {
     bool advancedRender = false;
     bool shadows = false;
+    bool ssao = false;
 };
 
 class WorldRenderer {

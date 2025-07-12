@@ -445,16 +445,24 @@ void WorldRenderer::draw(
     }
 
     CompileTimeShaderSettings currentSettings {
-        gbufferPipeline, shadows
-    };
+        gbufferPipeline,
+        shadows,
+        settings.graphics.ssao.get() && gbufferPipeline};
     if (
         prevCTShaderSettings.advancedRender != currentSettings.advancedRender ||
-        prevCTShaderSettings.shadows != currentSettings.shadows
+        prevCTShaderSettings.shadows != currentSettings.shadows ||
+        prevCTShaderSettings.ssao != currentSettings.ssao
     ) {
         if (shadows) {
             Shader::preprocessor->define("ENABLE_SHADOWS", "true");
         } else {
             Shader::preprocessor->undefine("ENABLE_SHADOWS");
+        }
+
+        if (currentSettings.ssao) {
+            Shader::preprocessor->define("ENABLE_SSAO", "true");
+        } else {
+            Shader::preprocessor->undefine("ENABLE_SSAO");
         }
 
         if (gbufferPipeline) {
