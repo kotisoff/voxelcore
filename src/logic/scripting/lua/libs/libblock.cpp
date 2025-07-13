@@ -302,7 +302,7 @@ static int l_get_textures(lua::State* L) {
     if (auto def = require_block(L)) {
         lua::createtable(L, 6, 0);
         for (size_t i = 0; i < 6; i++) {
-            lua::pushstring(L, def->textureFaces[i]);
+            lua::pushstring(L, def->defaults.textureFaces[i]); // TODO: variant argument
             lua::rawseti(L, i + 1);
         }
         return 1;
@@ -312,7 +312,8 @@ static int l_get_textures(lua::State* L) {
 
 static int l_get_model(lua::State* L) {
     if (auto def = require_block(L)) {
-        return lua::pushlstring(L, BlockModelTypeMeta.getName(def->model.type));
+        // TODO: variant argument
+        return lua::pushlstring(L, BlockModelTypeMeta.getName(def->defaults.model.type));
     }
     return 0;
 }

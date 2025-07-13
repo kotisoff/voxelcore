@@ -28,7 +28,7 @@ std::unique_ptr<Content> ContentBuilder::build() {
         // Generating runtime info
         def.rt.id = blockDefsIndices.size();
         def.rt.emissive = *reinterpret_cast<uint32_t*>(def.emission);
-        def.rt.solid = def.model.type == BlockModelType::BLOCK;
+        def.rt.solid = def.defaults.model.type == BlockModelType::BLOCK; // FIXME
         def.rt.extended = def.size.x > 1 || def.size.y > 1 || def.size.z > 1;
 
         const float EPSILON = 0.01f;
@@ -50,7 +50,7 @@ std::unique_ptr<Content> ContentBuilder::build() {
         }
 
         blockDefsIndices.push_back(&def);
-        groups->insert(def.drawGroup);
+        groups->insert(def.defaults.drawGroup); // FIXME
     }
 
     std::vector<ItemDef*> itemDefsIndices;

@@ -10,6 +10,7 @@
 #include "maths/aabb.hpp"
 #include "typedefs.hpp"
 #include "util/EnumMetadata.hpp"
+#include "util/stack_vector.hpp"
 #include "interfaces/Serializable.hpp"
 
 struct ParticlesPreset;
@@ -32,6 +33,8 @@ inline constexpr uint FACE_PZ = 5;
 inline constexpr uint BLOCK_AABB_GRID = 16;
 
 inline constexpr size_t MAX_USER_BLOCK_FIELDS_SIZE = 240;
+
+inline constexpr int BLOCK_MAX_VARIANTS = 16;
 
 inline std::string DEFAULT_MATERIAL = "base:stone";
 
@@ -141,6 +144,21 @@ struct BlockMaterial : Serializable {
     void deserialize(const dv::value& src) override;
 };
 
+struct Variant {
+    /// @brief Block model
+    BlockModel model {};
+    /// @brief Textures set applied to block sides
+    std::array<std::string, 6> textureFaces;  // -x,x, -y,y, -z,z
+    /// @brief Culling mode
+    CullingMode culling = CullingMode::DEFAULT;
+    /// @brief Influences visible block sides for transparent blocks
+    uint8_t drawGroup = 0;
+};
+
+struct Variants {
+    util::stack_vector<Variant, BLOCK_MAX_VARIANTS> variants;
+};
+
 /// @brief Block properties definition
 class Block {
 public:
@@ -149,8 +167,7 @@ public:
 
     std::string caption;
 
-    /// @brief Textures set applied to block sides
-    std::array<std::string, 6> textureFaces;  // -x,x, -y,y, -z,z
+    Variant defaults {};
 
     dv::value properties = nullptr;
 
@@ -162,15 +179,6 @@ public:
     uint8_t emission[4] {0, 0, 0, 0};
 
     glm::i8vec3 size {1, 1, 1};
-
-    /// @brief Influences visible block sides for transparent blocks
-    uint8_t drawGroup = 0;
-
-    /// @brief Block model
-    BlockModel model {};
-
-    /// @brief Culling mode
-    CullingMode culling = CullingMode::DEFAULT;
 
     /// @brief Does the block passing lights into itself
     bool lightPassing = false;
@@ -243,6 +251,8 @@ public:
 
     std::unique_ptr<ParticlesPreset> particles;
 
+    std::unique_ptr<Variants> variants;
+
     /// @brief Runtime indices (content indexing results)
     struct {
         /// @brief block runtime integer id
@@ -275,6 +285,16 @@ public:
     ~Block();
 
     void cloneTo(Block& dst);
+
+    constexpr const Variant& getVariant(uint8_t bits) const {
+        if (bits == 0 || variants == nullptr)
+            return defaults;
+        return variants->variants[(bits - 1) % variants->variants.size()];
+    }
+
+    constexpr const BlockModel& getModel(uint8_t bits) const {
+        return getVariant(bits).model;
+    }
 
     static bool isReservedBlockField(std::string_view view);
 };
