@@ -122,6 +122,7 @@ template<> void ContentUnitLoader<Block>::loadUnit(
         if (stateBased.has("variants")) {
             const auto& variants = stateBased["variants"];
             def.variants = std::make_unique<Variants>();
+            def.variants->variants.push_back(def.defaults);
             for (int i = 0; i < variants.size(); i++) {
                 Variant variant = def.defaults;
                 load_variant(variant, variants[i], name);
@@ -198,7 +199,8 @@ template<> void ContentUnitLoader<Block>::loadUnit(
                 "block " + util::quote(def.name) + ": invalid block size"
             );
         }
-        // FIXME
+        
+        // should variant modify hitbox?
         if (def.defaults.model.type == BlockModelType::BLOCK &&
             (def.size.x != 1 || def.size.y != 1 || def.size.z != 1)) {
             def.defaults.model.type = BlockModelType::AABB;

@@ -128,6 +128,7 @@ void Block::cloneTo(Block& dst) {
     for (int i = 0; i < 6; i++) {
         dst.defaults = defaults;
     }
+    dst.defaults = defaults;
     if (variants) {
         dst.variants = std::make_unique<Variants>(*variants);
     }

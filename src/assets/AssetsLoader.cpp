@@ -272,11 +272,12 @@ void AssetsLoader::addDefaults(AssetsLoader& loader, const Content* content) {
             }
         }
         for (const auto& [_, def] : content->blocks.getDefs()) {
-            add_variant(loader, def->defaults);
             if (def->variants) {
                 for (const auto& variant : def->variants->variants) {
                     add_variant(loader, variant);
                 }
+            } else {
+                add_variant(loader, def->defaults);
             }
         }
         for (const auto& [_, def] : content->items.getDefs()) {

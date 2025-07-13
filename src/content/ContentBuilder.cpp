@@ -29,13 +29,15 @@ std::unique_ptr<Content> ContentBuilder::build() {
         def.rt.id = blockDefsIndices.size();
         def.rt.emissive = *reinterpret_cast<uint32_t*>(def.emission);
 
-        // TODO: refactor
-        def.defaults.rt.solid = def.defaults.model.type == BlockModelType::BLOCK;
         if (def.variants) {
             for (auto& variant : def.variants->variants) {
                 variant.rt.solid = variant.model.type == BlockModelType::BLOCK;
             }
+            def.defaults = def.variants->variants.at(0);
+        } else {
+            def.defaults.rt.solid = def.defaults.model.type == BlockModelType::BLOCK;
         }
+        
         const float EPSILON = 0.01f;
         def.rt.solid = glm::i8vec3(def.hitboxes[0].size() + EPSILON) == def.size;
         def.rt.extended = def.size.x > 1 || def.size.y > 1 || def.size.z > 1;
