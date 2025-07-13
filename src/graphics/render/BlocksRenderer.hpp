@@ -113,8 +113,8 @@ class BlocksRenderer {
     );
     void blockCustomModel(
         const glm::ivec3& icoord,
-        const Block* block, 
-        ubyte rotation,
+        const Block& block, 
+        blockstate states,
         bool lights,
         bool ao
     );
@@ -122,24 +122,26 @@ class BlocksRenderer {
     bool isOpenForLight(int x, int y, int z) const;
 
     // Does block allow to see other blocks sides (is it transparent)
-    inline bool isOpen(const glm::ivec3& pos, const Block& def) const {
-        auto id = voxelsBuffer->pickBlockId(
+    inline bool isOpen(const glm::ivec3& pos, const Block& def, const Variant& variant) const {
+        auto vox = voxelsBuffer->pickBlock(
             chunk->x * CHUNK_W + pos.x, pos.y, chunk->z * CHUNK_D + pos.z
         );
-        if (id == BLOCK_VOID) {
+        if (vox.id == BLOCK_VOID) {
             return false;
         }
-        const auto& block = *blockDefsCache[id];
-        if (((block.drawGroup != def.drawGroup) && block.drawGroup) || !block.rt.solid) {
+        const auto& block = *blockDefsCache[vox.id];
+        const auto& blockVariant = block.getVariant(vox.state.userbits);
+        uint8_t otherDrawGroup = blockVariant.drawGroup;
+        if ((otherDrawGroup && (otherDrawGroup != variant.drawGroup)) || !blockVariant.rt.solid) {
             return true;
         }
-        if ((def.culling == CullingMode::DISABLED ||
-             (def.culling == CullingMode::OPTIONAL &&
+        if ((variant.culling == CullingMode::DISABLED ||
+             (variant.culling == CullingMode::OPTIONAL &&
               settings.graphics.denseRender.get())) &&
-            id == def.rt.id) {
+            vox.id == def.rt.id) {
             return true;
         }
-        return !id;
+        return !vox.id;
     }
 
     glm::vec4 pickLight(int x, int y, int z) const;
