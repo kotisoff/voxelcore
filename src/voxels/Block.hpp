@@ -153,6 +153,11 @@ struct Variant {
     CullingMode culling = CullingMode::DEFAULT;
     /// @brief Influences visible block sides for transparent blocks
     uint8_t drawGroup = 0;
+
+    struct {
+        /// @brief is the block completely opaque for render
+        bool solid = true;
+    } rt;
 };
 
 struct Variants {
@@ -258,7 +263,7 @@ public:
         /// @brief block runtime integer id
         blockid_t id;
 
-        /// @brief is the block completely opaque for render and raycast
+        /// @brief is the block completely opaque for raycast
         bool solid = true;
 
         /// @brief does the block emit any lights

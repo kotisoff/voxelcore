@@ -28,13 +28,17 @@ std::unique_ptr<Content> ContentBuilder::build() {
         // Generating runtime info
         def.rt.id = blockDefsIndices.size();
         def.rt.emissive = *reinterpret_cast<uint32_t*>(def.emission);
-        def.rt.solid = def.defaults.model.type == BlockModelType::BLOCK; // FIXME
-        def.rt.extended = def.size.x > 1 || def.size.y > 1 || def.size.z > 1;
 
-        const float EPSILON = 0.01f;
-        if (def.rt.extended && glm::i8vec3(def.hitboxes[0].size() + EPSILON) == def.size) {
-            def.rt.solid = true;
+        // TODO: refactor
+        def.defaults.rt.solid = def.defaults.model.type == BlockModelType::BLOCK;
+        if (def.variants) {
+            for (auto& variant : def.variants->variants) {
+                variant.rt.solid = variant.model.type == BlockModelType::BLOCK;
+            }
         }
+        const float EPSILON = 0.01f;
+        def.rt.solid = glm::i8vec3(def.hitboxes[0].size() + EPSILON) == def.size;
+        def.rt.extended = def.size.x > 1 || def.size.y > 1 || def.size.z > 1;
 
         if (def.rotatable) {
             for (uint i = 0; i < BlockRotProfile::MAX_COUNT; i++) {

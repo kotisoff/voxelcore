@@ -130,8 +130,9 @@ class BlocksRenderer {
             return false;
         }
         const auto& block = *blockDefsCache[vox.id];
-        uint8_t otherDrawGroup = block.getVariant(vox.state.userbits).drawGroup;
-        if ((otherDrawGroup && (otherDrawGroup != variant.drawGroup)) || !block.rt.solid) {
+        const auto& blockVariant = block.getVariant(vox.state.userbits);
+        uint8_t otherDrawGroup = blockVariant.drawGroup;
+        if ((otherDrawGroup && (otherDrawGroup != variant.drawGroup)) || !blockVariant.rt.solid) {
             return true;
         }
         if ((variant.culling == CullingMode::DISABLED ||
