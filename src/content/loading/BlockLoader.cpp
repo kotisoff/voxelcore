@@ -121,7 +121,18 @@ template<> void ContentUnitLoader<Block>::loadUnit(
         const auto& stateBased = root["state-based"];
         if (stateBased.has("variants")) {
             const auto& variants = stateBased["variants"];
+
+            int offset = 0;
+            int bitsCount = 4;
+            stateBased.at("offset").get(offset);
+            stateBased.at("bits").get(bitsCount);
+            if (offset < 0 || bitsCount <= 0 || offset + bitsCount > 8) {
+                throw std::runtime_error("Invalid state-based bits configuration");
+            }
+
             def.variants = std::make_unique<Variants>();
+            def.variants->offset = 0;
+            def.variants->mask = 0xF;
             def.variants->variants.push_back(def.defaults);
             for (int i = 0; i < variants.size(); i++) {
                 Variant variant = def.defaults;

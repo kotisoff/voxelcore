@@ -161,6 +161,8 @@ struct Variant {
 };
 
 struct Variants {
+    uint8_t offset;
+    uint8_t mask;
     /// First variant is copy of Block::defaults
     util::stack_vector<Variant, BLOCK_MAX_VARIANTS> variants {};
 };
@@ -292,10 +294,12 @@ public:
 
     void cloneTo(Block& dst);
 
-    constexpr const Variant& getVariant(uint8_t bits) const {
-        if (bits == 0 || variants == nullptr)
+    constexpr const Variant& getVariant(uint8_t userbits) const {
+        if (userbits == 0 || variants == nullptr)
             return defaults;
-        return variants->variants[bits % BLOCK_MAX_VARIANTS];
+        return variants->variants[
+            (userbits >> variants->offset) & variants->mask
+        ];
     }
 
     constexpr const BlockModel& getModel(uint8_t bits) const {
