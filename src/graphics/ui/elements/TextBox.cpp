@@ -829,6 +829,10 @@ void TextBox::onInput() {
 void TextBox::performEditingKeyboardEvents(Keycode key) {
     bool shiftPressed = gui.getInput().pressed(Keycode::LEFT_SHIFT);
     bool breakSelection = getSelectionLength() != 0 && !shiftPressed;
+
+    uint current_line = getLineAt(getCaret());
+    uint previousCaret = getCaret();
+    
     if (key == Keycode::BACKSPACE) {
         bool erased = eraseSelected();
         if (erased) {
@@ -873,6 +877,30 @@ void TextBox::performEditingKeyboardEvents(Keycode key) {
         onUpPressed();
     } else if (key == Keycode::DOWN && onDownPressed) {
         onDownPressed();
+    } else if (key == Keycode::HOME) {
+        setCaret(getLinePos(current_line));
+        resetMaxLocalCaret();
+
+        if (shiftPressed) {
+            if (selectionStart == selectionEnd) {
+                selectionOrigin = previousCaret;
+            }
+            extendSelection(getCaret());
+        } else {
+            resetSelection();
+        }
+    } else if (key == Keycode::END && getLineLength(current_line) > 0) {
+        setCaret(getLinePos(current_line) + getLineLength(current_line) - 1);
+        resetMaxLocalCaret();
+	
+        if (shiftPressed) {
+            if (selectionStart == selectionEnd) {
+                selectionOrigin = previousCaret;
+            }
+            extendSelection(getCaret());
+        } else {
+            resetSelection();
+        }
     }
 }
 
