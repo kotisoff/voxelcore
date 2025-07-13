@@ -66,7 +66,7 @@ void ContentGfxCache::refresh(const Block& def, const Atlas& atlas) {
     refresh_variant(assets, def, def.defaults, 0, sideregions, atlas, settings, models);
     if (def.variants) {
         const auto& variants = def.variants->variants;
-        for (int i = 0; i < variants.size(); i++) {
+        for (int i = 0; i < variants.size() - 1; i++) {
             refresh_variant(assets, def, variants[i], i + 1, sideregions, atlas, settings, models);
         }
     }
@@ -79,8 +79,7 @@ void ContentGfxCache::refresh() {
 
     const auto& blocks = indices->blocks.getIterable();
     for (blockid_t i = 0; i < blocks.size(); i++) {
-        auto def = blocks[i];
-        refresh(*def, atlas);
+        refresh(*blocks[i], atlas);
     }
 }
 

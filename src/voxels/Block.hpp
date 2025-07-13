@@ -156,7 +156,7 @@ struct Variant {
 };
 
 struct Variants {
-    util::stack_vector<Variant, BLOCK_MAX_VARIANTS> variants;
+    util::stack_vector<Variant, BLOCK_MAX_VARIANTS> variants {};
 };
 
 /// @brief Block properties definition
@@ -289,7 +289,7 @@ public:
     constexpr const Variant& getVariant(uint8_t bits) const {
         if (bits == 0 || variants == nullptr)
             return defaults;
-        return variants->variants[(bits - 1) % variants->variants.size()];
+        return variants->variants[(bits - 1) % BLOCK_MAX_VARIANTS];
     }
 
     constexpr const BlockModel& getModel(uint8_t bits) const {

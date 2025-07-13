@@ -117,6 +117,22 @@ template<> void ContentUnitLoader<Block>::loadUnit(
 
     load_variant(def.defaults, root, name);
 
+    if (root.has("state-based")) {
+        const auto& stateBased = root["state-based"];
+        if (stateBased.has("variants")) {
+            const auto& variants = stateBased["variants"];
+            def.variants = std::make_unique<Variants>();
+            for (int i = 0; i < variants.size(); i++) {
+                Variant variant = def.defaults;
+                load_variant(variant, variants[i], name);
+                def.variants->variants.push_back(variant);
+            }
+            while (def.variants->variants.size() < BLOCK_MAX_VARIANTS) {
+                def.variants->variants.push_back(def.defaults);
+            }
+        }
+    }
+
     root.at("material").get(def.material);
 
     // rotation profile
