@@ -830,7 +830,12 @@ void TextBox::performEditingKeyboardEvents(Keycode key) {
     bool shiftPressed = gui.getInput().pressed(Keycode::LEFT_SHIFT);
     bool breakSelection = getSelectionLength() != 0 && !shiftPressed;
     if (key == Keycode::BACKSPACE) {
-        if (!eraseSelected() && caret > 0 && input.length() > 0) {
+        bool erased = eraseSelected();
+        if (erased) {
+            if (validate()) {
+                onInput();
+            }
+        } else if (caret > 0 && input.length() > 0) {
             if (caret > input.length()) {
                 caret = input.length();
             }
