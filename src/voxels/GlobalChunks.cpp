@@ -168,11 +168,9 @@ void GlobalChunks::decref(Chunk* chunk) {
         ekey.pos[1] = chunk->z;
 
         save(chunk);
-        
         if (onUnload) {
             onUnload(*chunk);
         }
-
         chunksMap.erase(ekey.key);
         refCounters.erase(found);
     }
