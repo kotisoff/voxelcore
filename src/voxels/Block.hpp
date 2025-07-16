@@ -294,13 +294,13 @@ public:
 
     void cloneTo(Block& dst);
 
-    constexpr uint8_t getVariantIndex(uint8_t userbits) const {
+    uint8_t getVariantIndex(uint8_t userbits) const {
         if (variants == nullptr)
             return 0;
         return (userbits >> variants->offset) & variants->mask;
     }
 
-    constexpr const Variant& getVariantByBits(uint8_t userbits) const {
+    const Variant& getVariantByBits(uint8_t userbits) const {
         if (userbits == 0 || variants == nullptr)
             return defaults;
         return variants->variants[
@@ -308,13 +308,13 @@ public:
         ];
     }
 
-    constexpr const Variant& getVariant(uint8_t index) const {
+    const Variant& getVariant(uint8_t index) const {
         if (index == 0)
             return defaults;
         return variants->variants[index];
     }
 
-    constexpr const BlockModel& getModel(uint8_t bits) const {
+    const BlockModel& getModel(uint8_t bits) const {
         return getVariantByBits(bits).model;
     }
 
