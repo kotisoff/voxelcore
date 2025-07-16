@@ -130,7 +130,7 @@ class BlocksRenderer {
             return false;
         }
         const auto& block = *blockDefsCache[vox.id];
-        const auto& blockVariant = block.getVariant(vox.state.userbits);
+        const auto& blockVariant = block.getVariantByBits(vox.state.userbits);
         uint8_t otherDrawGroup = blockVariant.drawGroup;
         if ((otherDrawGroup && (otherDrawGroup != variant.drawGroup)) || !blockVariant.rt.solid) {
             return true;
