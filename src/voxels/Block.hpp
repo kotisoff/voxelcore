@@ -294,7 +294,13 @@ public:
 
     void cloneTo(Block& dst);
 
-    constexpr const Variant& getVariant(uint8_t userbits) const {
+    uint8_t getVariantIndex(uint8_t userbits) const {
+        if (variants == nullptr)
+            return 0;
+        return (userbits >> variants->offset) & variants->mask;
+    }
+
+    const Variant& getVariantByBits(uint8_t userbits) const {
         if (userbits == 0 || variants == nullptr)
             return defaults;
         return variants->variants[
@@ -302,8 +308,14 @@ public:
         ];
     }
 
-    constexpr const BlockModel& getModel(uint8_t bits) const {
-        return getVariant(bits).model;
+    const Variant& getVariant(uint8_t index) const {
+        if (index == 0)
+            return defaults;
+        return variants->variants[index];
+    }
+
+    const BlockModel& getModel(uint8_t bits) const {
+        return getVariantByBits(bits).model;
     }
 
     static bool isReservedBlockField(std::string_view view);

@@ -294,7 +294,7 @@ static bool is_aligned(const glm::vec3& v, float e = 1e-6f) {
 void BlocksRenderer::blockCustomModel(
     const glm::ivec3& icoord, const Block& block, blockstate states, bool lights, bool ao
 ) {
-    const auto& variant = block.getVariant(states.userbits);
+    const auto& variant = block.getVariantByBits(states.userbits);
     glm::vec3 X(1, 0, 0);
     glm::vec3 Y(0, 1, 0);
     glm::vec3 Z(0, 0, 1);
@@ -370,7 +370,7 @@ void BlocksRenderer::blockCube(
     bool lights,
     bool ao
 ) {
-    const auto& variant = block.getVariant(states.userbits);
+    const auto& variant = block.getVariantByBits(states.userbits);
     glm::ivec3 X(1, 0, 0);
     glm::ivec3 Y(0, 1, 0);
     glm::ivec3 Z(0, 0, 1);
@@ -488,8 +488,8 @@ void BlocksRenderer::render(
             blockid_t id = vox.id;
             blockstate state = vox.state;
             const auto& def = *blockDefsCache[id];
-            const auto& variant = def.getVariant(state.userbits);
-            uint8_t variantId = state.userbits;
+            uint8_t variantId = def.getVariantIndex(state.userbits);
+            const auto& variant = def.getVariant(variantId);
             if (id == 0 || variant.drawGroup != drawGroup || state.segment) {
                 continue;
             }
@@ -561,7 +561,7 @@ SortingMeshData BlocksRenderer::renderTranslucent(
             blockid_t id = vox.id;
             blockstate state = vox.state;
             const auto& def = *blockDefsCache[id];
-            uint8_t variantId = state.userbits;
+            uint8_t variantId = def.getVariantIndex(state.userbits);
             const auto& variant = def.getVariant(variantId);
             if (id == 0 || variant.drawGroup != drawGroup || state.segment) {
                 continue;
@@ -687,7 +687,7 @@ void BlocksRenderer::build(const Chunk* chunk, const Chunks* chunks) {
         const voxel& vox = voxels[i];
         blockid_t id = vox.id;
         const auto& def = *blockDefsCache[id];
-        const auto& variant = def.getVariant(vox.state.userbits);
+        const auto& variant = def.getVariantByBits(vox.state.userbits);
 
         if (beginEnds[variant.drawGroup][0] == 0) {
             beginEnds[variant.drawGroup][0] = i+1;
