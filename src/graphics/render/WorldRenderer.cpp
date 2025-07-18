@@ -164,14 +164,14 @@ void WorldRenderer::setupWorldShader(
         auto inventory = player.getInventory();
         ItemStack& stack = inventory->getSlot(player.getChosenSlot());
         auto& item = indices->items.require(stack.getItemId());
-        float multiplier = 0.5f;
+        float multiplier = 0.75f;
         shader.uniform3f(
             "u_torchlightColor",
             item.emission[0] / 15.0f * multiplier,
             item.emission[1] / 15.0f * multiplier,
             item.emission[2] / 15.0f * multiplier
         );
-        shader.uniform1f("u_torchlightDistance", 6.0f);
+        shader.uniform1f("u_torchlightDistance", 8.0f);
     }
 }
 
