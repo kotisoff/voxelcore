@@ -67,7 +67,7 @@ void ContentGfxCache::refresh(const Block& def, const Atlas& atlas) {
     if (def.variants) {
         const auto& variants = def.variants->variants;
         for (int i = 1; i < variants.size() - 1; i++) {
-            refresh_variant(assets, def, variants[i], i + 1, sideregions, atlas, settings, models);
+            refresh_variant(assets, def, variants[i], i, sideregions, atlas, settings, models);
         }
         def.variants->variants.at(0) = def.defaults;
     }
