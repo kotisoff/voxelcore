@@ -66,8 +66,9 @@ function on_sensor_enter(index, oid)
                 local stack = item.stack_size(dropitem.id)
                 local sum = dropitem.count + odrop.count
                 if sum <= stack then
-                    dropitem.count = sum
-                    other:despawn()
+                    dropitem.count = 0
+                    odrop.count = sum
+                    entity:despawn()
                 end
             end
         end
