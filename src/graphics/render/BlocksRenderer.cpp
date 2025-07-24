@@ -477,6 +477,7 @@ glm::vec4 BlocksRenderer::pickSoftLight(
 void BlocksRenderer::render(
     const voxel* voxels, int beginEnds[256][2]
 ) {
+    bool denseRender = this->denseRender;
     for (const auto drawGroup : *content.drawGroups) {
         int begin = beginEnds[drawGroup][0];
         if (begin == 0) {
@@ -497,12 +498,12 @@ void BlocksRenderer::render(
                 continue;
             }
             const UVRegion texfaces[6] {
-                cache.getRegion(id, variantId, 0),
-                cache.getRegion(id, variantId, 1),
-                cache.getRegion(id, variantId, 2),
-                cache.getRegion(id, variantId, 3),
-                cache.getRegion(id, variantId, 4),
-                cache.getRegion(id, variantId, 5)
+                cache.getRegion(id, variantId, 0, denseRender),
+                cache.getRegion(id, variantId, 1, denseRender),
+                cache.getRegion(id, variantId, 2, denseRender),
+                cache.getRegion(id, variantId, 3, denseRender),
+                cache.getRegion(id, variantId, 4, denseRender),
+                cache.getRegion(id, variantId, 5, denseRender)
             };
             int x = i % CHUNK_W;
             int y = i / (CHUNK_D * CHUNK_W);
@@ -550,6 +551,8 @@ SortingMeshData BlocksRenderer::renderTranslucent(
     AABB aabb {};
     bool aabbInit = false;
     size_t totalSize = 0;
+
+    bool denseRender = this->denseRender;
     for (const auto drawGroup : *content.drawGroups) {
         int begin = beginEnds[drawGroup][0];
         if (begin == 0) {
@@ -570,12 +573,12 @@ SortingMeshData BlocksRenderer::renderTranslucent(
                 continue;
             }
             const UVRegion texfaces[6] {
-                cache.getRegion(id, variantId, 0),
-                cache.getRegion(id, variantId, 1),
-                cache.getRegion(id, variantId, 2),
-                cache.getRegion(id, variantId, 3),
-                cache.getRegion(id, variantId, 4),
-                cache.getRegion(id, variantId, 5)
+                cache.getRegion(id, variantId, 0, denseRender),
+                cache.getRegion(id, variantId, 1, denseRender),
+                cache.getRegion(id, variantId, 2, denseRender),
+                cache.getRegion(id, variantId, 3, denseRender),
+                cache.getRegion(id, variantId, 4, denseRender),
+                cache.getRegion(id, variantId, 5, denseRender)
             };
             int x = i % CHUNK_W;
             int y = i / (CHUNK_D * CHUNK_W);
@@ -706,9 +709,16 @@ void BlocksRenderer::build(const Chunk* chunk, const Chunks* chunks) {
     vertexCount = 0;
     vertexOffset = 0;
     indexCount = 0;
+
     denseRender = settings.graphics.denseRender.get();
+    // denseRender = false;
 
     render(voxels, beginEnds);
+
+    // denseRender = settings.graphics.denseRender.get();
+    // if (denseRender) {
+        
+    // }
 }
 
 ChunkMeshData BlocksRenderer::createMesh() {
