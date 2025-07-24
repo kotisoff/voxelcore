@@ -33,6 +33,7 @@ class BlocksRenderer {
     int voxelBufferPadding = 2;
     bool overflow = false;
     bool cancelled = false;
+    bool denseRender = false;
     const Chunk* chunk = nullptr;
     std::unique_ptr<VoxelsVolume> voxelsBuffer;
 
@@ -137,7 +138,7 @@ class BlocksRenderer {
         }
         if ((variant.culling == CullingMode::DISABLED ||
              (variant.culling == CullingMode::OPTIONAL &&
-              settings.graphics.denseRender.get())) &&
+             denseRender)) &&
             vox.id == def.rt.id) {
             return true;
         }
