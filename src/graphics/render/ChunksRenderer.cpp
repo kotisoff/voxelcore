@@ -18,6 +18,9 @@ static debug::Logger logger("chunks-render");
 
 size_t ChunksRenderer::visibleChunks = 0;
 
+inline constexpr int DENSE_DISTANCE = 64;
+inline constexpr int DENSE_DISTANCE2 = DENSE_DISTANCE * DENSE_DISTANCE;
+
 class RendererWorker : public util::Worker<std::shared_ptr<Chunk>, RendererResult> {
     const Chunks& chunks;
     BlocksRenderer renderer;
@@ -87,6 +90,9 @@ ChunksRenderer::ChunksRenderer(
         level->content, cache, settings
     );
     logger.info() << "created " << threadPool.getWorkersCount() << " workers";
+    logger.info() << "memory consumption is " 
+        << renderer->getMemoryConsumption() * threadPool.getWorkersCount()
+        << " B";
 }
 
 ChunksRenderer::~ChunksRenderer() = default;
@@ -182,7 +188,7 @@ const Mesh<ChunkVertex>* ChunksRenderer::retrieveChunk(
 }
 
 void ChunksRenderer::drawChunksShadowsPass(
-    const Camera& camera, Shader& shader
+    const Camera& camera, Shader& shader, const Camera& playerCamera
 ) {
     Frustum frustum;
     frustum.update(camera.getProjView());
@@ -205,7 +211,7 @@ void ChunksRenderer::drawChunksShadowsPass(
             pos.x * CHUNK_W + 0.5f, 0.5f, pos.y * CHUNK_D + 0.5f
         );
 
-        glm::vec3 min(pos.x * CHUNK_W, chunk->bottom, chunk->z * CHUNK_D);
+        glm::vec3 min(chunk->x * CHUNK_W, chunk->bottom, chunk->z * CHUNK_D);
         glm::vec3 max(
             chunk->x * CHUNK_W + CHUNK_W,
             chunk->top,
@@ -217,7 +223,9 @@ void ChunksRenderer::drawChunksShadowsPass(
         }
         glm::mat4 model = glm::translate(glm::mat4(1.0f), coord);
         shader.uniformMatrix("u_model", model);
-        found->second.mesh->draw();
+        found->second.mesh->draw(GL_TRIANGLES, 
+            glm::distance2(playerCamera.position * glm::vec3(1, 0, 1), 
+                           (min + max) * 0.5f * glm::vec3(1, 0, 1)) < DENSE_DISTANCE2);
     }
 }
 
@@ -265,7 +273,8 @@ void ChunksRenderer::drawChunks(
             );
             glm::mat4 model = glm::translate(glm::mat4(1.0f), coord);
             shader.uniformMatrix("u_model", model);
-            mesh->draw();
+            mesh->draw(GL_TRIANGLES, glm::distance2(camera.position * glm::vec3(1, 0, 1), 
+                (coord + glm::vec3(CHUNK_W * 0.5f, 0.0f, CHUNK_D * 0.5f))) < DENSE_DISTANCE2);
             visibleChunks++;
         }
     }

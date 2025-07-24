@@ -406,7 +406,7 @@ void WorldRenderer::generateShadowsMap(
         sctx.setViewport({resolution, resolution});
         shadowMap.bind();
         setupWorldShader(shadowsShader, shadowCamera, settings, 0.0f);
-        chunks->drawChunksShadowsPass(shadowCamera, shadowsShader);
+        chunks->drawChunksShadowsPass(shadowCamera, shadowsShader, camera);
         shadowMap.unbind();
     }
 }
