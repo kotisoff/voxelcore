@@ -18,9 +18,6 @@ static debug::Logger logger("chunks-render");
 
 size_t ChunksRenderer::visibleChunks = 0;
 
-inline constexpr int DENSE_DISTANCE = 64;
-inline constexpr int DENSE_DISTANCE2 = DENSE_DISTANCE * DENSE_DISTANCE;
-
 class RendererWorker : public util::Worker<std::shared_ptr<Chunk>, RendererResult> {
     const Chunks& chunks;
     BlocksRenderer renderer;
@@ -197,6 +194,9 @@ void ChunksRenderer::drawChunksShadowsPass(
 
     atlas.getTexture()->bind();
 
+    auto denseDistance = settings.graphics.denseRenderDistance.get();
+    auto denseDistance2 = denseDistance * denseDistance;
+
     for (const auto& chunk : chunks.getChunks()) {
         if (chunk == nullptr) {
             continue;
@@ -225,7 +225,7 @@ void ChunksRenderer::drawChunksShadowsPass(
         shader.uniformMatrix("u_model", model);
         found->second.mesh->draw(GL_TRIANGLES, 
             glm::distance2(playerCamera.position * glm::vec3(1, 0, 1), 
-                           (min + max) * 0.5f * glm::vec3(1, 0, 1)) < DENSE_DISTANCE2);
+                           (min + max) * 0.5f * glm::vec3(1, 0, 1)) < denseDistance2);
     }
 }
 
@@ -262,6 +262,9 @@ void ChunksRenderer::drawChunks(
     visibleChunks = 0;
     shader.uniform1i("u_alphaClip", true);
 
+    auto denseDistance = settings.graphics.denseRenderDistance.get();
+    auto denseDistance2 = denseDistance * denseDistance;
+
     // TODO: minimize draw calls number
     for (int i = indices.size()-1; i >= 0; i--) {
         auto& chunk = chunks.getChunks()[indices[i].index];
@@ -274,7 +277,7 @@ void ChunksRenderer::drawChunks(
             glm::mat4 model = glm::translate(glm::mat4(1.0f), coord);
             shader.uniformMatrix("u_model", model);
             mesh->draw(GL_TRIANGLES, glm::distance2(camera.position * glm::vec3(1, 0, 1), 
-                (coord + glm::vec3(CHUNK_W * 0.5f, 0.0f, CHUNK_D * 0.5f))) < DENSE_DISTANCE2);
+                (coord + glm::vec3(CHUNK_W * 0.5f, 0.0f, CHUNK_D * 0.5f))) < denseDistance2);
             visibleChunks++;
         }
     }
