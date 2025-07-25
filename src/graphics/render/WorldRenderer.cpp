@@ -220,8 +220,6 @@ void WorldRenderer::renderLevel(
     if (hudVisible) {
         renderLines(camera, linesShader, ctx);
     }
-    shader.use();
-    chunks->drawSortedMeshes(camera, shader);
 
     if (!pause) {
         scripting::on_frontend_render();
@@ -431,6 +429,7 @@ void WorldRenderer::draw(
 
     auto& mainShader = assets.require<Shader>("main");
     auto& entityShader = assets.require<Shader>("entity");
+    auto& translucentShader = assets.require<Shader>("translucent");
     auto& deferredShader = assets.require<PostEffect>("deferred_lighting").getShader();
     const auto& settings = engine.getSettings();
 
@@ -463,6 +462,7 @@ void WorldRenderer::draw(
         mainShader.recompile();
         entityShader.recompile();
         deferredShader.recompile();
+        translucentShader.recompile();
         prevCTShaderSettings = currentSettings;
     }
 
@@ -525,6 +525,7 @@ void WorldRenderer::draw(
     {
         DrawContext ctx = pctx.sub();
         ctx.setDepthTest(true);
+
         if (gbufferPipeline) {
             postProcessing.bindDepthBuffer();
         } else {
@@ -532,6 +533,16 @@ void WorldRenderer::draw(
         }
         // Drawing background sky plane
         skybox->draw(ctx, camera, assets, worldInfo.daytime, clouds);
+
+        {
+            auto sctx = ctx.sub();
+            sctx.setCullFace(true);
+            skybox->bind();
+            translucentShader.use();
+            setupWorldShader(translucentShader, camera, settings, fogFactor);
+            chunks->drawSortedMeshes(camera, translucentShader);
+            skybox->unbind();
+        }
 
         entityShader.use();
         setupWorldShader(entityShader, camera, settings, fogFactor);
@@ -552,8 +563,7 @@ void WorldRenderer::draw(
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     postProcessing.render(pctx, assets, timer, camera);
-
-    skybox->unbind();
+    
     if (player.currentCamera == player.fpCamera) {
         DrawContext ctx = pctx.sub();
         ctx.setDepthTest(true);
