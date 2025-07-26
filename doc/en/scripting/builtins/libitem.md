@@ -10,6 +10,9 @@ item.index(name: str) -> int
 -- Returns the item display name.
 block.caption(blockid: int) -> str
 
+-- Returns the item display description.
+item.description(itemid: int) -> str
+
 -- Returns max stack size for the item
 item.stack_size(itemid: int) -> int
 

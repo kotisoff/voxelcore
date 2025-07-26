@@ -34,6 +34,9 @@ struct ItemDef {
     /// @brief Item name will shown in inventory
     std::string caption;
 
+    /// @brief Item description will shown in inventory
+    std::string description;
+
     dv::value properties = nullptr;
 
     /// @brief Item max stack size

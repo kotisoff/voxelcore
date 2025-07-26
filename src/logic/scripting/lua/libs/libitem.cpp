@@ -57,6 +57,13 @@ static int l_caption(lua::State* L) {
     return 0;
 }
 
+static int l_description(lua::State* L) {
+    if (auto def = get_item_def(L, 1)) {
+        return lua::pushstring(L, def->description);
+    }
+    return 0;
+}
+
 static int l_placing_block(lua::State* L) {
     if (auto def = get_item_def(L, 1)) {
         return lua::pushinteger(L, def->rt.placingBlock);
@@ -108,6 +115,7 @@ const luaL_Reg itemlib[] = {
     {"defs_count", lua::wrap<l_defs_count>},
     {"icon", lua::wrap<l_get_icon>},
     {"caption", lua::wrap<l_caption>},
+    {"description", lua::wrap<l_description>},
     {"placing_block", lua::wrap<l_placing_block>},
     {"model_name", lua::wrap<l_model_name>},
     {"emission", lua::wrap<l_emission>},
