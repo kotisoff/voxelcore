@@ -18,6 +18,14 @@ Name of the item model. The model will be loaded automatically.
 Default value is `packid:itemname.model`.
 If the model is not specified, an automatic one will be generated.
 
+### Caption and Description
+`caption` - name of item in inventory
+`description` - item description in inventory
+
+this props allow to use `md`
+
+*see [Text Styles](/doc/en/text-styles.md)*
+
 ## Behaviour
 
 ### *placing-block*
