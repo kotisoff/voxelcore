@@ -97,6 +97,26 @@ inventory.set(...)
 inventory.set_all_data(...)
 ```
 for moving is inefficient, use inventory.move or inventory.move_range.
+```lua
+-- Set item caption
+inventory.set_caption(
+    -- id of inventory
+    invid: int,
+    -- slot id
+    slot: int,
+    -- Item Caption
+    caption: string
+)
+-- Set item description
+inventory.set_description(
+    -- id of inventory
+    invid: int,
+    -- slot id
+    slot: int,
+    -- Item Description
+    description: string
+)
+```
 
 ```lua
 -- Returns a copy of value of a local property of an item by name or nil.
