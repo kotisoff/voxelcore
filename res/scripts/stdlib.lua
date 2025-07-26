@@ -34,7 +34,10 @@ local function complete_app_lib(app)
     app.reconfig_packs = core.reconfig_packs
     app.get_setting = core.get_setting
     app.set_setting = core.set_setting
-    app.tick = coroutine.yield
+    app.tick = function()
+        coroutine.yield()
+        network.__process_events()
+    end
     app.get_version = core.get_version
     app.get_setting_info = core.get_setting_info
     app.load_content = function()
