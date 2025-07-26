@@ -182,14 +182,17 @@ static int l_available(lua::State* L, network::Network& network) {
     return 0;
 }
 
+struct ConnectionEvent {
+    u64id_t server;
+    u64id_t client;
+};
+
+static std::vector<ConnectionEvent> clients_queue {};
+
 static int l_open(lua::State* L, network::Network& network) {
     int port = lua::tointeger(L, 1);
-    lua::pushvalue(L, 2);
-    auto callback = lua::create_lambda_nothrow(L);
-    u64id_t id = network.openServer(port, [callback](u64id_t id) {
-        engine->postRunnable([=]() {
-            callback({id});
-        });
+    u64id_t id = network.openServer(port, [](u64id_t sid, u64id_t id) {
+        clients_queue.push_back({sid, id});
     });
     return lua::pushinteger(L, id);
 }
@@ -250,6 +253,23 @@ static int l_get_total_download(lua::State* L, network::Network& network) {
     return lua::pushinteger(L, network.getTotalDownload());
 }
 
+static int l_pull_connections(lua::State* L, network::Network& network) {
+    lua::createtable(L, clients_queue.size(), 0);
+    for (size_t i = 0; i < clients_queue.size(); i++) {
+        lua::createtable(L, 2, 0);
+
+        lua::pushinteger(L, clients_queue[i].server);
+        lua::rawseti(L, 1);
+
+        lua::pushinteger(L, clients_queue[i].client);
+        lua::rawseti(L, 2);
+        
+        lua::rawseti(L, i + 1);
+    }
+    clients_queue.clear();
+    return 1;
+}
+
 template <int(*func)(lua::State*, network::Network&)>
 int wrap(lua_State* L) {
     int result = 0;
@@ -267,13 +287,13 @@ int wrap(lua_State* L) {
     return result;
 }
 
-
 const luaL_Reg networklib[] = {
     {"get", wrap<l_get>},
     {"get_binary", wrap<l_get_binary>},
     {"post", wrap<l_post>},
     {"get_total_upload", wrap<l_get_total_upload>},
     {"get_total_download", wrap<l_get_total_download>},
+    {"__pull_connections", wrap<l_pull_connections>},
     {"__open", wrap<l_open>},
     {"__closeserver", wrap<l_closeserver>},
     {"__connect", wrap<l_connect>},

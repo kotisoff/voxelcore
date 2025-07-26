@@ -60,8 +60,37 @@ local ServerSocket = {__index={
     get_port=function(self) return network.__get_serverport(self.id) end,
 }}
 
-network.tcp_open = function(port, handler)
-    return setmetatable({id=network.__open(port, function(id)
+
+local _tcp_server_callbacks = {}
+
+network.tcp_open = function (port, handler)
+    local socket = setmetatable({id=network.__open(port)}, ServerSocket)
+
+    _tcp_server_callbacks[socket.id] = function(id) 
         handler(setmetatable({id=id}, Socket))
-    end)}, ServerSocket)
+    end
+    return socket
+end
+
+network.__pull_events = function()
+    local cleaned = false
+    local connections = network.__pull_connections()
+    for i, pair in ipairs(connections) do
+        local sid, cid = unpack(pair)
+        local callback = _tcp_server_callbacks[sid]
+
+        if callback then
+            callback(cid)
+        end
+
+        -- remove dead servers
+        if not cleaned then
+            for sid, callback in pairs(_tcp_server_callbacks) do
+                if not network.__is_serveropen(sid) then
+                    _tcp_server_callbacks[sid] = nil
+                end
+            end
+            cleaned = true
+        end
+    end
 end
