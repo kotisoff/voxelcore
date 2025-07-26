@@ -119,25 +119,37 @@ SlotView::SlotView(GUI& gui, SlotLayout layout)
 
 void SlotView::refreshTooltip(const ItemStack& stack, const ItemDef& item) {
     itemid_t itemid = stack.getItemId();
-    if (itemid == cache.stack.getItemId()) {
+    dv::value* caption = stack.getField("caption");
+    dv::value* description = stack.getField("description");
+    if (
+        itemid == cache.stack.getItemId() &&
+        caption == cache.stack.getField("caption") &&
+        description == cache.stack.getField("description")
+    ) {
         return;
     }
     if (itemid) {
-        dv::value* caption = stack.getField("caption");
-        dv::value* description = stack.getField("description");
         std::wstring captionText;
         std::wstring descriptionText;
 
         if (description != nullptr) {
-            descriptionText = util::pascal_case( langs::get( util::str2wstr_utf8( description->asString() ) ) );
+            descriptionText = util::pascal_case(
+                langs::get(util::str2wstr_utf8(description->asString()))
+            );
         } else {
-            descriptionText = util::pascal_case( langs::get( util::str2wstr_utf8( item.description ) ) );
+            descriptionText = util::pascal_case(
+                langs::get(util::str2wstr_utf8(item.description))
+            );
         }
 
         if (caption != nullptr) {
-            captionText = util::pascal_case( langs::get( util::str2wstr_utf8( caption->asString() ) ) ); 
+            captionText = util::pascal_case(
+                langs::get(util::str2wstr_utf8(caption->asString()))
+            );
         } else {
-            captionText = util::pascal_case( langs::get( util::str2wstr_utf8( item.caption ) ) );
+            captionText = util::pascal_case(
+                langs::get(util::str2wstr_utf8(item.caption))
+            );
         }
 
         tooltip = captionText + L"\n" + descriptionText;
