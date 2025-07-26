@@ -152,7 +152,11 @@ void SlotView::refreshTooltip(const ItemStack& stack, const ItemDef& item) {
             );
         }
 
-        tooltip = captionText + L"\n" + descriptionText;
+        if (descriptionText.length() > 0) {
+            tooltip = captionText + L"\n" + descriptionText;
+        } else {
+            tooltip = captionText;
+        }
     } else {
         tooltip.clear();
     }
