@@ -535,8 +535,11 @@ local _getinfo = debug.getinfo
 for i, name in ipairs(removed_names) do
     debug[name] = nil
 end
-debug.getinfo = function(...)
-    local debuginfo = _getinfo(...)
+debug.getinfo = function(lvl, fields)
+    if type(lvl) == "number" then
+        lvl = lvl + 1
+    end
+    local debuginfo = _getinfo(lvl, fields)
     debuginfo.func = nil
     return debuginfo
 end
