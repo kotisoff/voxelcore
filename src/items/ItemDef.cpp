@@ -4,6 +4,7 @@
 
 ItemDef::ItemDef(const std::string& name) : name(name) {
     caption = util::id_to_caption(name);
+    description = "";
 }
 void ItemDef::cloneTo(ItemDef& dst) {
     dst.caption = caption;

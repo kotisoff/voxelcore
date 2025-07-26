@@ -124,15 +124,23 @@ void SlotView::refreshTooltip(const ItemStack& stack, const ItemDef& item) {
     }
     if (itemid) {
         dv::value* caption = stack.getField("caption");
-        if (caption != nullptr) {
-            tooltip = util::pascal_case(
-                langs::get(util::str2wstr_utf8(caption->asString()))
-            );
+        dv::value* description = stack.getField("description");
+        std::wstring captionText;
+        std::wstring descriptionText;
+
+        if (description != nullptr) {
+            descriptionText = util::pascal_case( langs::get( util::str2wstr_utf8( description->asString() ) ) );
         } else {
-            tooltip = util::pascal_case(
-                langs::get(util::str2wstr_utf8(item.caption))
-            );
+            descriptionText = util::pascal_case( langs::get( util::str2wstr_utf8( item.description ) ) );
         }
+
+        if (caption != nullptr) {
+            captionText = util::pascal_case( langs::get( util::str2wstr_utf8( caption->asString() ) ) ); 
+        } else {
+            captionText = util::pascal_case( langs::get( util::str2wstr_utf8( item.caption ) ) );
+        }
+
+        tooltip = captionText + L"\n" + descriptionText;
     } else {
         tooltip.clear();
     }
