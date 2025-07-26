@@ -531,8 +531,14 @@ local removed_names = {
     "getregistry", "getupvalue", "setupvalue", "upvalueid", "upvaluejoin",
     "sethook", "gethook", "getinfo"
 }
+local _getinfo = debug.getinfo
 for i, name in ipairs(removed_names) do
     debug[name] = nil
+end
+debug.getinfo = function(...)
+    local debuginfo = _getinfo(...)
+    debuginfo.func = nil
+    return debuginfo
 end
 
 -- --------- Deprecated functions ------ --
