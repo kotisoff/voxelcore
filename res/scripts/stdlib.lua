@@ -36,7 +36,7 @@ local function complete_app_lib(app)
     app.set_setting = core.set_setting
     app.tick = function()
         coroutine.yield()
-        network.__pull_events()
+        network.__process_events()
     end
     app.get_version = core.get_version
     app.get_setting_info = core.get_setting_info
