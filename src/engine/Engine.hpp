@@ -44,11 +44,11 @@ public:
 };
 
 struct CoreParameters {
-    bool headless = true;
+    bool headless = false;
     bool testMode = false;
     std::filesystem::path resFolder = "res";
     std::filesystem::path userFolder = ".";
-    std::filesystem::path scriptFile = "res/content/remp/remp_server.lua";
+    std::filesystem::path scriptFile;
     std::filesystem::path projectFolder;
 };
 
