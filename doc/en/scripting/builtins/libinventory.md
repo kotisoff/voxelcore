@@ -98,6 +98,13 @@ inventory.set_all_data(...)
 ```
 for moving is inefficient, use inventory.move or inventory.move_range.
 ```lua
+-- Get item caption
+inventory.get_caption(
+    -- id of inventory
+    invid: int,
+    -- slot id
+    slot: int
+)
 -- Set item caption
 inventory.set_caption(
     -- id of inventory
@@ -106,6 +113,13 @@ inventory.set_caption(
     slot: int,
     -- Item Caption
     caption: string
+)
+-- Get item description
+inventory.get_description(
+    -- id of inventory
+    invid: int,
+    -- slot id
+    slot: int
 )
 -- Set item description
 inventory.set_description(
