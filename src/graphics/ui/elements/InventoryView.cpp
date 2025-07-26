@@ -116,46 +116,43 @@ SlotView::SlotView(GUI& gui, SlotLayout layout)
     setColor(glm::vec4(0, 0, 0, 0.2f));
     setTooltipDelay(0.0f);
 }
+// TODO: Refactor
+std::wstring get_caption_string(const ItemStack& stack, const ItemDef& item) {
+    dv::value* caption = stack.getField("caption");
+    if (caption != nullptr) {
+        return util::pascal_case(
+            langs::get(util::str2wstr_utf8(caption->asString()))
+        );
+    } else {
+        return util::pascal_case(langs::get(util::str2wstr_utf8(item.caption)));
+    }
+}
+// TODO: Refactor
+std::wstring get_description_string(const ItemStack& stack, const ItemDef& item) {
+    dv::value* description = stack.getField("description");
+
+    if (description != nullptr) {
+        return langs::get(util::str2wstr_utf8(description->asString()));
+    } else {
+        return langs::get(util::str2wstr_utf8(item.description));
+    }
+}
 
 void SlotView::refreshTooltip(const ItemStack& stack, const ItemDef& item) {
     itemid_t itemid = stack.getItemId();
-    dv::value* caption = stack.getField("caption");
-    dv::value* description = stack.getField("description");
-    if (
-        itemid == cache.stack.getItemId() &&
-        caption == cache.stack.getField("caption") &&
-        description == cache.stack.getField("description")
-    ) {
+    std::wstring caption = get_caption_string(stack, item);
+    std::wstring cached_caption = get_caption_string(cache.stack, item);
+    std::wstring description = get_description_string(stack, item);
+    std::wstring cached_description = get_description_string(cache.stack, item);
+
+    if (itemid == cache.stack.getItemId() && cached_caption == caption && cached_description == description) {
         return;
     }
     if (itemid) {
-        std::wstring captionText;
-        std::wstring descriptionText;
-
-        if (description != nullptr) {
-            descriptionText = util::pascal_case(
-                langs::get(util::str2wstr_utf8(description->asString()))
-            );
+        if (description.length() > 0) {
+            tooltip = caption + L"\n" + description;
         } else {
-            descriptionText = util::pascal_case(
-                langs::get(util::str2wstr_utf8(item.description))
-            );
-        }
-
-        if (caption != nullptr) {
-            captionText = util::pascal_case(
-                langs::get(util::str2wstr_utf8(caption->asString()))
-            );
-        } else {
-            captionText = util::pascal_case(
-                langs::get(util::str2wstr_utf8(item.caption))
-            );
-        }
-
-        if (descriptionText.length() > 0) {
-            tooltip = captionText + L"\n" + descriptionText;
-        } else {
-            tooltip = captionText;
+            tooltip = caption;
         }
     } else {
         tooltip.clear();
