@@ -1,6 +1,13 @@
 #include "objects/rigging.hpp"
 #include "libentity.hpp"
 
+#include "graphics/render/WorldRenderer.hpp"
+#include "graphics/render/NamedSkeletons.hpp"
+
+namespace scripting {
+    extern WorldRenderer* renderer;
+}
+
 static int index_range_check(
     const rigging::Skeleton& skeleton, lua::Integer index
 ) {
@@ -14,6 +21,9 @@ static int index_range_check(
 }
 
 static rigging::Skeleton* get_skeleton(lua::State* L) {
+    if (lua::isstring(L, 1)) {
+        return scripting::renderer->skeletons->getSkeleton(lua::tostring(L, 1));
+    }
     if (auto entity = get_entity(L, 1)) {
         return &entity->getSkeleton();
     }
