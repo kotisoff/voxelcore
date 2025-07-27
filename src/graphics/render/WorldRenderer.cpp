@@ -116,11 +116,7 @@ WorldRenderer::WorldRenderer(
         content.getDefaults()["hand-skeleton"].asString()
     );
     hands = std::make_unique<HandsRenderer>(
-        *assets,
-        level,
-        player,
-        *modelBatch,
-        skeletons->createSkeleton("hand", &skeletonConfig)
+        *assets, *modelBatch, skeletons->createSkeleton("hand", &skeletonConfig)
     );
 }
 
