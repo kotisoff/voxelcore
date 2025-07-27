@@ -153,7 +153,7 @@ static bool is_same_tooltip(const ItemStack& stack, const ItemStack& cache) {
     auto description = stack.getField("description");
     auto cDescription = cache.getField("description");
 
-    if (((caption != nullptr) != (description != nullptr)) ||
+    if (((caption != nullptr) != (cCaption != nullptr)) ||
         ((description != nullptr) != (cDescription != nullptr))) {
         return false;
     }
@@ -250,7 +250,7 @@ void SlotView::draw(const DrawContext& pctx, const Assets& assets) {
         cache.countStr = std::to_wstring(stack.getCount());
     }
     refreshTooltip(stack, item);
-    cache.stack.set(ItemStack(stack.getItemId(), stack.getCount()));
+    cache.stack.set(stack);
 
     glm::vec4 tint(1, 1, 1, isEnabled() ? 1 : 0.5f);
     glm::vec2 pos = calcPos();
