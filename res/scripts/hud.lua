@@ -83,7 +83,7 @@ function on_hud_open()
     configure_SSAO()
 end
 
-function update_hand()
+local function update_hand()
     local skeleton = gfx.skeletons
     local pid = hud.get_player()
     local invid, slot = player.get_inventory(pid)
@@ -117,5 +117,9 @@ function update_hand()
 end
 
 function on_hud_render()
-    timeit(1, update_hand)
+    if hud.hand_controller then
+        hud.hand_controller()
+    else
+        update_hand()
+    end
 end
