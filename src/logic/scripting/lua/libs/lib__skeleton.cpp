@@ -150,6 +150,10 @@ static int l_set_interpolated(lua::State* L) {
     return 0;
 }
 
+static int l_exists(lua::State* L) {
+    return lua::pushboolean(L, get_skeleton(L));
+}
+
 const luaL_Reg skeletonlib[] = {
     {"get_model", lua::wrap<l_get_model>},
     {"set_model", lua::wrap<l_set_model>},
@@ -164,5 +168,6 @@ const luaL_Reg skeletonlib[] = {
     {"set_color", lua::wrap<l_set_color>},
     {"is_interpolated", lua::wrap<l_is_interpolated>},
     {"set_interpolated", lua::wrap<l_set_interpolated>},
+    {"exists", lua::wrap<l_exists>},
     {NULL, NULL}
 };

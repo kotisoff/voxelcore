@@ -83,8 +83,6 @@ function on_hud_open()
     configure_SSAO()
 end
 
-local prev_rotation = mat4.idt()
-
 function update_hand()
     local skeleton = gfx.skeletons
     local pid = hud.get_player()
