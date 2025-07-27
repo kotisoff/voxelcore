@@ -86,7 +86,7 @@ end
 local prev_rotation = mat4.idt()
 
 function update_hand()
-    local skeleton = __skeleton
+    local skeleton = gfx.skeletons
     local pid = hud.get_player()
     local invid, slot = player.get_inventory(pid)
     local itemid = inventory.get(invid, slot)
