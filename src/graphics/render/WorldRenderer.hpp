@@ -34,7 +34,7 @@ class PostProcessing;
 class DrawContext;
 class ModelBatch;
 class Assets;
-class ShadowMap;
+class Shadows;
 class GBuffer;
 struct EngineSettings;
 
@@ -54,20 +54,17 @@ class WorldRenderer {
     std::unique_ptr<Batch3D> batch3d;
     std::unique_ptr<ModelBatch> modelBatch;
     std::unique_ptr<GuidesRenderer> guides;
-    std::unique_ptr<ChunksRenderer> chunks;
+    std::unique_ptr<ChunksRenderer> chunksRenderer;
     std::unique_ptr<HandsRenderer> hands;
     std::unique_ptr<Skybox> skybox;
-    std::unique_ptr<ShadowMap> shadowMap;
-    std::unique_ptr<ShadowMap> wideShadowMap;
+    std::unique_ptr<Shadows> shadowMapping;
     Weather weather {};
-    Camera shadowCamera;
-    Camera wideShadowCamera;
     
     float timer = 0.0f;
     bool debug = false;
     bool lightsDebug = false;
     bool gbufferPipeline = false;
-    bool shadows = false;
+
 
     CompileTimeShaderSettings prevCTShaderSettings {};
 
@@ -90,12 +87,17 @@ class WorldRenderer {
         float fogFactor
     );
 
-    void generateShadowsMap(
-        const Camera& camera,
-        const DrawContext& pctx,
-        ShadowMap& shadowMap,
-        Camera& shadowCamera,
-        float scale
+    /// @brief Render opaque pass
+    /// @param context graphics context
+    /// @param camera active camera
+    /// @param settings engine settings
+    void renderOpaque(
+        const DrawContext& context, 
+        const Camera& camera, 
+        const EngineSettings& settings,
+        float delta,
+        bool pause,
+        bool hudVisible
     );
 public:
     std::unique_ptr<ParticlesRenderer> particles;
@@ -111,26 +113,13 @@ public:
     WorldRenderer(Engine& engine, LevelFrontend& frontend, Player& player);
     ~WorldRenderer();
 
-    void draw(
+    void renderFrame(
         const DrawContext& context, 
         Camera& camera, 
         bool hudVisible,
         bool pause,
         float delta,
         PostProcessing& postProcessing
-    );
-
-    /// @brief Render level without diegetic interface
-    /// @param context graphics context
-    /// @param camera active camera
-    /// @param settings engine settings
-    void renderLevel(
-        const DrawContext& context, 
-        const Camera& camera, 
-        const EngineSettings& settings,
-        float delta,
-        bool pause,
-        bool hudVisible
     );
 
     void clear();
