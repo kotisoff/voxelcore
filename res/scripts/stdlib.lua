@@ -396,8 +396,6 @@ function _rules.clear()
 end
 
 function __vc_on_hud_open()
-    gfx.skeletons = __skeleton
-
     _rules.create("allow-cheats", true)
 
     _rules.create("allow-content-access", hud._is_content_access(), function(value)
