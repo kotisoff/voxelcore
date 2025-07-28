@@ -1,7 +1,7 @@
 #include "Shadows.hpp"
 
 #include <GL/glew.h>
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
 #include "assets/Assets.hpp"
