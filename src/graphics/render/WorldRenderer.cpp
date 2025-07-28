@@ -52,6 +52,7 @@
 #include "TextsRenderer.hpp"
 #include "ChunksRenderer.hpp"
 #include "GuidesRenderer.hpp"
+#include "LinesRenderer.hpp"
 #include "ModelBatch.hpp"
 #include "Skybox.hpp"
 #include "Emitter.hpp"
@@ -118,6 +119,7 @@ WorldRenderer::WorldRenderer(
     hands = std::make_unique<HandsRenderer>(
         *assets, *modelBatch, skeletons->createSkeleton("hand", &skeletonConfig)
     );
+    lines = std::make_unique<LinesRenderer>();
 }
 
 WorldRenderer::~WorldRenderer() = default;
@@ -480,6 +482,10 @@ void WorldRenderer::draw(
         }
         // Drawing background sky plane
         skybox->draw(ctx, camera, assets, worldInfo.daytime, clouds);
+
+        linesShader.use();
+        lines->draw(*lineBatch);
+        lineBatch->flush();
 
         {
             auto sctx = ctx.sub();

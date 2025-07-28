@@ -23,6 +23,7 @@ class PrecipitationRenderer;
 class HandsRenderer;
 class NamedSkeletons;
 class GuidesRenderer;
+class LinesRenderer;
 class TextsRenderer;
 class Shader;
 class Frustum;
@@ -102,6 +103,7 @@ public:
     std::unique_ptr<BlockWrapsRenderer> blockWraps;
     std::unique_ptr<PrecipitationRenderer> precipitation;
     std::unique_ptr<NamedSkeletons> skeletons;
+    std::unique_ptr<LinesRenderer> lines;
 
     static bool showChunkBorders;
     static bool showEntitiesDebug;
