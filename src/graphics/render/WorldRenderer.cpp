@@ -387,6 +387,7 @@ void WorldRenderer::renderFrame(
 
         // In-world lines
         linesShader.use();
+        linesShader.uniformMatrix("u_projview", camera.getProjView());
         lines->draw(*lineBatch);
         lineBatch->flush();
 
