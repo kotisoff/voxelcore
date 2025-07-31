@@ -12,6 +12,7 @@
 #include "settings.hpp"
 #include "voxels/Chunk.hpp"
 #include "voxels/GlobalChunks.hpp"
+#include "voxels/Pathfinding.hpp"
 #include "window/Camera.hpp"
 #include "LevelEvents.hpp"
 #include "World.hpp"
@@ -27,7 +28,8 @@ Level::Level(
       physics(std::make_unique<PhysicsSolver>(glm::vec3(0, -22.6f, 0))),
       events(std::make_unique<LevelEvents>()),
       entities(std::make_unique<Entities>(*this)),
-      players(std::make_unique<Players>(*this)) {
+      players(std::make_unique<Players>(*this)),
+      pathfinding(std::make_unique<voxels::Pathfinding>(*this)) {
     const auto& worldInfo = world->getInfo();
     auto& cameraIndices = content.getIndices(ResourceType::CAMERA);
     for (size_t i = 0; i < cameraIndices.size(); i++) {
