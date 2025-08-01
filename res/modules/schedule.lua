@@ -1,11 +1,12 @@
 local Schedule = {
     __index = {
-        set_interval = function(self, ms, callback)
+        set_interval = function(self, ms, callback, repetions)
             local id = self._next_interval
             self._intervals[id] = {
                 last_called = 0.0,
                 delay = ms / 1000.0,
                 callback = callback,
+                repetions = repetions,
             }
             self._next_interval = id + 1
             return id
@@ -18,6 +19,14 @@ local Schedule = {
                         debug.error(s..'\n'..debug.traceback())
                     end)
                     interval.last_called = timer
+                    local repetions = interval.repetions
+                    if repetions then
+                        if repetions <= 1 then
+                            self:remove_interval(id)
+                        else
+                            interval.repetions = repetions - 1
+                        end
+                    end
                 end
             end
             self._timer = timer
