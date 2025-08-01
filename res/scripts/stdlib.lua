@@ -450,8 +450,37 @@ function __vc_on_hud_open()
     hud.open_permanent("core:ingame_chat")
 end
 
+local ScheduleGroup_mt = {
+    __index = {
+        publish = function(self, schedule)
+            local id = self._next_schedule
+            self._schedules[id] = schedule
+            self._next_schedule = id + 1
+        end,
+        tick = function(self, dt)
+            for id, schedule in pairs(self._schedules) do
+                schedule:tick(dt)
+            end
+        end,
+        remove = function(self, id)
+            self._schedules[id] = nil
+        end
+    }
+}
+
+local function ScheduleGroup()
+    return setmetatable({
+        _next_schedule = 1,
+        _schedules = {},
+    }, ScheduleGroup_mt)
+end
+
+time.schedules = {}
+
 local RULES_FILE = "world:rules.toml"
 function __vc_on_world_open()
+    time.schedules.world = ScheduleGroup()
+
     if not file.exists(RULES_FILE) then
         return
     end
@@ -459,6 +488,10 @@ function __vc_on_world_open()
     for name, value in pairs(rule_values) do
         _rules.set(name, value)
     end
+end
+
+function __vc_on_world_tick()
+    time.schedules.world:tick(1.0 / 20.0)
 end
 
 function __vc_on_world_save()

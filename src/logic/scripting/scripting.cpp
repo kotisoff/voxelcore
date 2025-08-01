@@ -299,6 +299,9 @@ void scripting::on_world_load(LevelController* controller) {
 
 void scripting::on_world_tick() {
     auto L = lua::get_main_state();
+    if (lua::getglobal(L, "__vc_on_world_tick")) {
+        lua::call_nothrow(L, 0, 0);
+    } 
     for (auto& pack : content_control->getAllContentPacks()) {
         lua::emit_event(L, pack.id + ":.worldtick");
     }
