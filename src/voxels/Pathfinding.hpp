@@ -6,6 +6,7 @@
 #include <glm/vec3.hpp>
 
 class Level;
+class GlobalChunks;
 
 namespace voxels {
     struct RouteNode {
@@ -15,6 +16,10 @@ namespace voxels {
     struct Route {
         bool found;
         std::vector<RouteNode> nodes;
+    };
+
+    struct Agent {
+        int height;
     };
 
     struct Map {
@@ -40,9 +45,14 @@ namespace voxels {
     class Pathfinding {
     public:
         Pathfinding(const Level& level);
-        
-        Route perform(const glm::ivec3& start, const glm::ivec3& end);
+
+        Route perform(
+            const Agent& agent, const glm::ivec3& start, const glm::ivec3& end
+        );
     private:
         const Level& level;
+        const GlobalChunks& chunks;
+
+        int getSurfaceAt(const glm::ivec3& pos, int maxDelta);
     };
 }
