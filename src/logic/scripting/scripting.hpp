@@ -70,7 +70,7 @@ namespace scripting {
     );
 
     void on_world_load(LevelController* controller);
-    void on_world_tick();
+    void on_world_tick(int tps);
     void on_world_save();
     void on_world_quit();
     void cleanup();

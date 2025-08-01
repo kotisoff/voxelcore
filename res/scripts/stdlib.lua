@@ -510,8 +510,8 @@ function __vc_on_world_open()
     end
 end
 
-function __vc_on_world_tick()
-    time.schedules.world:tick(1.0 / 20.0)
+function __vc_on_world_tick(tps)
+    time.schedules.world:tick(1.0 / tps)
 end
 
 function __vc_on_world_save()
