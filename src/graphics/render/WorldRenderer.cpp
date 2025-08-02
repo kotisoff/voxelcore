@@ -27,6 +27,7 @@
 #include "voxels/Block.hpp"
 #include "voxels/Chunk.hpp"
 #include "voxels/Chunks.hpp"
+#include "voxels/Pathfinding.hpp"
 #include "window/Window.hpp"
 #include "world/Level.hpp"
 #include "world/LevelEvents.hpp"
@@ -386,6 +387,36 @@ void WorldRenderer::renderFrame(
         skybox->draw(ctx, camera, assets, worldInfo.daytime, clouds);
 
         // In-world lines
+        for (const auto& [_, agent] : level.pathfinding->getAgents()) {
+            const auto& route = agent.route;
+            if (!route.found)
+                continue;
+            for (int i = 1; i < route.nodes.size(); i++) {
+                const auto& a = route.nodes.at(i - 1);
+                const auto& b = route.nodes.at(i);
+
+                if (i == 1) {
+                    lines->pushLine(
+                        glm::vec3(a.pos) + glm::vec3(0.5f),
+                        glm::vec3(a.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
+                        glm::vec4(1, 1, 1, 1)
+                    );
+                }
+
+                lines->pushLine(
+                    glm::vec3(a.pos) + glm::vec3(0.5f),
+                    glm::vec3(b.pos) + glm::vec3(0.5f),
+                    glm::vec4(1, 0, 1, 1)
+                );
+
+                lines->pushLine(
+                    glm::vec3(b.pos) + glm::vec3(0.5f),
+                    glm::vec3(b.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
+                    glm::vec4(1, 1, 1, 1)
+                );
+            }
+        }
+
         linesShader.use();
         linesShader.uniformMatrix("u_projview", camera.getProjView());
         lines->draw(*lineBatch);

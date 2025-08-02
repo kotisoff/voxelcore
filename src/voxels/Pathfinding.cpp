@@ -75,6 +75,12 @@ static void restore_route(
     }
 }
 
+int Pathfinding::createAgent() {
+    int id = nextAgent++;
+    agents[id] = Agent();
+    return id;
+}
+
 Route Pathfinding::perform(
     const Agent& agent, const glm::ivec3& start, const glm::ivec3& end
 ) {
@@ -89,12 +95,16 @@ Route Pathfinding::perform(
     std::unordered_map<glm::ivec3, Node> parents;
 
     const auto& chunks = *level.chunks;
+    int height = std::max(agent.height, 1);
 
     while (!queue.empty()) {
+        if (blocked.size() == agent.maxVisitedBlocks) {
+            break;
+        }
         auto node = queue.top();
         queue.pop();
 
-        if (node.pos.x == end.x && glm::abs((node.pos.y - end.y) / agent.height) == 0 && node.pos.z == end.z) {
+        if (node.pos.x == end.x && glm::abs((node.pos.y - end.y) / height) == 0 && node.pos.z == end.z) {
             restore_route(route, node, parents);
             route.nodes.push_back({start});
             route.found = true;
@@ -142,6 +152,18 @@ Route Pathfinding::perform(
         }
     }
     return route;
+}
+
+Agent* Pathfinding::getAgent(int id) {
+    const auto& found = agents.find(id);
+    if (found != agents.end()) {
+        return &found->second;
+    }
+    return nullptr;
+}
+
+const std::unordered_map<int, Agent>& Pathfinding::getAgents() const {
+    return agents;
 }
 
 static int check_point(

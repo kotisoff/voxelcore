@@ -4,6 +4,7 @@
 #include <memory>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <unordered_map>
 
 class Level;
 class GlobalChunks;
@@ -19,7 +20,12 @@ namespace voxels {
     };
 
     struct Agent {
-        int height;
+        bool enabled = false;
+        int height = 1;
+        int maxVisitedBlocks = 1e5;
+        glm::ivec3 start;
+        glm::ivec3 target;
+        Route route;
     };
 
     struct Map {
@@ -46,12 +52,20 @@ namespace voxels {
     public:
         Pathfinding(const Level& level);
 
+        int createAgent();
+
         Route perform(
             const Agent& agent, const glm::ivec3& start, const glm::ivec3& end
         );
+
+        Agent* getAgent(int id);
+
+        const std::unordered_map<int, Agent>& getAgents() const;
     private:
         const Level& level;
         const GlobalChunks& chunks;
+        std::unordered_map<int, Agent> agents;
+        int nextAgent = 1;
 
         int getSurfaceAt(const glm::ivec3& pos, int maxDelta);
     };
