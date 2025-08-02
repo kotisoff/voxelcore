@@ -52,8 +52,8 @@
 #include "NamedSkeletons.hpp"
 #include "TextsRenderer.hpp"
 #include "ChunksRenderer.hpp"
-#include "GuidesRenderer.hpp"
 #include "LinesRenderer.hpp"
+#include "DebugLinesRenderer.hpp"
 #include "ModelBatch.hpp"
 #include "Skybox.hpp"
 #include "Emitter.hpp"
@@ -80,7 +80,6 @@ WorldRenderer::WorldRenderer(
       modelBatch(std::make_unique<ModelBatch>(
           MODEL_BATCH_CAPACITY, assets, *player.chunks, engine.getSettings()
       )),
-      guides(std::make_unique<GuidesRenderer>()),
       chunksRenderer(std::make_unique<ChunksRenderer>(
           &level,
           *player.chunks,
@@ -120,6 +119,7 @@ WorldRenderer::WorldRenderer(
     );
     lines = std::make_unique<LinesRenderer>();
     shadowMapping = std::make_unique<Shadows>(level);
+    debugLines = std::make_unique<DebugLinesRenderer>(level);
 }
 
 WorldRenderer::~WorldRenderer() = default;
@@ -274,39 +274,6 @@ void WorldRenderer::renderLines(
     }
 }
 
-static void draw_route(
-    LinesRenderer& lines, const voxels::Agent& agent
-) {
-    const auto& route = agent.route;
-    if (!route.found)
-        return;
-
-    for (int i = 1; i < route.nodes.size(); i++) {
-        const auto& a = route.nodes.at(i - 1);
-        const auto& b = route.nodes.at(i);
-
-        if (i == 1) {
-            lines.pushLine(
-                glm::vec3(a.pos) + glm::vec3(0.5f),
-                glm::vec3(a.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
-                glm::vec4(1, 1, 1, 1)
-            );
-        }
-
-        lines.pushLine(
-            glm::vec3(a.pos) + glm::vec3(0.5f),
-            glm::vec3(b.pos) + glm::vec3(0.5f),
-            glm::vec4(1, 0, 1, 1)
-        );
-
-        lines.pushLine(
-            glm::vec3(b.pos) + glm::vec3(0.5f),
-            glm::vec3(b.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
-            glm::vec4(1, 1, 1, 1)
-        );
-    }
-}
-
 void WorldRenderer::renderFrame(
     const DrawContext& pctx,
     Camera& camera,
@@ -316,6 +283,9 @@ void WorldRenderer::renderFrame(
     PostProcessing& postProcessing
 ) {
     // TODO: REFACTOR WHOLE RENDER ENGINE
+
+    auto projView = camera.getProjView();
+
     float delta = uiDelta * !pause;
     timer += delta;
     weather.update(delta);
@@ -373,9 +343,6 @@ void WorldRenderer::renderFrame(
         setupWorldShader(shader, shadowCamera, engine.getSettings(), 0.0f);
         chunksRenderer->drawShadowsPass(shadowCamera, shader, camera);
     });
-
-    auto& linesShader = assets.require<Shader>("lines");
-
     {
         DrawContext wctx = pctx.sub();
         postProcessing.use(wctx, gbufferPipeline);
@@ -387,14 +354,6 @@ void WorldRenderer::renderFrame(
             ctx.setDepthTest(true);
             ctx.setCullFace(true);
             renderOpaque(ctx, camera, settings, uiDelta, pause, hudVisible);
-            // Debug lines
-            if (hudVisible) {
-                if (debug) {
-                    guides->renderDebugLines(
-                        ctx, camera, *lineBatch, linesShader, showChunkBorders
-                    );
-                }
-            }
         }
         texts->render(pctx, camera, settings, hudVisible, true);
     }
@@ -419,15 +378,12 @@ void WorldRenderer::renderFrame(
         // Background sky plane
         skybox->draw(ctx, camera, assets, worldInfo.daytime, clouds);
 
-        // In-world lines
-        if (debug) {
-            for (const auto& [_, agent] : level.pathfinding->getAgents()) {
-                draw_route(*lines, agent);
-            }
-        }
-
+        auto& linesShader = assets.require<Shader>("lines");
         linesShader.use();
-        linesShader.uniformMatrix("u_projview", camera.getProjView());
+        debugLines->render(
+            ctx, camera, *lines, *lineBatch, linesShader, showChunkBorders
+        );
+        linesShader.uniformMatrix("u_projview", projView);
         lines->draw(*lineBatch);
         lineBatch->flush();
 

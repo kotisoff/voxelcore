@@ -22,7 +22,6 @@ class BlockWrapsRenderer;
 class PrecipitationRenderer;
 class HandsRenderer;
 class NamedSkeletons;
-class GuidesRenderer;
 class LinesRenderer;
 class TextsRenderer;
 class Shader;
@@ -36,6 +35,7 @@ class ModelBatch;
 class Assets;
 class Shadows;
 class GBuffer;
+class DebugLinesRenderer;
 struct EngineSettings;
 
 struct CompileTimeShaderSettings {
@@ -53,11 +53,11 @@ class WorldRenderer {
     std::unique_ptr<LineBatch> lineBatch;
     std::unique_ptr<Batch3D> batch3d;
     std::unique_ptr<ModelBatch> modelBatch;
-    std::unique_ptr<GuidesRenderer> guides;
     std::unique_ptr<ChunksRenderer> chunksRenderer;
     std::unique_ptr<HandsRenderer> hands;
     std::unique_ptr<Skybox> skybox;
     std::unique_ptr<Shadows> shadowMapping;
+    std::unique_ptr<DebugLinesRenderer> debugLines;
     Weather weather {};
     
     float timer = 0.0f;
