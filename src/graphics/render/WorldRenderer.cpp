@@ -274,6 +274,39 @@ void WorldRenderer::renderLines(
     }
 }
 
+static void draw_route(
+    LinesRenderer& lines, const voxels::Agent& agent
+) {
+    const auto& route = agent.route;
+    if (!route.found)
+        return;
+
+    for (int i = 1; i < route.nodes.size(); i++) {
+        const auto& a = route.nodes.at(i - 1);
+        const auto& b = route.nodes.at(i);
+
+        if (i == 1) {
+            lines.pushLine(
+                glm::vec3(a.pos) + glm::vec3(0.5f),
+                glm::vec3(a.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
+                glm::vec4(1, 1, 1, 1)
+            );
+        }
+
+        lines.pushLine(
+            glm::vec3(a.pos) + glm::vec3(0.5f),
+            glm::vec3(b.pos) + glm::vec3(0.5f),
+            glm::vec4(1, 0, 1, 1)
+        );
+
+        lines.pushLine(
+            glm::vec3(b.pos) + glm::vec3(0.5f),
+            glm::vec3(b.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
+            glm::vec4(1, 1, 1, 1)
+        );
+    }
+}
+
 void WorldRenderer::renderFrame(
     const DrawContext& pctx,
     Camera& camera,
@@ -389,40 +422,7 @@ void WorldRenderer::renderFrame(
         // In-world lines
         if (debug) {
             for (const auto& [_, agent] : level.pathfinding->getAgents()) {
-                const auto& route = agent.route;
-                if (!route.found)
-                    continue;
-                for (const auto& blocked : route.visited) {
-                    lines->pushLine(
-                        glm::vec3(blocked) + glm::vec3(0.5f),
-                        glm::vec3(blocked) + glm::vec3(0.5f, 1.0f, 0.5f),
-                        glm::vec4(1, 0, 0, 1)
-                    );
-                }
-                for (int i = 1; i < route.nodes.size(); i++) {
-                    const auto& a = route.nodes.at(i - 1);
-                    const auto& b = route.nodes.at(i);
-
-                    if (i == 1) {
-                        lines->pushLine(
-                            glm::vec3(a.pos) + glm::vec3(0.5f),
-                            glm::vec3(a.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
-                            glm::vec4(1, 1, 1, 1)
-                        );
-                    }
-
-                    lines->pushLine(
-                        glm::vec3(a.pos) + glm::vec3(0.5f),
-                        glm::vec3(b.pos) + glm::vec3(0.5f),
-                        glm::vec4(1, 0, 1, 1)
-                    );
-
-                    lines->pushLine(
-                        glm::vec3(b.pos) + glm::vec3(0.5f),
-                        glm::vec3(b.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
-                        glm::vec4(1, 1, 1, 1)
-                    );
-                }
+                draw_route(*lines, agent);
             }
         }
 

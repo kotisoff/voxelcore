@@ -11,6 +11,7 @@
 #include "objects/Player.hpp"
 #include "physics/Hitbox.hpp"
 #include "voxels/Chunks.hpp"
+#include "voxels/Pathfinding.hpp"
 #include "scripting/scripting.hpp"
 #include "lighting/Lighting.hpp"
 #include "settings.hpp"
@@ -69,6 +70,9 @@ LevelController::LevelController(
 }
 
 void LevelController::update(float delta, bool pause) {
+    level->pathfinding->performAllAsync(
+        settings.pathfinding.stepsPerAsyncAgent.get()
+    );
     for (const auto& [_, player] : *level->players) {
         if (player->isSuspended()) {
             continue;

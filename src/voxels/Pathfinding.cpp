@@ -1,8 +1,5 @@
 #include "Pathfinding.hpp"
 
-#include <queue>
-#include <unordered_map>
-
 #include "world/Level.hpp"
 #include "voxels/GlobalChunks.hpp"
 #include "voxels/Chunk.hpp"
@@ -12,19 +9,6 @@
 inline constexpr float SQRT2 = 1.4142135623730951f; // sqrt(2)
 
 using namespace voxels;
-
-struct Node {
-    glm::ivec3 pos;
-    glm::ivec3 parent;
-    float gScore;
-    float fScore;
-};
-
-struct NodeLess {
-    bool operator()(const Node& l, const Node& r) const {
-        return l.fScore > r.fScore;
-    }
-};
 
 static float heuristic(const glm::ivec3& a, const glm::ivec3& b) {
     return glm::distance(glm::vec3(a), glm::vec3(b));
@@ -79,50 +63,70 @@ int Pathfinding::createAgent() {
     return id;
 }
 
-Route Pathfinding::perform(
-    const Agent& agent, const glm::ivec3& start, const glm::ivec3& end
-) {
+void Pathfinding::performAllAsync(int stepsPerAgent) {
+    for (auto& [id, agent] : agents) {
+        if (agent.state.finished) {
+            continue;
+        }
+        perform(agent, stepsPerAgent);
+    }
+}
+
+Route Pathfinding::perform(Agent& agent, int maxVisited) {
     using namespace blocks_agent;
 
     Route route {};
 
-    std::priority_queue<Node, std::vector<Node>, NodeLess> queue;
-    queue.push({start, {}, 0, heuristic(start, end)});
-
-    std::unordered_set<glm::ivec3> blocked;
-    std::unordered_map<glm::ivec3, Node> parents;
+    State state = std::move(agent.state);
+    if (state.queue.empty()) {
+        state.queue.push({agent.start, {}, 0, heuristic(agent.start, agent.target)});
+    }
 
     const auto& chunks = *level.chunks;
     int height = std::max(agent.height, 1);
 
-    glm::ivec3 nearest = start;
-    float minHScore = heuristic(start, end);
+    if (state.nearest == glm::ivec3(0)) {
+        state.nearest = agent.start;
+        state.minHScore = heuristic(agent.start, agent.target);
+    }
+    int visited = -1;
 
-    while (!queue.empty()) {
-        if (blocked.size() == agent.maxVisitedBlocks) {
+    while (!state.queue.empty()) {
+        if (state.blocked.size() == agent.maxVisitedBlocks) {
             if (agent.mayBeIncomplete) {
-                restore_route(route, nearest, parents);
-                route.nodes.push_back({start});
+                restore_route(route, state.nearest, state.parents);
+                route.nodes.push_back({agent.start});
                 route.found = true;
-                route.visited = std::move(blocked);
+                state.finished = true;
+                agent.state = std::move(state);
+                agent.route = route;
                 return route;
             }
             break;
         }
-        auto node = queue.top();
-        queue.pop();
+        visited++;
+        if (visited == maxVisited) {
+            state.finished = false;
+            agent.state = std::move(state);
+            return {};
+        }
 
-        if (node.pos.x == end.x &&
-            glm::abs((node.pos.y - end.y) / height) == 0 &&
-            node.pos.z == end.z) {
-            restore_route(route, node.pos, parents);
-            route.nodes.push_back({start});
+        auto node = state.queue.top();
+        state.queue.pop();
+
+        if (node.pos.x == agent.target.x &&
+            glm::abs((node.pos.y - agent.target.y) / height) == 0 &&
+            node.pos.z == agent.target.z) {
+            restore_route(route, node.pos, state.parents);
+            route.nodes.push_back({agent.start});
             route.found = true;
-            route.visited = std::move(blocked);
+            state.finished = true;
+            agent.state = std::move(state);
+            agent.route = route;
             return route;
         }
 
-        blocked.emplace(node.pos);
+        state.blocked.emplace(node.pos);
         glm::ivec2 neighbors[8] {
             {0, 1}, {1, 0}, {0, -1}, {-1, 0},
             {-1, -1}, {1, -1}, {1, 1}, {-1, 1},
@@ -139,7 +143,7 @@ Route Pathfinding::perform(
             }
             pos.y = surface;
             auto point = pos + glm::ivec3(offset.x, 0, offset.y);
-            if (blocked.find(point) != blocked.end()) {
+            if (state.blocked.find(point) != state.blocked.end()) {
                 continue;
             }
 
@@ -153,22 +157,23 @@ Route Pathfinding::perform(
             int score = glm::abs(node.pos.y - pos.y) * 10;
             float sum = glm::abs(offset.x) + glm::abs(offset.y);
             float gScore =
-                node.gScore + glm::max(sum, SQRT2) * 0.5f + sum * 0.5f + score;
-            const auto& found = parents.find(point);
-            if (found == parents.end()) {
-                float hScore = heuristic(point, end);
-                if (hScore < minHScore) {
-                    minHScore = hScore;
-                    nearest = point;
+                node.gScore + sum + score;
+            const auto& found = state.parents.find(point);
+            if (found == state.parents.end()) {
+                float hScore = heuristic(point, agent.target);
+                if (hScore < state.minHScore) {
+                    state.minHScore = hScore;
+                    state.nearest = point;
                 }
-                float fScore = gScore + hScore;
+                float fScore = gScore * 0.75f + hScore;
                 Node nNode {point, node.pos, gScore, fScore};
-                parents[point] = node;
-                queue.push(nNode);
+                state.parents[point] = node;
+                state.queue.push(nNode);
             }
         }
     }
-    return route;
+    agent.state = std::move(state);
+    return {};
 }
 
 Agent* Pathfinding::getAgent(int id) {

@@ -85,6 +85,11 @@ struct GraphicsSettings {
     IntegerSetting denseRenderDistance {56, 0, 10'000};
 };
 
+struct PathfindingSettings {
+    /// @brief Max visited blocks by an agent per async tick
+    IntegerSetting stepsPerAsyncAgent {256, 1, 2048};
+};
+
 struct DebugSettings {
     /// @brief Turns off chunks saving/loading
     FlagSetting generatorTestMode {false};
@@ -109,4 +114,5 @@ struct EngineSettings {
     DebugSettings debug;
     UiSettings ui;
     NetworkSettings network;
+    PathfindingSettings pathfinding;
 };
