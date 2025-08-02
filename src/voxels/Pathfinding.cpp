@@ -94,7 +94,7 @@ Route Pathfinding::perform(
         auto node = queue.top();
         queue.pop();
 
-        if (node.pos.x == end.x && node.pos.z == end.z) {
+        if (node.pos.x == end.x && glm::abs((node.pos.y - end.y) / agent.height) == 0 && node.pos.z == end.z) {
             restore_route(route, node, parents);
             route.nodes.push_back({start});
             route.found = true;
