@@ -63,6 +63,8 @@ namespace voxels {
 
         int createAgent();
 
+        bool removeAgent(int id);
+
         void performAllAsync(int stepsPerAgent);
 
         Route perform(Agent& agent, int maxVisited = -1);
