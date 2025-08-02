@@ -1,10 +1,6 @@
 #include "Pathfinding.hpp"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
-
 #include <queue>
-#include <unordered_set>
 #include <unordered_map>
 
 #include "world/Level.hpp"
@@ -12,6 +8,8 @@
 #include "voxels/Chunk.hpp"
 #include "voxels/blocks_agent.hpp"
 #include "content/Content.hpp"
+
+inline constexpr float SQRT2 = 1.4142135623730951f; // sqrt(2)
 
 using namespace voxels;
 
@@ -28,7 +26,7 @@ struct NodeLess {
     }
 };
 
-static float distance(const glm::ivec3& a, const glm::ivec3& b) {
+static float heuristic(const glm::ivec3& a, const glm::ivec3& b) {
     return glm::distance(glm::vec3(a), glm::vec3(b));
 }
 
@@ -60,10 +58,10 @@ static bool check_passability(
 
 static void restore_route(
     Route& route,
-    const Node& node,
+    const glm::ivec3& lastPos,
     const std::unordered_map<glm::ivec3, Node>& parents
 ) {
-    auto pos = node.pos;
+    auto pos = lastPos;
     while (true) {
         const auto& found = parents.find(pos);
         if (found == parents.end()) {
@@ -89,7 +87,7 @@ Route Pathfinding::perform(
     Route route {};
 
     std::priority_queue<Node, std::vector<Node>, NodeLess> queue;
-    queue.push({start, {}, 0, distance(start, end)});
+    queue.push({start, {}, 0, heuristic(start, end)});
 
     std::unordered_set<glm::ivec3> blocked;
     std::unordered_map<glm::ivec3, Node> parents;
@@ -97,18 +95,31 @@ Route Pathfinding::perform(
     const auto& chunks = *level.chunks;
     int height = std::max(agent.height, 1);
 
+    glm::ivec3 nearest = start;
+    float minHScore = heuristic(start, end);
+
     while (!queue.empty()) {
         if (blocked.size() == agent.maxVisitedBlocks) {
+            if (agent.mayBeIncomplete) {
+                restore_route(route, nearest, parents);
+                route.nodes.push_back({start});
+                route.found = true;
+                route.visited = std::move(blocked);
+                return route;
+            }
             break;
         }
         auto node = queue.top();
         queue.pop();
 
-        if (node.pos.x == end.x && glm::abs((node.pos.y - end.y) / height) == 0 && node.pos.z == end.z) {
-            restore_route(route, node, parents);
+        if (node.pos.x == end.x &&
+            glm::abs((node.pos.y - end.y) / height) == 0 &&
+            node.pos.z == end.z) {
+            restore_route(route, node.pos, parents);
             route.nodes.push_back({start});
             route.found = true;
-            break;
+            route.visited = std::move(blocked);
+            return route;
         }
 
         blocked.emplace(node.pos);
@@ -128,6 +139,9 @@ Route Pathfinding::perform(
             }
             pos.y = surface;
             auto point = pos + glm::ivec3(offset.x, 0, offset.y);
+            if (blocked.find(point) != blocked.end()) {
+                continue;
+            }
 
             if (is_obstacle_at(chunks, pos.x, pos.y + agent.height / 2, pos.z)) {
                 continue;
@@ -135,18 +149,21 @@ Route Pathfinding::perform(
             if (!check_passability(agent, chunks, node, offset, i >= 4)) {
                 continue;
             }
-            if (blocked.find(point) != blocked.end()) {
-                continue;
-            }
-            int score = glm::abs(node.pos.y - pos.y);
+
+            int score = glm::abs(node.pos.y - pos.y) * 10;
+            float sum = glm::abs(offset.x) + glm::abs(offset.y);
             float gScore =
-                node.gScore + glm::abs(offset.x) + glm::abs(offset.y) + score;
+                node.gScore + glm::max(sum, SQRT2) * 0.5f + sum * 0.5f + score;
             const auto& found = parents.find(point);
-            if (found == parents.end() || gScore < found->second.gScore) {
-                float hScore = distance(point, end);
+            if (found == parents.end()) {
+                float hScore = heuristic(point, end);
+                if (hScore < minHScore) {
+                    minHScore = hScore;
+                    nearest = point;
+                }
                 float fScore = gScore + hScore;
                 Node nNode {point, node.pos, gScore, fScore};
-                parents[point] = Node {node.pos, node.parent, gScore, fScore};
+                parents[point] = node;
                 queue.push(nNode);
             }
         }

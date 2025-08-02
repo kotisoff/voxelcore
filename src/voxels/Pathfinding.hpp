@@ -1,10 +1,14 @@
 #pragma once
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
+
 #include <vector>
 #include <memory>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <unordered_map>
+#include <unordered_set>
 
 class Level;
 class GlobalChunks;
@@ -17,12 +21,14 @@ namespace voxels {
     struct Route {
         bool found;
         std::vector<RouteNode> nodes;
+        std::unordered_set<glm::ivec3> visited;
     };
 
     struct Agent {
         bool enabled = false;
-        int height = 1;
-        int maxVisitedBlocks = 1e5;
+        bool mayBeIncomplete = true;
+        int height = 2;
+        int maxVisitedBlocks = 1e3;
         glm::ivec3 start;
         glm::ivec3 target;
         Route route;

@@ -387,33 +387,42 @@ void WorldRenderer::renderFrame(
         skybox->draw(ctx, camera, assets, worldInfo.daytime, clouds);
 
         // In-world lines
-        for (const auto& [_, agent] : level.pathfinding->getAgents()) {
-            const auto& route = agent.route;
-            if (!route.found)
-                continue;
-            for (int i = 1; i < route.nodes.size(); i++) {
-                const auto& a = route.nodes.at(i - 1);
-                const auto& b = route.nodes.at(i);
+        if (debug) {
+            for (const auto& [_, agent] : level.pathfinding->getAgents()) {
+                const auto& route = agent.route;
+                if (!route.found)
+                    continue;
+                for (const auto& blocked : route.visited) {
+                    lines->pushLine(
+                        glm::vec3(blocked) + glm::vec3(0.5f),
+                        glm::vec3(blocked) + glm::vec3(0.5f, 1.0f, 0.5f),
+                        glm::vec4(1, 0, 0, 1)
+                    );
+                }
+                for (int i = 1; i < route.nodes.size(); i++) {
+                    const auto& a = route.nodes.at(i - 1);
+                    const auto& b = route.nodes.at(i);
 
-                if (i == 1) {
+                    if (i == 1) {
+                        lines->pushLine(
+                            glm::vec3(a.pos) + glm::vec3(0.5f),
+                            glm::vec3(a.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
+                            glm::vec4(1, 1, 1, 1)
+                        );
+                    }
+
                     lines->pushLine(
                         glm::vec3(a.pos) + glm::vec3(0.5f),
-                        glm::vec3(a.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
+                        glm::vec3(b.pos) + glm::vec3(0.5f),
+                        glm::vec4(1, 0, 1, 1)
+                    );
+
+                    lines->pushLine(
+                        glm::vec3(b.pos) + glm::vec3(0.5f),
+                        glm::vec3(b.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
                         glm::vec4(1, 1, 1, 1)
                     );
                 }
-
-                lines->pushLine(
-                    glm::vec3(a.pos) + glm::vec3(0.5f),
-                    glm::vec3(b.pos) + glm::vec3(0.5f),
-                    glm::vec4(1, 0, 1, 1)
-                );
-
-                lines->pushLine(
-                    glm::vec3(b.pos) + glm::vec3(0.5f),
-                    glm::vec3(b.pos) + glm::vec3(0.5f, 1.0f, 0.5f),
-                    glm::vec4(1, 1, 1, 1)
-                );
             }
         }
 

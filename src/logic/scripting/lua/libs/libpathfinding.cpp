@@ -46,10 +46,18 @@ static int l_make_route(lua::State* L) {
     return 0;
 }
 
+static int l_set_max_visited_blocks(lua::State* L) {
+    if (auto agent = get_agent(L)) {
+        agent->maxVisitedBlocks = lua::tointeger(L, 2);
+    }
+    return 0;
+}
+
 const luaL_Reg pathfindinglib[] = {
     {"create_agent", lua::wrap<l_create_agent>},
     {"set_enabled", lua::wrap<l_set_enabled>},
     {"is_enabled", lua::wrap<l_is_enabled>},
     {"make_route", lua::wrap<l_make_route>},
+    {"set_max_visited", lua::wrap<l_set_max_visited_blocks>},
     {NULL, NULL}
 };
