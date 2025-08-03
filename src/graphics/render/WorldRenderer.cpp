@@ -380,9 +380,11 @@ void WorldRenderer::renderFrame(
 
         auto& linesShader = assets.require<Shader>("lines");
         linesShader.use();
-        debugLines->render(
-            ctx, camera, *lines, *lineBatch, linesShader, showChunkBorders
-        );
+        if (debug && hudVisible) {
+            debugLines->render(
+                ctx, camera, *lines, *lineBatch, linesShader, showChunkBorders
+            );
+        }
         linesShader.uniformMatrix("u_projview", projView);
         lines->draw(*lineBatch);
         lineBatch->flush();

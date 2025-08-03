@@ -181,6 +181,7 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
             }
         }
     }
+    state.finished = true;
     agent.state = std::move(state);
     return {};
 }
