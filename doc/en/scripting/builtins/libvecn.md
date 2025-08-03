@@ -100,6 +100,13 @@ vecn.length(a: vector)
 
 ```
 
+#### Distance - *vecn.distance(...)*
+
+```lua
+-- returns the distance between two vectors
+vecn.distance(a: vector, b: vector)
+```
+
 #### Absolute value - *vecn.abs(...)*
 
 ```lua
@@ -187,6 +194,10 @@ print("mul: " .. vec3.tostring(result_mul)) -- {10, 40, 80}
 -- multiplying a vector by a scalar
 local result_mul_scal = vec3.mul(v1_3d, scal)
 print("mul_scal: " .. vec3.tostring(result_mul_scal)) -- {6, 12, 12}
+
+-- calculating distance between vectors
+local result_distance = vec3.distance(v1_3d, v2_3d)
+print("distance: " .. result_distance) -- 43
 
 -- vector normalization
 local result_norm = vec3.normalize(v1_3d)
