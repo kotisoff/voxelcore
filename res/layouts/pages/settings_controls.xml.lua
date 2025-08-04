@@ -1,9 +1,9 @@
 local WARNING_COLORS = {
-    {252, 200, 149, 255},
-    {246, 233, 44, 255},
-    {250, 151, 75, 255},
+    {208, 104, 107, 255},
     {250, 75, 139, 255},
-    {208, 104, 107, 255}
+    {250, 151, 75, 255},
+    {246, 233, 44, 255},
+    {252, 200, 149, 255}
 }
 
 local GENERAL_WARNING_COLOR = {208, 138, 0, 255}
@@ -49,7 +49,7 @@ function change_sensitivity(val)
     refresh_sensitivity()
 end
 
-function refresh_binding_labels()
+function refresh_binding_marks()
     local prev_bindings = {}
     local conflicts_colors = {}
     local available_colors = table.copy(WARNING_COLORS)
@@ -57,18 +57,19 @@ function refresh_binding_labels()
     local bindings = input.get_bindings()
     table.sort(bindings, function(a, b) return a > b end)
 
-    for _, bind_name in pairs(bindings) do
+    for _, bind_name in ipairs(bindings) do
         local key = input.get_binding_text(bind_name)
         local prev = prev_bindings[key]
         if prev then
             local color = GENERAL_WARNING_COLOR
             local conflict_color = conflicts_colors[key]
+            local available_colors_len = #available_colors
             if conflict_color then
                 color = conflict_color
-            elseif #available_colors > 0 then
-                color = available_colors[1]
+            elseif available_colors_len > 0 then
+                color = available_colors[available_colors_len]
                 conflicts_colors[key] = color
-                table.remove(available_colors, 1)
+                table.remove(available_colors, available_colors_len)
             end
 
             local tooltip = gui.str("settings.Conflict", "settings")
@@ -105,6 +106,6 @@ function on_open()
     end
 
     document.bindings_panel:setInterval(100, function ()
-        refresh_binding_labels()
+        refresh_binding_marks()
     end)
 end
