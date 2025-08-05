@@ -174,4 +174,8 @@ public:
     devtools::Editor& getEditor() {
         return *editor;
     }
+
+    const Project& getProject() {
+        return *project;
+    }
 };
