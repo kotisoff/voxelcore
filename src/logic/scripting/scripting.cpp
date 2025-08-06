@@ -603,6 +603,8 @@ void scripting::on_entity_spawn(
             } else {
                 lua::createtable(L, 0, 0);
             }
+        } else if (component->params != nullptr) {
+            lua::pushvalue(L, component->params);
         } else {
             lua::createtable(L, 0, 0);
         }
