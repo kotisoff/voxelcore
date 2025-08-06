@@ -157,6 +157,16 @@ console.add_command(
     end
 )
 
+
+console.add_command(
+    "entity.spawn nmae:str x:int~pos.x y:int~pos.y z:int~pos.z",
+    "Spawn entity with default parameters",
+    function(args, kwargs)
+        local eid = entities.spawn(args[1], {args[2], args[3], args[4]})
+        return string.format("spawned %s at %s, %s, %s", unpack(args))
+    end
+)
+
 console.add_command(
     "entity.despawn entity:sel=$entity.selected",
     "Despawn entity",
