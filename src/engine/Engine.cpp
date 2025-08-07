@@ -60,6 +60,17 @@ static std::unique_ptr<ImageData> load_icon() {
     return nullptr;
 }
 
+static std::unique_ptr<scripting::IProjectScript> load_project_script() {
+    io::path scriptFile = "project:project_script.lua";
+    if (io::exists(scriptFile)) {
+        logger.info() << "starting project script";
+        return scripting::load_project_script(scriptFile);
+    } else {
+        logger.warning() << "project script does not exists";
+    }
+    return nullptr;
+}
+
 Engine::Engine() = default;
 Engine::~Engine() = default;
 
@@ -166,12 +177,15 @@ void Engine::initialize(CoreParameters coreParameters) {
         }
     });
     scripting::initialize(this);
+
     if (!isHeadless()) {
         gui->setPageLoader(scripting::create_page_loader());
     }
     keepAlive(settings.ui.language.observe([this](auto lang) {
         langs::setup(lang, paths.resPaths.collectRoots());
     }, true));
+
+    projectScript = load_project_script();
 }
 
 void Engine::loadSettings() {
@@ -228,6 +242,7 @@ void Engine::run() {
     }
 }
 
+#include "graphics/ui/elements/Container.hpp"
 void Engine::postUpdate() {
     network->update();
     postRunnables.run();
@@ -270,6 +285,7 @@ void Engine::saveSettings() {
 }
 
 void Engine::close() {
+    projectScript.reset();
     saveSettings();
     logger.info() << "shutting down";
     if (screen) {
@@ -349,6 +365,12 @@ void Engine::setScreen(std::shared_ptr<Screen> screen) {
     audio::reset_channel(audio::get_channel_index("regular"));
     audio::reset_channel(audio::get_channel_index("ambient"));
     this->screen = std::move(screen);
+    if (this->screen) {
+        this->screen->onOpen();
+    }
+    if (projectScript && this->screen) {
+        projectScript->onScreenChange(this->screen->getName());
+    }
 }
 
 void Engine::onWorldOpen(std::unique_ptr<Level> level, int64_t localPlayer) {

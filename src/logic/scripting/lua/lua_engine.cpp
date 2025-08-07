@@ -58,12 +58,8 @@ static void create_libs(State* L, StateType stateType) {
     openlib(L, "vec4", vec4lib);
     openlib(L, "yaml", yamllib);
 
-    if (stateType == StateType::SCRIPT) {
-        openlib(L, "app", applib);
-    } else if (stateType == StateType::BASE) {
-        openlib(L, "__vc_app", applib);
-    }
     if (stateType == StateType::BASE || stateType == StateType::SCRIPT) {
+        openlib(L, "__vc_app", applib);
         openlib(L, "assets", assetslib);
         openlib(L, "audio", audiolib);
         openlib(L, "console", consolelib);

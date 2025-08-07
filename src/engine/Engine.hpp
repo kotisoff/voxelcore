@@ -38,6 +38,10 @@ namespace devtools {
     class Editor;
 }
 
+namespace scripting {
+    class IProjectScript;
+}
+
 class initialize_error : public std::runtime_error {
 public:
     initialize_error(const std::string& message) : std::runtime_error(message) {}
@@ -71,6 +75,7 @@ class Engine : public util::ObjectsKeeper {
     std::unique_ptr<Input> input;
     std::unique_ptr<gui::GUI> gui;
     std::unique_ptr<devtools::Editor> editor;
+    std::unique_ptr<scripting::IProjectScript> projectScript;
     PostRunnables postRunnables;
     Time time;
     OnWorldOpen levelConsumer;
@@ -177,5 +182,9 @@ public:
 
     const Project& getProject() {
         return *project;
+    }
+
+    scripting::IProjectScript* getProjectScript() {
+        return projectScript.get();
     }
 };

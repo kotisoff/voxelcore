@@ -5,10 +5,10 @@
 #include "devtools/Project.hpp"
 #include "frontend/screens/MenuScreen.hpp"
 #include "frontend/screens/LevelScreen.hpp"
-#include "interfaces/Process.hpp"
-#include "logic/scripting/scripting.hpp"
 #include "window/Window.hpp"
 #include "world/Level.hpp"
+#include "graphics/ui/GUI.hpp"
+#include "graphics/ui/elements/Container.hpp"
 
 static debug::Logger logger("mainloop");
 
@@ -31,26 +31,15 @@ void Mainloop::run() {
             ));
         }
     });
-    
-    io::path projectScript = "project:project_script.lua";
-    std::unique_ptr<Process> process;
-    if (io::exists(projectScript)) {
-        logger.info() << "starting project script";
-        process = scripting::start_coroutine(projectScript);
-    } else {
-        logger.warning() << "project script does not exists";
-    }
 
     logger.info() << "starting menu screen";
     engine.setScreen(std::make_shared<MenuScreen>(engine));
     
     logger.info() << "main loop started";
     while (!window.isShouldClose()){
-        if (process) {
-            process->update();
-        }
         time.update(window.time());
         engine.updateFrontend();
+
         if (!window.isIconified()) {
             engine.renderFrame();
         }
