@@ -185,7 +185,7 @@ void Engine::initialize(CoreParameters coreParameters) {
         langs::setup(lang, paths.resPaths.collectRoots());
     }, true));
 
-    projectScript = load_project_script();
+    project->script = load_project_script();
 }
 
 void Engine::loadSettings() {
@@ -242,7 +242,6 @@ void Engine::run() {
     }
 }
 
-#include "graphics/ui/elements/Container.hpp"
 void Engine::postUpdate() {
     network->update();
     postRunnables.run();
@@ -285,7 +284,6 @@ void Engine::saveSettings() {
 }
 
 void Engine::close() {
-    projectScript.reset();
     saveSettings();
     logger.info() << "shutting down";
     if (screen) {
@@ -302,6 +300,7 @@ void Engine::close() {
     audio::close();
     network.reset();
     clearKeepedObjects();
+    project.reset();
     scripting::close();
     logger.info() << "scripting finished";
     if (!params.headless) {
@@ -368,8 +367,8 @@ void Engine::setScreen(std::shared_ptr<Screen> screen) {
     if (this->screen) {
         this->screen->onOpen();
     }
-    if (projectScript && this->screen) {
-        projectScript->onScreenChange(this->screen->getName());
+    if (project->script && this->screen) {
+        project->script->onScreenChange(this->screen->getName());
     }
 }
 

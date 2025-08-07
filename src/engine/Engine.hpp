@@ -75,7 +75,6 @@ class Engine : public util::ObjectsKeeper {
     std::unique_ptr<Input> input;
     std::unique_ptr<gui::GUI> gui;
     std::unique_ptr<devtools::Editor> editor;
-    std::unique_ptr<scripting::IProjectScript> projectScript;
     PostRunnables postRunnables;
     Time time;
     OnWorldOpen levelConsumer;
@@ -182,9 +181,5 @@ public:
 
     const Project& getProject() {
         return *project;
-    }
-
-    scripting::IProjectScript* getProjectScript() {
-        return projectScript.get();
     }
 };
