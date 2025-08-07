@@ -256,7 +256,7 @@ function open_file_in_editor(filename, line, mutable)
 end
 
 function on_open(mode)
-    registry = require "core:internal/scripts_registry"
+    registry = __vc_scripts_registry
 
     document.codePanel:setInterval(200, refresh_file_title)
 

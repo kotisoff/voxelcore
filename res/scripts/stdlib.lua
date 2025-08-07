@@ -169,59 +169,10 @@ function inventory.set_description(invid, slot, description)
     inventory.set_data(invid, slot, "description", description)
 end
 
-------------------------------------------------
-------------------- Events ---------------------
-------------------------------------------------
-events = {
-    handlers = {}
-}
-
-function events.on(event, func)
-    if events.handlers[event] == nil then
-        events.handlers[event] = {}
-    end
-    table.insert(events.handlers[event], func)
-end
-
-function events.reset(event, func)
-    if func == nil then
-        events.handlers[event] = nil
-    else
-        events.handlers[event] = {func}
-    end
-end
-
-function events.remove_by_prefix(prefix)
-    for name, handlers in pairs(events.handlers) do
-        local actualname = name
-        if type(name) == 'table' then
-            actualname = name[1]
-        end
-        if actualname:sub(1, #prefix+1) == prefix..':' then
-            events.handlers[actualname] = nil
-        end
-    end
-end
+events = require "core:internal/events"
 
 function pack.unload(prefix)
     events.remove_by_prefix(prefix)
-end
-
-function events.emit(event, ...)
-    local result = nil
-    local handlers = events.handlers[event]
-    if handlers == nil then
-        return nil
-    end
-    for _, func in ipairs(handlers) do
-        local status, newres = xpcall(func, __vc__error, ...)
-        if not status then
-            debug.error("error in event ("..event..") handler: "..newres)
-        else 
-            result = result or newres
-        end
-    end
-    return result
 end
 
 gui_util = require "core:internal/gui_util"
@@ -319,10 +270,11 @@ entities.get_all = function(uids)
 end
 
 local bytearray = require "core:internal/bytearray"
-
 Bytearray = bytearray.FFIBytearray
 Bytearray_as_string = bytearray.FFIBytearray_as_string
 Bytearray_construct = function(...) return Bytearray(...) end
+
+__vc_scripts_registry = require "core:internal/scripts_registry"
 
 file.open = require "core:internal/stream_providers/file"
 file.open_named_pipe = require "core:internal/stream_providers/named_pipe"
@@ -342,6 +294,7 @@ else
 end
 
 ffi = nil
+__vc_lock_internal_modules()
 
 math.randomseed(time.uptime() * 1536227939)
 
