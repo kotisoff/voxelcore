@@ -189,6 +189,7 @@ end
 _GUI_ROOT = Document.new("core:root")
 _MENU = _GUI_ROOT.menu
 menu = _MENU
+gui.root = _GUI_ROOT
 
 ---  Console library extension ---
 console.cheats = {}

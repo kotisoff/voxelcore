@@ -143,6 +143,12 @@ std::unique_ptr<IProjectScript> scripting::load_project_script(
     auto L = lua::get_main_state();
     auto source = io::read_string(script);
     auto env = create_environment(nullptr);
+    lua::pushenv(L, *env);
+    if (lua::getglobal(L, "__vc_app")) {
+        lua::setfield(L, "app");
+    }
+    lua::pop(L);
+
     lua::loadbuffer(L, *env, source, script.name());
     lua::call(L, 0);
     return std::make_unique<LuaProjectScript>(L, std::move(env));
