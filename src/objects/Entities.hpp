@@ -65,7 +65,8 @@ public:
         ModelBatch& batch,
         const Frustum* frustum,
         float delta,
-        bool pause
+        bool pause,
+        entityid_t fpsEntity
     );
 
     entityid_t spawn(

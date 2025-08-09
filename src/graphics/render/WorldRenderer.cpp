@@ -205,7 +205,9 @@ void WorldRenderer::renderOpaque(
         *modelBatch,
         culling ? frustumCulling.get() : nullptr,
         delta,
-        pause
+        pause,
+        player.currentCamera.get() == player.fpCamera.get() ? player.getEntity()
+                                                            : 0
     );
     modelBatch->render();
     particles->render(camera, delta * !pause);

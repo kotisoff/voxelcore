@@ -328,13 +328,10 @@ static void debug_render_skeleton(
     size_t pindex = bone->getIndex();
     for (auto& sub : bone->getSubnodes()) {
         size_t sindex = sub->getIndex();
+        const auto& matrices = skeleton.calculated.matrices;
         batch.line(
-            glm::vec3(
-                skeleton.calculated.matrices[pindex] * glm::vec4(0, 0, 0, 1)
-            ),
-            glm::vec3(
-                skeleton.calculated.matrices[sindex] * glm::vec4(0, 0, 0, 1)
-            ),
+            glm::vec3(matrices[pindex] * glm::vec4(0, 0, 0, 1)),
+            glm::vec3(matrices[sindex] * glm::vec4(0, 0, 0, 1)),
             glm::vec4(0, 0.5f, 0, 1)
         );
         debug_render_skeleton(batch, sub.get(), skeleton);
@@ -391,10 +388,14 @@ void Entities::render(
     ModelBatch& batch,
     const Frustum* frustum,
     float delta,
-    bool pause
+    bool pause,
+    entityid_t fpsEntity
 ) {
-    auto view = registry.view<Transform, rigging::Skeleton>();
-    for (auto [entity, transform, skeleton] : view.each()) {
+    auto view = registry.view<EntityId, Transform, rigging::Skeleton>();
+    for (auto [entity, eid, transform, skeleton] : view.each()) {
+        if (eid.uid == fpsEntity) {
+            continue;
+        }
         if (transform.dirty) {
             transform.refresh();
         }

@@ -186,10 +186,6 @@ void Player::postUpdate() {
             attemptToFindSpawnpoint();
         }
     }
-
-    // TODO: ERASE & FORGET
-    auto& skeleton = entity->getSkeleton();
-    skeleton.visible = currentCamera != fpCamera;
 }
 
 void Player::teleport(glm::vec3 position) {
