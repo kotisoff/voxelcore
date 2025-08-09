@@ -3,6 +3,7 @@
 #include "typedefs.hpp"
 #include "data/dv_fwd.hpp"
 
+#include <string>
 #include <entt/fwd.hpp>
 #include <glm/vec3.hpp>
 
