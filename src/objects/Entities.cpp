@@ -19,7 +19,6 @@
 #include "EntityDef.hpp"
 #include "Entity.hpp"
 #include "rigging.hpp"
-#include "physics/Hitbox.hpp"
 #include "physics/PhysicsSolver.hpp"
 #include "world/Level.hpp"
 
@@ -100,7 +99,8 @@ entityid_t Entities::spawn(
     }
     body.hitbox.position = tsf.pos;
     scripting::on_entity_spawn(
-        def, id, scripting.components, args, componentsMap);
+        def, id, scripting.components, args, componentsMap
+    );
     return id;
 }
 
@@ -127,19 +127,10 @@ void Entities::loadEntity(const dv::value& map, Entity entity) {
     auto& skeleton = entity.getSkeleton();
 
     if (map.has(COMP_RIGIDBODY)) {
-        auto& bodymap = map[COMP_RIGIDBODY];
-        dv::get_vec(bodymap, "vel", body.hitbox.velocity);
-        std::string bodyTypeName;
-        map.at("type").get(bodyTypeName);
-        BodyTypeMeta.getItem(bodyTypeName, body.hitbox.type);
-        bodymap["crouch"].asBoolean(body.hitbox.crouching);
-        bodymap["damping"].asNumber(body.hitbox.linearDamping);
+        body.deserialize(map[COMP_RIGIDBODY]);
     }
     if (map.has(COMP_TRANSFORM)) {
-        auto& tsfmap = map[COMP_TRANSFORM];
-        dv::get_vec(tsfmap, "pos", transform.pos);
-        dv::get_vec(tsfmap, "size", transform.size);
-        dv::get_mat(tsfmap, "rot", transform.rot);
+        transform.deserialize(map[COMP_TRANSFORM]);
     }
     std::string skeletonName = skeleton.config->getName();
     map.at("skeleton").get(skeletonName);
@@ -147,21 +138,7 @@ void Entities::loadEntity(const dv::value& map, Entity entity) {
         skeleton.config = level.content.getSkeleton(skeletonName);
     }
     if (auto foundSkeleton = map.at(COMP_SKELETON)) {
-        auto& skeletonmap = *foundSkeleton;
-        if (auto found = skeletonmap.at("textures")) {
-            auto& texturesmap = *found;
-            for (auto& [slot, _] : texturesmap.asObject()) {
-                texturesmap.at(slot).get(skeleton.textures[slot]);
-            }
-        }
-        if (auto found = skeletonmap.at("pose")) {
-            auto& posearr = *found;
-            for (size_t i = 0;
-                 i < std::min(skeleton.pose.matrices.size(), posearr.size());
-                 i++) {
-                dv::get_mat(posearr[i], skeleton.pose.matrices[i]);
-            }
-        }
+        skeleton.deserialize(*foundSkeleton);
     }
 }
 

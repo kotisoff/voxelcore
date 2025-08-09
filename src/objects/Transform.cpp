@@ -23,3 +23,9 @@ dv::value Transform::serialize() const {
     }
     return tsfmap;
 }
+
+void Transform::deserialize(const dv::value& root) {
+    dv::get_vec(root, "pos", pos);
+    dv::get_vec(root, "size", size);
+    dv::get_mat(root, "rot", rot);
+}

@@ -70,6 +70,22 @@ dv::value Skeleton::serialize(bool saveTextures, bool savePose) const {
     return root;
 }
 
+void Skeleton::deserialize(const dv::value& root) {
+    if (auto found = root.at("textures")) {
+        auto& texturesmap = *found;
+        for (auto& [slot, _] : texturesmap.asObject()) {
+            texturesmap.at(slot).get(textures[slot]);
+        }
+    }
+    if (auto found = root.at("pose")) {
+        auto& posearr = *found;
+        auto& matrices = pose.matrices;
+        for (size_t i = 0; i < std::min(matrices.size(), posearr.size()); i++) {
+            dv::get_mat(posearr[i], pose.matrices[i]);
+        }
+    }
+}
+
 static void get_all_nodes(std::vector<Bone*>& nodes, Bone* node) {
     nodes[node->getIndex()] = node;
     for (auto& subnode : node->getSubnodes()) {

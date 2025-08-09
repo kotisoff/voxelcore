@@ -26,6 +26,15 @@ dv::value Rigidbody::serialize(bool saveVelocity, bool saveBodySettings) const {
     return bodymap;
 }
 
+void Rigidbody::deserialize(const dv::value& root) {
+    dv::get_vec(root, "vel", hitbox.velocity);
+    std::string bodyTypeName;
+    root.at("type").get(bodyTypeName);
+    BodyTypeMeta.getItem(bodyTypeName, hitbox.type);
+    root["crouch"].asBoolean(hitbox.crouching);
+    root["damping"].asNumber(hitbox.linearDamping);
+}
+
 template <void (*callback)(const Entity&, size_t, entityid_t)>
 static sensorcallback create_sensor_callback(Entities& entities) {
     return [&entities](auto entityid, auto index, auto otherid) {

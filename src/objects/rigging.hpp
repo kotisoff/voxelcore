@@ -92,6 +92,7 @@ namespace rigging {
         Skeleton(const SkeletonConfig* config);
 
         dv::value serialize(bool saveTextures, bool savePose) const;
+        void deserialize(const dv::value& root);
     };
 
     class SkeletonConfig {

@@ -8,7 +8,7 @@
 #include <data/dv_fwd.hpp>
 
 struct Transform {
-    static inline constexpr float EPSILON = 0.0000001f;
+    static inline constexpr float EPSILON = 1e-7f;
     glm::vec3 pos;
     glm::vec3 size;
     glm::mat3 rot;
@@ -19,6 +19,7 @@ struct Transform {
     glm::vec3 displaySize;
 
     dv::value serialize() const;
+    void deserialize(const dv::value& root);
 
     void refresh();
 
