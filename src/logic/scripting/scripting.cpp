@@ -21,6 +21,7 @@
 #include "maths/Heightmap.hpp"
 #include "objects/Entities.hpp"
 #include "objects/EntityDef.hpp"
+#include "objects/Entity.hpp"
 #include "objects/Player.hpp"
 #include "util/stringutil.hpp"
 #include "util/timeutil.hpp"

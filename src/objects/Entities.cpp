@@ -17,6 +17,7 @@
 #include "maths/FrustumCulling.hpp"
 #include "maths/rays.hpp"
 #include "EntityDef.hpp"
+#include "Entity.hpp"
 #include "rigging.hpp"
 #include "physics/Hitbox.hpp"
 #include "physics/PhysicsSolver.hpp"
@@ -24,103 +25,16 @@
 
 static debug::Logger logger("entities");
 
-static inline std::string COMP_TRANSFORM = "transform";
-static inline std::string COMP_RIGIDBODY = "rigidbody";
-static inline std::string COMP_SKELETON = "skeleton";
-static inline std::string SAVED_DATA_VARNAME = "SAVED_DATA";
-
-void Transform::refresh() {
-    combined = glm::mat4(1.0f);
-    combined = glm::translate(combined, pos);
-    combined = combined * glm::mat4(rot);
-    combined = glm::scale(combined, size);
-    displayPos = pos;
-    displaySize = size;
-    dirty = false;
-}
-
-void Entity::setInterpolatedPosition(const glm::vec3& position) {
-    getSkeleton().interpolation.refresh(position);
-}
-
-glm::vec3 Entity::getInterpolatedPosition() const {
-    const auto& skeleton = getSkeleton();
-    if (skeleton.interpolation.isEnabled()) {
-        return skeleton.interpolation.getCurrent();
-    }
-    return getTransform().pos;
-}
-
-void Entity::destroy() {
-    if (isValid()) {
-        entities.despawn(id);
-    }
-}
-
-rigging::Skeleton& Entity::getSkeleton() const {
-    return registry.get<rigging::Skeleton>(entity);
-}
-
-void Entity::setRig(const rigging::SkeletonConfig* rigConfig) {
-    auto& skeleton = registry.get<rigging::Skeleton>(entity);
-    skeleton.config = rigConfig;
-    skeleton.pose.matrices.resize(
-        rigConfig->getBones().size(), glm::mat4(1.0f)
-    );
-    skeleton.calculated.matrices.resize(
-        rigConfig->getBones().size(), glm::mat4(1.0f)
-    );
-}
-
 Entities::Entities(Level& level)
     : level(level), sensorsTickClock(20, 3), updateTickClock(20, 3) {
 }
 
-template <void (*callback)(const Entity&, size_t, entityid_t)>
-static sensorcallback create_sensor_callback(Entities* entities) {
-    return [=](auto entityid, auto index, auto otherid) {
-        if (auto entity = entities->get(entityid)) {
-            if (entity->isValid()) {
-                callback(*entity, index, otherid);
-            }
-        }
-    };
-}
-
-static void initialize_body(
-    const EntityDef& def, Rigidbody& body, entityid_t id, Entities* entities
-) {
-    body.sensors.resize(def.radialSensors.size() + def.boxSensors.size());
-    for (auto& [i, box] : def.boxSensors) {
-        SensorParams params {};
-        params.aabb = box;
-        body.sensors[i] = Sensor {
-            true,
-            SensorType::AABB,
-            i,
-            id,
-            params,
-            params,
-            {},
-            {},
-            create_sensor_callback<scripting::on_sensor_enter>(entities),
-            create_sensor_callback<scripting::on_sensor_exit>(entities)};
+std::optional<Entity> Entities::get(entityid_t id) {
+    const auto& found = entities.find(id);
+    if (found != entities.end() && registry.valid(found->second)) {
+        return Entity(*this, id, registry, found->second);
     }
-    for (auto& [i, radius] : def.radialSensors) {
-        SensorParams params {};
-        params.radial = glm::vec4(radius);
-        body.sensors[i] = Sensor {
-            true,
-            SensorType::RADIUS,
-            i,
-            id,
-            params,
-            params,
-            {},
-            {},
-            create_sensor_callback<scripting::on_sensor_enter>(entities),
-            create_sensor_callback<scripting::on_sensor_exit>(entities)};
-    }
+    return std::nullopt;
 }
 
 entityid_t Entities::spawn(
@@ -168,7 +82,7 @@ entityid_t Entities::spawn(
         Hitbox {def.bodyType, position, def.hitbox * 0.5f},
         std::vector<Sensor> {}
     );
-    initialize_body(def, body, id, this);
+    body.initialize(def, id, *this);
 
     auto& scripting = registry.emplace<ScriptComponents>(entity);
     registry.emplace<rigging::Skeleton>(entity, skeleton->instance());
@@ -232,8 +146,8 @@ void Entities::loadEntity(const dv::value& map, Entity entity) {
     if (skeletonName != skeleton.config->getName()) {
         skeleton.config = level.content.getSkeleton(skeletonName);
     }
-    if (auto found = map.at(COMP_SKELETON)) {
-        auto& skeletonmap = *found;
+    if (auto foundSkeleton = map.at(COMP_SKELETON)) {
+        auto& skeletonmap = *foundSkeleton;
         if (auto found = skeletonmap.at("textures")) {
             auto& texturesmap = *found;
             for (auto& [slot, _] : texturesmap.asObject()) {
@@ -284,7 +198,7 @@ std::optional<Entities::RaycastResult> Entities::rayCast(
 
 void Entities::loadEntities(dv::value root) {
     clean();
-    auto& list = root["data"];
+    const auto& list = root["data"];
     for (auto& map : list) {
         try {
             loadEntity(map);
@@ -298,74 +212,6 @@ void Entities::onSave(const Entity& entity) {
     scripting::on_entity_save(entity);
 }
 
-dv::value Entities::serialize(const Entity& entity) {
-    auto root = dv::object();
-    auto& eid = entity.getID();
-    auto& def = eid.def;
-    root["def"] = def.name;
-    root["uid"] = eid.uid;
-    {
-        auto& transform = entity.getTransform();
-        auto& tsfmap = root.object(COMP_TRANSFORM);
-        tsfmap["pos"] = dv::to_value(transform.pos);
-        if (transform.size != glm::vec3(1.0f)) {
-            tsfmap["size"] = dv::to_value(transform.size);
-        }
-        if (transform.rot != glm::mat3(1.0f)) {
-            tsfmap["rot"] = dv::to_value(transform.rot);
-        }
-    }
-    {
-        auto& rigidbody = entity.getRigidbody();
-        auto& hitbox = rigidbody.hitbox;
-        auto& bodymap = root.object(COMP_RIGIDBODY);
-        if (!rigidbody.enabled) {
-            bodymap["enabled"] = false;
-        }
-        if (def.save.body.velocity) {
-            bodymap["vel"] = dv::to_value(rigidbody.hitbox.velocity);
-        }
-        if (def.save.body.settings) {
-            bodymap["damping"] = rigidbody.hitbox.linearDamping;
-            if (hitbox.type != def.bodyType) {
-                bodymap["type"] = BodyTypeMeta.getNameString(hitbox.type);
-            }
-            if (hitbox.crouching) {
-                bodymap["crouch"] = hitbox.crouching;
-            }
-        }
-    }
-    auto& skeleton = entity.getSkeleton();
-    if (skeleton.config->getName() != def.skeletonName) {
-        root["skeleton"] = skeleton.config->getName();
-    }
-    if (def.save.skeleton.pose || def.save.skeleton.textures) {
-        auto& skeletonmap = root.object(COMP_SKELETON);
-        if (def.save.skeleton.textures) {
-            auto& map = skeletonmap.object("textures");
-            for (auto& [slot, texture] : skeleton.textures) {
-                map[slot] = texture;
-            }
-        }
-        if (def.save.skeleton.pose) {
-            auto& list = skeletonmap.list("pose");
-            for (auto& mat : skeleton.pose.matrices) {
-                list.add(dv::to_value(mat));
-            }
-        }
-    }
-    auto& scripts = entity.getScripting();
-    if (!scripts.components.empty()) {
-        auto& compsMap = root.object("comps");
-        for (auto& comp : scripts.components) {
-            auto data =
-                scripting::get_component_value(comp->env, SAVED_DATA_VARNAME);
-            compsMap[comp->name] = data;
-        }
-    }
-    return root;
-}
-
 dv::value Entities::serialize(const std::vector<Entity>& entities) {
     auto list = dv::list();
     for (auto& entity : entities) {
@@ -375,7 +221,7 @@ dv::value Entities::serialize(const std::vector<Entity>& entities) {
         }
         level.entities->onSave(entity);
         if (!eid.destroyFlag) {
-            list.add(level.entities->serialize(entity));
+            list.add(entity.serialize());
         }
     }
     return list;

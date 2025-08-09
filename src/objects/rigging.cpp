@@ -23,7 +23,7 @@ Bone::Bone(
     std::string name,
     std::string model,
     std::vector<std::unique_ptr<Bone>> bones,
-    glm::vec3 offset
+    const glm::vec3& offset
 )
     : index(index),
       name(std::move(name)),
@@ -51,6 +51,23 @@ Skeleton::Skeleton(const SkeletonConfig* config)
     for (size_t i = 0; i < bones.size(); i++) {
         flags[i].visible = true;
     }
+}
+
+dv::value Skeleton::serialize(bool saveTextures, bool savePose) const {
+    auto root = dv::object();
+    if (saveTextures) {
+        auto& map = root.object("textures");
+        for (auto& [slot, texture] : textures) {
+            map[slot] = texture;
+        }
+    }
+    if (savePose) {
+        auto& list = root.list("pose");
+        for (auto& mat : pose.matrices) {
+            list.add(dv::to_value(mat));
+        }
+    }
+    return root;
 }
 
 static void get_all_nodes(std::vector<Bone*>& nodes, Bone* node) {

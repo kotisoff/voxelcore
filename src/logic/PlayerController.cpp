@@ -13,6 +13,7 @@
 #include "items/ItemStack.hpp"
 #include "lighting/Lighting.hpp"
 #include "objects/Entities.hpp"
+#include "objects/Entity.hpp"
 #include "objects/Player.hpp"
 #include "objects/Players.hpp"
 #include "physics/Hitbox.hpp"
@@ -309,16 +310,7 @@ void PlayerController::updateKeyboard(const Input& inputEvents) {
 }
 
 void PlayerController::resetKeyboard() {
-    input.zoom = false;
-    input.moveForward = false;
-    input.moveBack = false;
-    input.moveLeft = false;
-    input.moveRight = false;
-    input.sprint = false;
-    input.shift = false;
-    input.cheat = false;
-    input.jump = false;
-    input.delta = {};
+    input = {};
 }
 
 void PlayerController::updatePlayer(float delta) {
@@ -338,7 +330,8 @@ static int determine_rotation(
             if (norm.z > 0.0f) return BLOCK_DIR_NORTH;
             if (norm.z < 0.0f) return BLOCK_DIR_SOUTH;
         } else if (name == "pane" || name == "stairs") {
-            int verticalBit = (name == "stairs" && (norm.y - camDir.y * 0.5f) < 0.0) ? 4 : 0; 
+            int verticalBit =
+                (name == "stairs" && (norm.y - camDir.y * 0.5f) < 0.0) ? 4 : 0;
             if (abs(camDir.x) > abs(camDir.z)) {
                 if (camDir.x > 0.0f) return BLOCK_DIR_EAST | verticalBit;
                 if (camDir.x < 0.0f) return BLOCK_DIR_WEST | verticalBit;

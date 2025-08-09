@@ -18,6 +18,7 @@
 #include "objects/Players.hpp"
 #include "objects/Entities.hpp"
 #include "objects/EntityDef.hpp"
+#include "objects/Entity.hpp"
 #include "physics/Hitbox.hpp"
 #include "util/stringutil.hpp"
 #include "voxels/Block.hpp"

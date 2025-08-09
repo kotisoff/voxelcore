@@ -5,6 +5,7 @@
 #include "items/Inventories.hpp"
 #include "items/Inventory.hpp"
 #include "objects/Entities.hpp"
+#include "objects/Entity.hpp"
 #include "objects/Player.hpp"
 #include "objects/Players.hpp"
 #include "physics/Hitbox.hpp"

@@ -9,6 +9,7 @@
 #include "content/ContentReport.hpp"
 #include "items/Inventory.hpp"
 #include "Entities.hpp"
+#include "Entity.hpp"
 #include "rigging.hpp"
 #include "physics/Hitbox.hpp"
 #include "physics/PhysicsSolver.hpp"
@@ -137,7 +138,7 @@ void Player::updateInput(PlayerInput& input, float delta) {
     }
     if (glm::length(dir) > 0.0f) {
         dir = glm::normalize(dir);
-        hitbox->velocity += dir * speed * delta * 9.0f;
+        doMove(dir, speed, delta);
     }
     if (flight) {
         if (input.jump) {
@@ -146,9 +147,22 @@ void Player::updateInput(PlayerInput& input, float delta) {
         if (input.shift) {
             hitbox->velocity.y -= speed * delta * 9;
         }
+    } else if (input.jump) {
+        doJump();
     }
-    if (input.jump && hitbox->grounded) {
-        hitbox->velocity.y = JUMP_FORCE;
+}
+
+void Player::doMove(const glm::vec3& dir, float speed, float delta) {
+    if (auto hitbox = getHitbox()) {
+        hitbox->velocity += dir * speed * delta * 9.0f;
+    }
+}
+
+void Player::doJump() {
+    if (auto hitbox = getHitbox()) {
+        if (hitbox->grounded) {
+            hitbox->velocity.y = JUMP_FORCE;
+        }
     }
 }
 
