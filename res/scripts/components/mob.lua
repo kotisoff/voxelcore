@@ -110,7 +110,9 @@ function on_update(tps)
         end
         body:set_vdamping(flight)
         body:set_gravity_scale(flight and 0.0 or 1.0)
-        body:set_linear_damping((flight or not grounded) and air_damping or ground_damping)
+        body:set_linear_damping(
+            (flight or not grounded) and air_damping or ground_damping
+        )
         body:set_body_type(noclip and "kinematic" or "dynamic")
     end
 end
