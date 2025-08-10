@@ -1,19 +1,35 @@
 local body = entity.rigidbody
 
-local jump_force = SAVED_DATA.jump_force or ARGS.jump_force or 0.0
-local air_damping = SAVED_DATA.air_damping or ARGS.air_damping or 1.0
-local ground_damping = SAVED_DATA.ground_damping or ARGS.ground_damping or 1.0
-local movement_speed = SAVED_DATA.movement_speed or ARGS.movement_speed or 4.0
-local run_speed_mul = SAVED_DATA.run_speed_mul or ARGS.run_speed_mul or 1.5
-local crouch_speed_mul = SAVED_DATA.crouch_speed_mul or ARGS.crouch_speed_mul or 0.35
-local flight_speed_mul = SAVED_DATA.flight_speed_mul or ARGS.flight_speed_mul or 4.0
-local cheat_speed_mul = SAVED_DATA.cheat_speed_mul or ARGS.cheat_speed_mul or 5.0
+local props = {}
+
+local function def_prop(name, def_value)
+    props[name] = SAVED_DATA[name] or ARGS[name] or def_value
+    this["get_"..name] = function() return props[name] end
+    this["set_"..name] = function(value)
+        props[name] = value
+        if math.abs(value - def_value) < 1e-7 then
+            SAVED_DATA[name] = nil
+        else
+            SAVED_DATA[name] = value
+        end
+    end
+end
+
+def_prop("jump_force", 0.0)
+def_prop("air_damping", 1.0)
+def_prop("ground_damping", 1.0)
+def_prop("movement_speed", 4.0)
+def_prop("run_speed_mul", 1.5)
+def_prop("crouch_speed_mul", 0.35)
+def_prop("flight_speed_mul", 4.0)
+def_prop("cheat_speed_mul", 5.0)
+def_prop("gravity_scale", 1.0)
 
 function jump(multiplier)
     if body:is_grounded() then
         local vel = body:get_vel()
         body:set_vel(
-            vec3.add(vel, {0, jump_force * (multiplier or 1.0), 0}, vel))
+            vec3.add(vel, {0, props.jump_force * (multiplier or 1.0), 0}, vel))
     end
 end
 
@@ -43,7 +59,7 @@ end
 function on_update(tps)
     local delta = (1.0 / tps)
     local pid = entity:get_player()
-    if pid then
+    if pid and hud and not hud.is_inventory_open() and not menu.page ~= "" then
         -- todo: replace with entity direction
         local cam = cameras.get("core:first-person")
         local front = cam:get_front()
@@ -66,19 +82,19 @@ function on_update(tps)
 
         local vel = body:get_vel()
 
-        local speed = movement_speed
+        local speed = props.movement_speed
 
         if flight then
-            speed = speed * flight_speed_mul
+            speed = speed * props.flight_speed_mul
         elseif issprint then
-            speed = speed * run_speed_mul
+            speed = speed * props.run_speed_mul
         elseif iscrouch and grounded then
-            speed = speed * crouch_speed_mul
+            speed = speed * props.crouch_speed_mul
         end
         body:set_crouching(iscrouch)
 
         if ischeat then
-            speed = speed * cheat_speed_mul
+            speed = speed * props.cheat_speed_mul
         end
 
         local dir = {0, 0, 0}
@@ -109,9 +125,9 @@ function on_update(tps)
             jump()
         end
         body:set_vdamping(flight)
-        body:set_gravity_scale(flight and 0.0 or 1.0)
+        body:set_gravity_scale(flight and 0.0 or props.gravity_scale)
         body:set_linear_damping(
-            (flight or not grounded) and air_damping or ground_damping
+            (flight or not grounded) and props.air_damping or props.ground_damping
         )
         body:set_body_type(noclip and "kinematic" or "dynamic")
     end
