@@ -21,13 +21,6 @@
 
 static debug::Logger logger("player");
 
-constexpr float CROUCH_SPEED_MUL = 0.35f;
-constexpr float RUN_SPEED_MUL = 1.5f;
-constexpr float PLAYER_GROUND_DAMPING = 10.0f;
-constexpr float PLAYER_AIR_DAMPING = 8.0f;
-constexpr float FLIGHT_SPEED_MUL = 4.0f;
-constexpr float CHEAT_SPEED_MUL = 5.0f;
-constexpr float JUMP_FORCE = 8.0f;
 constexpr int SPAWN_ATTEMPTS_PER_UPDATE = 64;
 
 Player::Player(
@@ -82,17 +75,6 @@ void Player::updateEntity() {
                           "will be respawned";
         eid = ENTITY_AUTO;
     }
-    auto hitbox = getHitbox();
-    if (hitbox == nullptr) {
-        return;
-    }
-    hitbox->linearDamping = PLAYER_GROUND_DAMPING;
-    hitbox->verticalDamping = flight;
-    hitbox->gravityScale = flight ? 0.0f : 1.0f;
-    if (flight || !hitbox->grounded) {
-        hitbox->linearDamping = PLAYER_AIR_DAMPING;
-    }
-    hitbox->type = noclip ? BodyType::KINEMATIC : BodyType::DYNAMIC;
 }
 
 Hitbox* Player::getHitbox() {
@@ -100,70 +82,6 @@ Hitbox* Player::getHitbox() {
         return &entity->getRigidbody().hitbox;
     }
     return nullptr;
-}
-
-void Player::updateInput(PlayerInput& input, float delta) {
-    auto hitbox = getHitbox();
-    if (hitbox == nullptr) {
-        return;
-    }
-    bool crouch = input.shift && hitbox->grounded && !input.sprint;
-    float speed = this->speed;
-    if (flight) {
-        speed *= FLIGHT_SPEED_MUL;
-    }
-    if (input.cheat) {
-        speed *= CHEAT_SPEED_MUL;
-    }
-
-    hitbox->crouching = crouch;
-    if (crouch) {
-        speed *= CROUCH_SPEED_MUL;
-    } else if (input.sprint) {
-        speed *= RUN_SPEED_MUL;
-    }
-
-    glm::vec3 dir(0, 0, 0);
-    if (input.moveForward) {
-        dir += fpCamera->dir;
-    }
-    if (input.moveBack) {
-        dir -= fpCamera->dir;
-    }
-    if (input.moveRight) {
-        dir += fpCamera->right;
-    }
-    if (input.moveLeft) {
-        dir -= fpCamera->right;
-    }
-    if (glm::length(dir) > 0.0f) {
-        dir = glm::normalize(dir);
-        doMove(dir, speed, delta);
-    }
-    if (flight) {
-        if (input.jump) {
-            hitbox->velocity.y += speed * delta * 9;
-        }
-        if (input.shift) {
-            hitbox->velocity.y -= speed * delta * 9;
-        }
-    } else if (input.jump) {
-        doJump();
-    }
-}
-
-void Player::doMove(const glm::vec3& dir, float speed, float delta) {
-    if (auto hitbox = getHitbox()) {
-        hitbox->velocity += dir * speed * delta * 9.0f;
-    }
-}
-
-void Player::doJump() {
-    if (auto hitbox = getHitbox()) {
-        if (hitbox->grounded) {
-            hitbox->velocity.y = JUMP_FORCE;
-        }
-    }
 }
 
 void Player::updateSelectedEntity() {

@@ -59,9 +59,6 @@ class Player : public Serializable {
     entityid_t eid = ENTITY_AUTO;
     entityid_t selectedEid = 0;
 
-    void doMove(const glm::vec3& dir, float speed, float delta);
-    void doJump();
-
     glm::vec3 rotation {};
 public:
     util::VecInterpolation<3, float, true> rotationInterpolation {true};
@@ -85,7 +82,6 @@ public:
 
     void teleport(glm::vec3 position);
     void updateEntity();
-    void updateInput(PlayerInput& input, float delta);
     void updateSelectedEntity();
     void postUpdate();
 

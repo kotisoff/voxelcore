@@ -297,7 +297,9 @@ void Entities::updatePhysics(float delta) {
         int substeps = static_cast<int>(delta * vel * 20);
         substeps = std::min(100, std::max(2, substeps));
         physics->step(*level.chunks, hitbox, delta, substeps, eid.uid);
-        hitbox.linearDamping = hitbox.grounded * 24;
+        hitbox.friction = glm::abs(hitbox.gravityScale <= 1e-7f)
+                              ? 8.0f
+                              : (!grounded ? 2.0f : 10.0f);
         transform.setPos(hitbox.position);
         if (hitbox.grounded && !grounded) {
             scripting::on_entity_grounded(

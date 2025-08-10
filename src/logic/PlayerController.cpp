@@ -271,7 +271,6 @@ void PlayerController::update(float delta, const Input* inputEvents) {
     } else {
         resetKeyboard();
     }
-    updatePlayer(delta);
 }
 
 void PlayerController::postUpdate(
@@ -311,10 +310,6 @@ void PlayerController::updateKeyboard(const Input& inputEvents) {
 
 void PlayerController::resetKeyboard() {
     input = {};
-}
-
-void PlayerController::updatePlayer(float delta) {
-    player.updateInput(input, delta);
 }
 
 static int determine_rotation(
