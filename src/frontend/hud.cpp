@@ -598,6 +598,9 @@ void Hud::remove(const std::shared_ptr<UINode>& node) {
         }
     }
     cleanup();
+    if (node == secondUI) {
+        closeInventory();
+    }
 }
 
 void Hud::setDebug(bool flag) {
