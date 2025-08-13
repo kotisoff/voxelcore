@@ -123,7 +123,6 @@ function run_current_file()
     local unit = info and info.unit
 
     if script_type == "model" then
-        print(current_file.filename)
         clear_output()
         local _, err = pcall(reload_model, current_file.filename, unit)
         if err then

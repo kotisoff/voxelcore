@@ -10,6 +10,7 @@ Subsections:
 - [Entities and components](scripting/ecs.md)
 - [Libraries](#)
     - [app](scripting/builtins/libapp.md)
+    - [assets](scripting/builtins/libassets.md)
     - [base64](scripting/builtins/libbase64.md)
     - [bjson, json, toml, yaml](scripting/filesystem.md)
     - [block](scripting/builtins/libblock.md)
