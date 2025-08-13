@@ -39,6 +39,7 @@ class Entities {
     entityid_t nextID = 1;
     util::Clock sensorsTickClock;
     util::Clock updateTickClock;
+    util::Clock physicsTickClock;
 
     void updateSensors(
         Rigidbody& body, const Transform& tsf, std::vector<Sensor*>& sensors
