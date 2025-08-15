@@ -27,6 +27,7 @@
 #include "voxels/Block.hpp"
 #include "voxels/Chunk.hpp"
 #include "world/Level.hpp"
+#include "world/World.hpp"
 #include "interfaces/Process.hpp"
 
 using namespace scripting;
@@ -330,7 +331,11 @@ void scripting::on_world_load(LevelController* controller) {
     } 
     
     for (auto& pack : content_control->getAllContentPacks()) {
-        lua::emit_event(L, pack.id + ":.worldopen");
+        lua::emit_event(L, pack.id + ":.worldopen", [](auto L) {
+            return lua::pushboolean(
+                L, !scripting::level->getWorld()->getInfo().isLoaded
+            );
+        });
     }
 }
 
