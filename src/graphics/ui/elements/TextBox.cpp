@@ -846,6 +846,8 @@ void TextBox::onTab(bool shiftPressed) {
     int lastSelectionEnd = selectionEnd;
     size_t lastCaret = caret;
     
+    auto combination = history->beginCombination();
+
     resetSelection();
 
     for (int line = lineA; line <= lineB; line++) {
@@ -884,6 +886,7 @@ void TextBox::onTab(bool shiftPressed) {
     } else {
         selectionOrigin = selectionEnd;
     }
+    historian->sync();
 }
 
 void TextBox::refreshSyntax() {
