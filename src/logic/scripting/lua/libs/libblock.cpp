@@ -101,12 +101,9 @@ static int l_set(lua::State* L) {
     if (static_cast<size_t>(id) >= indices->blocks.count()) {
         return 0;
     }
-    int cx = floordiv<CHUNK_W>(x);
-    int cz = floordiv<CHUNK_D>(z);
-    if (!blocks_agent::get_chunk(*level->chunks, cx, cz)) {
+    if (!blocks_agent::set(*level->chunks, x, y, z, id, int2blockstate(state))) {
         return 0;
     }
-    blocks_agent::set(*level->chunks, x, y, z, id, int2blockstate(state));
 
     auto chunksController = controller->getChunksController();
     if (chunksController == nullptr) {
