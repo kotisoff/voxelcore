@@ -22,9 +22,9 @@ local O_NONBLOCK = 0x800
 local F_GETFL    = 3
 
 local function getError()
-    local err = ffi.errno()
+    local err = FFI.errno()
 
-    return ffi.string(C.strerror(err)).." ("..err..")"
+    return FFI.string(C.strerror(err)).." ("..err..")"
 end
 
 local lib = {}
