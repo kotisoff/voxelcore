@@ -38,10 +38,6 @@ namespace devtools {
     class Editor;
 }
 
-namespace scripting {
-    class IProjectScript;
-}
-
 class initialize_error : public std::runtime_error {
 public:
     initialize_error(const std::string& message) : std::runtime_error(message) {}
@@ -86,6 +82,9 @@ class Engine : public util::ObjectsKeeper {
     void updateHotkeys();
     void loadAssets();
     void loadProject();
+
+    void initializeClient();
+    void onContentLoad();
 public:
     Engine();
     ~Engine();
