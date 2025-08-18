@@ -31,7 +31,7 @@ local lib = {}
 
 function lib.read(fd, len)
     local buffer = FFI.new("uint8_t[?]", len)
-    local result = C.read(fd, buffer, len)
+    local result = tonumber(C.read(fd, buffer, len))
 
     local out = Bytearray()
 
