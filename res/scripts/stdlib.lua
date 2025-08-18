@@ -1,3 +1,5 @@
+local enable_experimental = core.get_setting("debug.enable-experimental")
+
 ------------------------------------------------
 ------ Extended kit of standard functions ------
 ------------------------------------------------
@@ -167,6 +169,10 @@ function inventory.set_description(invid, slot, description)
         description = ""
     end
     inventory.set_data(invid, slot, "description", description)
+end
+
+if enable_experimental then
+    require "core:internal/maths_inline"
 end
 
 events = require "core:internal/events"
