@@ -65,9 +65,18 @@ namespace scripting {
 
     void process_post_runnables();
 
-    std::unique_ptr<Process> start_coroutine(
+    class IClientProjectScript {
+    public:
+        virtual ~IClientProjectScript() {}
+
+        virtual void onScreenChange(const std::string& name, bool show) = 0;
+    };
+
+    std::unique_ptr<IClientProjectScript> load_client_project_script(
         const io::path& script
     );
+
+    std::unique_ptr<Process> start_coroutine(const io::path& script);
 
     void on_world_load(LevelController* controller);
     void on_world_tick(int tps);
