@@ -106,7 +106,7 @@ static bool resolve_dependencies(
             continue;
         }
         if (dep.verison == "*" || dep.verison == found->second.version){
-            // dependency pack version mets the required one
+            // dependency pack version meets the required one
             continue;
         } else {
             throw contentpack_error(
