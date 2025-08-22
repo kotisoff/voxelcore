@@ -189,17 +189,16 @@ function check_dependencies(packinfo)
                     "%s (%s)", gui.str("error.dependency-not-found"), depid
                 )
             end
+
+            local dep_pack = pack.get_info(depid);
+            if depver ~= "*" or depver ~= dep_pack.version then
+                return string.format("%s (%s@%s != %s)", gui.str("error.dependency-version-not-met"), depid, dep_pack.version, depver);
+            end
+            
             if table.has(packs_installed, packinfo.id) then
                 table.insert(required, depid)
             end
         end
-
-        local dep_pack = pack.get_info(depid);
-
-        if depver ~= "*" or depver ~= dep_pack.version then
-            return string.format("%s (%s@%s != %s)", gui.str("error.dependency-version-not-met"), depid, dep_pack.version, depver);
-        end
-
     end
     return
 end
