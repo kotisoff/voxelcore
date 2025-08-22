@@ -191,10 +191,10 @@ function check_dependencies(packinfo)
             end
 
             local dep_pack = pack.get_info(depid);
-            if depver ~= "*" or depver ~= dep_pack.version then
+            if depver ~= "*" and depver ~= dep_pack.version then
                 return string.format("%s (%s@%s != %s)", gui.str("error.dependency-version-not-met"), depid, dep_pack.version, depver);
             end
-            
+
             if table.has(packs_installed, packinfo.id) then
                 table.insert(required, depid)
             end
