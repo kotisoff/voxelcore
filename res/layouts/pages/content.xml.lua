@@ -200,7 +200,6 @@ function check_dependencies(packinfo)
             return string.format("%s (%s@%s != %s)", gui.str("error.dependency-version-not-met"), depid, dep_pack.version, depver);
         end
 
-        debug.print(packinfo);
     end
     return
 end
