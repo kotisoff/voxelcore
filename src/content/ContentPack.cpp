@@ -132,7 +132,15 @@ ContentPack ContentPack::read(const io::path& folder) {
                     level = DependencyLevel::weak;
                     break;
             }
-            pack.dependencies.push_back({level, depName});
+
+            std::string depVersion = "*";
+            size_t version_pos = depName.rfind("@");
+            if (version_pos != std::string::npos){
+                depVersion = depName.substr(version_pos + 1);
+                depName = depName.substr(0, version_pos);
+            }
+            
+            pack.dependencies.push_back({level, depName, depVersion});
         }
     }
 

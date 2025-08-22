@@ -35,6 +35,7 @@ enum class DependencyLevel {
 struct DependencyPack {
     DependencyLevel level;
     std::string id;
+    std::string verison;
 };
 
 struct ContentPackStats {

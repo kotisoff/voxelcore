@@ -181,8 +181,9 @@ function check_dependencies(packinfo)
         return
     end
     for i,dep in ipairs(packinfo.dependencies) do
-        local depid = dep:sub(2,-1)
-        if dep:sub(1,1) == '!' then 
+        local depid, depver = unpack(string.split(dep:sub(2,-1), "@"))
+
+        if dep:sub(1,1) == '!' then
             if not table.has(packs_all, depid) then
                 return string.format(
                     "%s (%s)", gui.str("error.dependency-not-found"), depid
@@ -192,6 +193,14 @@ function check_dependencies(packinfo)
                 table.insert(required, depid)
             end
         end
+
+        local dep_pack = pack.get_info(depid);
+
+        if depver ~= "*" or depver ~= dep_pack.version then
+            return string.format("%s (%s@%s != %s)", gui.str("error.dependency-version-not-met"), depid, dep_pack.version, depver);
+        end
+
+        debug.print(packinfo);
     end
     return
 end

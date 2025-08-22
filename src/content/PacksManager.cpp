@@ -105,6 +105,14 @@ static bool resolve_dependencies(
             // added
             continue;
         }
+        if (dep.verison == "*" || dep.verison == found->second.version){
+            // dependency pack version mets the required one
+            continue;
+        } else {
+            throw contentpack_error(
+                dep.id, io::path(), "does not meet required version '" + dep.verison +"' of '" + pack->id + "'"
+            );
+        }
 
         if (!util::contains(allNames, dep.id) &&
             dep.level != DependencyLevel::weak) {
