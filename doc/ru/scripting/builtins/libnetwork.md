@@ -135,7 +135,7 @@ network.udp_open(
 	port: int,
 	-- Функция, вызываемая при получении датаграмы
 	-- В параметры передаётся адрес и порт отправителя, а также сами данные
-	datagramHandler: function(address: str, port: int, data: Bytearray)
+	datagramHandler: function(server: DatagramServerSocket, address: str, port: int, data: Bytearray)
 ) --> DatagramServerSocket
 ```
 

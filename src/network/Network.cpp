@@ -442,8 +442,6 @@ public:
         return to_string(addr, false);
     }
 
-    TransportType getTransportType() const override { return TransportType::TCP; }
-
     static std::shared_ptr<SocketTcpConnection> connect(
         const std::string& address, int port, runnable callback
     ) {
@@ -611,7 +609,7 @@ public:
         : id(id), descriptor(descriptor), addr(std::move(addr)) {}
 
     ~SocketUdpConnection() override {
-        close();
+        SocketUdpConnection::close();
     }
 
     static std::shared_ptr<SocketUdpConnection> connect(
@@ -623,18 +621,17 @@ public:
     ) {
         SOCKET descriptor = socket(AF_INET, SOCK_DGRAM, 0);
         if (descriptor == -1) {
-            throw std::runtime_error("Could not create UDP socket");
+            throw std::runtime_error("could not create UDP socket");
         }
 
         sockaddr_in serverAddr{};
         serverAddr.sin_family = AF_INET;
         if (inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr) <= 0) {
             closesocket(descriptor);
-            throw std::runtime_error("Invalid UDP address: " + address);
+            throw std::runtime_error("invalid UDP address: " + address);
         }
         serverAddr.sin_port = htons(port);
 
-        // вызов connect() на UDP сокете → ограничиваем только одним адресом
         if (::connect(descriptor, (sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
             auto err = handle_socket_error("UDP connect failed");
             closesocket(descriptor);
@@ -721,10 +718,6 @@ public:
     [[nodiscard]] ConnectionState getState() const override {
         return state;
     }
-
-    [[nodiscard]] TransportType getTransportType() const noexcept override {
-        return TransportType::UDP;
-    }
 };
 
 class SocketUdpServer : public UdpServer {
@@ -737,14 +730,16 @@ class SocketUdpServer : public UdpServer {
     ServerDatagramCallback callback;
 
 public:
-    SocketUdpServer(u64id_t id, Network* network, SOCKET descriptor, int port, ServerDatagramCallback cb)
-        : id(id), network(network), descriptor(descriptor), port(port), callback(std::move(cb)) {}
+    SocketUdpServer(u64id_t id, Network* network, SOCKET descriptor, int port)
+        : id(id), network(network), descriptor(descriptor), port(port) {}
 
     ~SocketUdpServer() override {
         SocketUdpServer::close();
     }
 
-    void startListen() {
+    void startListen(ServerDatagramCallback handler) {
+        callback = std::move(handler);
+
         thread = std::make_unique<std::thread>([this]() {
             util::Buffer<char> buffer(16384);
             sockaddr_in clientAddr{};
@@ -806,8 +801,8 @@ public:
             throw std::runtime_error("Could not bind UDP port " + std::to_string(port));
         }
 
-        auto server = std::make_shared<SocketUdpServer>(id, network, descriptor, port, std::move(handler));
-        server->startListen();
+        auto server = std::make_shared<SocketUdpServer>(id, network, descriptor, port);
+        server->startListen(std::move(handler));
         return server;
     }
 };

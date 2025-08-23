@@ -90,19 +90,21 @@ network.tcp_connect = function(address, port, callback)
 end
 
 network.udp_open = function (port, datagramHandler)
-    if type(datagramHandler) ~= 'func' then
+    if type(datagramHandler) ~= 'function' then
         error "udp server cannot be opened without datagram handler"
     end
 
     local socket = setmetatable({id=network.__open_udp(port)}, DatagramServerSocket)
 
-    _udp_server_callbacks[socket.id] = datagramHandler
+    _udp_server_callbacks[socket.id] = function(...)
+        datagramHandler(socket, ...)
+    end
 
     return socket
 end
 
 network.udp_connect = function (address, port, datagramHandler, openCallback)
-    if type(datagramHandler) ~= 'func' then
+    if type(datagramHandler) ~= 'function' then
         error "udp client socket cannot be opened without datagram handler"
     end
 
