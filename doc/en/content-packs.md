@@ -31,7 +31,7 @@ If prefix is not specified, '!' level will be used.
 Example: '~randutil' - weak dependency 'randutil'.
 
 Dependency version is indicated by postfix after '@' symbol.
-If postfix is not specified, '*' (any) version will be used.
+If postfix is not specified, '\*' (any) version will be used.
 
 Example: 'randutil@1.0' - dependency 'randutil' which requires version 1.0.
 
