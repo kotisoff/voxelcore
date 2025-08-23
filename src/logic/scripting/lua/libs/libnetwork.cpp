@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "api_lua.hpp"
 #include "coders/json.hpp"
 #include "engine/Engine.hpp"

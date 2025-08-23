@@ -104,10 +104,10 @@ server:get_port() --> int
 network.udp_connect(
 	address: str,
 	port: int,
-    -- Функция, вызызываемая при получении датаграммы с указанного при открытии сокета адреса и порта
+    -- Функция, вызываемая при получении датаграммы с указанного при открытии сокета адреса и порта
 	datagramHandler: function(Bytearray),
 	-- Функция, вызываемая после открытия сокета
-	-- Необязательна, так как в UDP нет handshake
+	-- Опциональна, так как в UDP нет handshake
     [опционально] openCallback: function(WriteableSocket),
 ) --> WriteableSocket
 ```
@@ -135,7 +135,7 @@ network.udp_open(
 	port: int,
 	-- Функция, вызываемая при получении датаграмы
 	-- В параметры передаётся адрес и порт отправителя, а также сами данные
-	datagramHandler: function(server: DatagramServerSocket, address: str, port: int, data: Bytearray)
+	datagramHandler: function(address: str, port: int, data: Bytearray, server: DatagramServerSocket)
 ) --> DatagramServerSocket
 ```
 

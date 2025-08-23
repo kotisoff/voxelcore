@@ -96,8 +96,8 @@ network.udp_open = function (port, datagramHandler)
 
     local socket = setmetatable({id=network.__open_udp(port)}, DatagramServerSocket)
 
-    _udp_server_callbacks[socket.id] = function(...)
-        datagramHandler(socket, ...)
+    _udp_server_callbacks[socket.id] = function(address, port, data)
+        datagramHandler(address, port, data, socket)
     end
 
     return socket
