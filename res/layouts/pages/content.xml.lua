@@ -179,7 +179,7 @@ end
 local Version = {};
 
 function Version.matches_pattern(version)
-    for _, letter in string.gmatch(version, "%s+") do
+    for _, letter in string.gmatch(version, "%.+") do
         if type(letter) ~= "number" or letter ~= "." then
             return false;
         end
