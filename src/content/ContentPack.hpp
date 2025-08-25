@@ -20,9 +20,14 @@ public:
         io::path folder,
         const std::string& message
     );
-
+    
     std::string getPackId() const;
     io::path getFolder() const;
+};
+
+enum class DependencyVersionOperator {
+    equal, more, less,
+    more_or_equal, less_or_equal
 };
 
 enum class DependencyLevel {
@@ -35,7 +40,8 @@ enum class DependencyLevel {
 struct DependencyPack {
     DependencyLevel level;
     std::string id;
-    std::string verison;
+    std::string version;
+    std::string op;
 };
 
 struct ContentPackStats {

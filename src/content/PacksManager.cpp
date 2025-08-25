@@ -3,6 +3,7 @@
 #include <queue>
 #include <sstream>
 
+#include "ContentPackVersion.hpp"
 #include "util/listutil.hpp"
 
 PacksManager::PacksManager() = default;
@@ -105,12 +106,21 @@ static bool resolve_dependencies(
             // added
             continue;
         }
-        if (dep.verison == "*" || dep.verison == found->second.version){
+
+        auto dep_pack = found -> second;
+
+        if (Version::matches_pattern(dep.version) && Version::matches_pattern(dep_pack.version)
+            && Version(dep_pack.version)
+                .process_operator(dep.op, Version(dep.version))
+        ) {
             // dependency pack version meets the required one
+            continue;
+        } else if (dep.version == "*" || dep.version == dep_pack.version){
+            // fallback: dependency pack version also meets required one
             continue;
         } else {
             throw contentpack_error(
-                dep.id, io::path(), "does not meet required version '" + dep.verison +"' of '" + pack->id + "'"
+                dep.id, io::path(), "does not meet required version '" + dep.op + dep.version +"' of '" + pack->id + "'"
             );
         }
 
