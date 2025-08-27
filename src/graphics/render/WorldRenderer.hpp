@@ -65,7 +65,6 @@ class WorldRenderer {
     bool lightsDebug = false;
     bool gbufferPipeline = false;
 
-
     CompileTimeShaderSettings prevCTShaderSettings {};
 
     /// @brief Render block selection lines

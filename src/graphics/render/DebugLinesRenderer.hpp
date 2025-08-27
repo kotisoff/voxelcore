@@ -9,6 +9,8 @@ class Level;
 
 class DebugLinesRenderer {
 public:
+    static bool showPaths;
+    
     DebugLinesRenderer(const Level& level)
         : level(level) {};
 

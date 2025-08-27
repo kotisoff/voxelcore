@@ -10,6 +10,8 @@
 #include "voxels/Pathfinding.hpp"
 #include "maths/voxmaths.hpp"
 
+bool DebugLinesRenderer::showPaths = false;
+
 static void draw_route(
     LinesRenderer& lines, const voxels::Agent& agent
 ) {
@@ -99,8 +101,10 @@ void DebugLinesRenderer::render(
     bool showChunkBorders
 ) {
     // In-world lines
-    for (const auto& [_, agent] : level.pathfinding->getAgents()) {
-        draw_route(renderer, agent);
+    if (showPaths) {
+        for (const auto& [_, agent] : level.pathfinding->getAgents()) {
+            draw_route(renderer, agent);
+        }
     }
     DrawContext ctx = pctx.sub(&linesBatch);
     const auto& viewport = ctx.getViewport();
