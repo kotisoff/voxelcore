@@ -2,14 +2,13 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
-
-#include <vector>
-#include <memory>
-#include <queue>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <memory>
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 class Level;
 class GlobalChunks;
@@ -50,6 +49,7 @@ namespace voxels {
         bool enabled = false;
         bool mayBeIncomplete = true;
         int height = 2;
+        int jumpHeight = 1;
         int maxVisitedBlocks = 1e3;
         glm::ivec3 start;
         glm::ivec3 target;

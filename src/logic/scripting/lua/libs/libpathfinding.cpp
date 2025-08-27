@@ -91,6 +91,13 @@ static int l_set_max_visited_blocks(lua::State* L) {
     return 0;
 }
 
+static int l_set_jump_height(lua::State* L) {
+    if (auto agent = get_agent(L)) {
+        agent->jumpHeight = lua::tointeger(L, 2);
+    }
+    return 0;
+}
+
 const luaL_Reg pathfindinglib[] = {
     {"create_agent", lua::wrap<l_create_agent>},
     {"remove_agent", lua::wrap<l_remove_agent>},
@@ -100,5 +107,6 @@ const luaL_Reg pathfindinglib[] = {
     {"make_route_async", lua::wrap<l_make_route_async>},
     {"pull_route", lua::wrap<l_pull_route>},
     {"set_max_visited", lua::wrap<l_set_max_visited_blocks>},
+    {"set_jump_height", lua::wrap<l_set_jump_height>},
     {NULL, NULL}
 };

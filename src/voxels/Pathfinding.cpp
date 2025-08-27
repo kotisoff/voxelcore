@@ -156,7 +156,7 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
                 continue;
             }
 
-            if (is_obstacle_at(chunks, pos.x, pos.y + agent.height / 2, pos.z)) {
+            if (is_obstacle_at(chunks, pos.x, pos.y + agent.jumpHeight, pos.z)) {
                 continue;
             }
             if (!check_passability(agent, chunks, node, offset, i >= 4)) {
