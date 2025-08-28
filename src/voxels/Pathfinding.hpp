@@ -10,8 +10,12 @@
 #include <unordered_set>
 #include <vector>
 
+class Block;
 class Level;
 class GlobalChunks;
+
+template <typename T>
+class ContentUnitIndices;
 
 namespace voxels {
     struct RouteNode {
@@ -21,6 +25,7 @@ namespace voxels {
     struct Route {
         bool found;
         std::vector<RouteNode> nodes;
+        int totalVisited;
     };
 
     struct Node {
@@ -75,9 +80,12 @@ namespace voxels {
     private:
         const Level& level;
         const GlobalChunks& chunks;
+        const ContentUnitIndices<Block>& blockDefs;
         std::unordered_map<int, Agent> agents;
         int nextAgent = 1;
 
         int getSurfaceAt(const glm::ivec3& pos, int maxDelta);
+
+        int checkPoint(int x, int y, int z);
     };
 }

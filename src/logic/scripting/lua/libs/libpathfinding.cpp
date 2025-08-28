@@ -32,6 +32,17 @@ static int l_is_enabled(lua::State* L) {
     return lua::pushboolean(L, false);
 }
 
+static int push_route(lua::State* L, const voxels::Route& route) {
+    lua::createtable(L, route.nodes.size(), 1);
+    for (int i = 0; i < route.nodes.size(); i++) {
+        lua::pushvec3(L, route.nodes[i].pos);
+        lua::rawseti(L, i + 1);
+    }
+    lua::pushinteger(L, route.totalVisited);
+    lua::setfield(L, "total_visited");
+    return 1;
+}
+
 static int l_make_route(lua::State* L) {
     if (auto agent = get_agent(L)) {
         auto start = lua::tovec3(L, 2);
@@ -43,12 +54,7 @@ static int l_make_route(lua::State* L) {
         if (!route.found) {
             return 0;
         }
-        lua::createtable(L, route.nodes.size(), 0);
-        for (int i = 0; i < route.nodes.size(); i++) {
-            lua::pushvec3(L, route.nodes[i].pos);
-            lua::rawseti(L, i + 1);
-        }
-        return 1;
+        return push_route(L, route);
     }
     return 0;
 }
@@ -74,12 +80,7 @@ static int l_pull_route(lua::State* L) {
         if (!route.found) {
             return lua::createtable(L, 0, 0);
         }
-        lua::createtable(L, route.nodes.size(), 0);
-        for (int i = 0; i < route.nodes.size(); i++) {
-            lua::pushvec3(L, route.nodes[i].pos);
-            lua::rawseti(L, i + 1);
-        }
-        return 1;
+        return push_route(L, route);
     }
     return 0;
 }

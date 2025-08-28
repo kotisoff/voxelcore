@@ -1,12 +1,12 @@
 #include "Pathfinding.hpp"
 
-#include "world/Level.hpp"
-#include "voxels/GlobalChunks.hpp"
-#include "voxels/Chunk.hpp"
-#include "voxels/blocks_agent.hpp"
 #include "content/Content.hpp"
+#include "voxels/Chunk.hpp"
+#include "voxels/GlobalChunks.hpp"
+#include "voxels/blocks_agent.hpp"
+#include "world/Level.hpp"
 
-inline constexpr float SQRT2 = 1.4142135623730951f; // sqrt(2)
+inline constexpr float SQRT2 = 1.4142135623730951f;  // sqrt(2)
 
 using namespace voxels;
 
@@ -15,7 +15,9 @@ static float heuristic(const glm::ivec3& a, const glm::ivec3& b) {
 }
 
 Pathfinding::Pathfinding(const Level& level)
-    : level(level), chunks(*level.chunks) {
+    : level(level),
+      chunks(*level.chunks),
+      blockDefs(level.content.getIndices()->blocks) {
 }
 
 static bool check_passability(
@@ -81,14 +83,32 @@ void Pathfinding::performAllAsync(int stepsPerAgent) {
     }
 }
 
+static Route finish_route(Agent& agent, State&& state) {
+    Route route {};
+    restore_route(route, state.nearest, state.parents);
+    route.totalVisited = state.blocked.size();
+    route.nodes.push_back({agent.start});
+    route.found = true;
+    state.finished = true;
+    agent.state = std::move(state);
+    agent.route = route;
+    return route;
+}
+
+enum Passability {
+    NON_PASSABLE = -1,
+    OBSTACLE = 0,
+    PASSABLE = 1,
+};
+
 Route Pathfinding::perform(Agent& agent, int maxVisited) {
     using namespace blocks_agent;
 
-    Route route {};
-
     State state = std::move(agent.state);
     if (state.queue.empty()) {
-        state.queue.push({agent.start, {}, 0, heuristic(agent.start, agent.target)});
+        state.queue.push(
+            {agent.start, {}, 0, heuristic(agent.start, agent.target)}
+        );
     }
 
     const auto& chunks = *level.chunks;
@@ -103,13 +123,7 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
     while (!state.queue.empty()) {
         if (state.blocked.size() == agent.maxVisitedBlocks) {
             if (agent.mayBeIncomplete) {
-                restore_route(route, state.nearest, state.parents);
-                route.nodes.push_back({agent.start});
-                route.found = true;
-                state.finished = true;
-                agent.state = std::move(state);
-                agent.route = route;
-                return route;
+                return finish_route(agent, std::move(state));
             }
             break;
         }
@@ -126,26 +140,27 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
         if (node.pos.x == agent.target.x &&
             glm::abs((node.pos.y - agent.target.y) / height) == 0 &&
             node.pos.z == agent.target.z) {
-            restore_route(route, node.pos, state.parents);
-            route.nodes.push_back({agent.start});
-            route.found = true;
-            state.finished = true;
-            agent.state = std::move(state);
-            agent.route = route;
-            return route;
+            return finish_route(agent, std::move(state));
         }
 
         state.blocked.emplace(node.pos);
         glm::ivec2 neighbors[8] {
-            {0, 1}, {1, 0}, {0, -1}, {-1, 0},
-            {-1, -1}, {1, -1}, {1, 1}, {-1, 1},
+            {0, 1},
+            {1, 0},
+            {0, -1},
+            {-1, 0},
+            {-1, -1},
+            {1, -1},
+            {1, 1},
+            {-1, 1},
         };
 
         for (int i = 0; i < sizeof(neighbors) / sizeof(glm::ivec2); i++) {
             auto offset = neighbors[i];
             auto pos = node.pos;
 
-            int surface = getSurfaceAt(pos + glm::ivec3(offset.x, 0, offset.y), 1);
+            int surface =
+                getSurfaceAt(pos + glm::ivec3(offset.x, 0, offset.y), 1);
 
             if (surface == -1) {
                 continue;
@@ -156,7 +171,9 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
                 continue;
             }
 
-            if (is_obstacle_at(chunks, pos.x, pos.y + agent.jumpHeight, pos.z)) {
+            if (is_obstacle_at(
+                    chunks, pos.x, pos.y + agent.jumpHeight, pos.z
+                )) {
                 continue;
             }
             if (!check_passability(agent, chunks, node, offset, i >= 4)) {
@@ -165,8 +182,7 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
 
             int score = glm::abs(node.pos.y - pos.y) * 10;
             float sum = glm::abs(offset.x) + glm::abs(offset.y);
-            float gScore =
-                node.gScore + sum + score;
+            float gScore = node.gScore + sum + score;
             const auto& found = state.parents.find(point);
             if (found == state.parents.end()) {
                 float hScore = heuristic(point, agent.target);
@@ -198,45 +214,37 @@ const std::unordered_map<int, Agent>& Pathfinding::getAgents() const {
     return agents;
 }
 
-static int check_point(
-    const ContentUnitIndices<Block>& defs,
-    const GlobalChunks& chunks,
-    int x,
-    int y,
-    int z
-) {
+int Pathfinding::checkPoint(int x, int y, int z) {
     auto vox = blocks_agent::get(chunks, x, y, z);
     if (vox == nullptr) {
-        return 0;
+        return OBSTACLE;
     }
-    const auto& def = defs.require(vox->id);
+    const auto& def = blockDefs.require(vox->id);
     if (def.obstacle) {
-        return 0;
+        return OBSTACLE;
     }
     if (def.translucent) {
-        return -1;
+        return NON_PASSABLE;
     }
-    return 1;
+    return PASSABLE;
 }
 
 int Pathfinding::getSurfaceAt(const glm::ivec3& pos, int maxDelta) {
     using namespace blocks_agent;
 
-    const auto& defs = level.content.getIndices()->blocks;
-
     int status;
     int surface = pos.y;
-    if (check_point(defs, chunks, pos.x, surface, pos.z) <= 0) {
-        if (check_point(defs, chunks, pos.x, surface + 1, pos.z) <= 0)
-            return -1;
+    if (checkPoint(pos.x, surface, pos.z) <= 0) {
+        if (checkPoint(pos.x, surface + 1, pos.z) <= 0)
+            return NON_PASSABLE;
         else
             return surface + 1;
-    } else if ((status = check_point(defs, chunks, pos.x, surface - 1, pos.z)) <= 0) {
-        if (status == -1)
-            return -1;
+    } else if ((status = checkPoint(pos.x, surface - 1, pos.z)) <= 0) {
+        if (status == NON_PASSABLE) 
+            return NON_PASSABLE;
         return surface;
-    } else if (check_point(defs, chunks, pos.x, surface - 2, pos.z) == 0) {
+    } else if (checkPoint(pos.x, surface - 2, pos.z) == 0) {
         return surface - 1;
     }
-    return -1;
+    return NON_PASSABLE;
 }
