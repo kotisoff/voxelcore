@@ -19,6 +19,7 @@
 static debug::Logger logger("window");
 
 static std::unordered_set<std::string> supported_gl_extensions;
+static void window_size_callback(GLFWwindow* window, int width, int height);
 
 static void init_gl_extensions_list() {
     GLint numExtensions = 0;
@@ -430,6 +431,7 @@ public:
                 settings->height.get(),
                 GLFW_DONT_CARE
             );
+            window_size_callback(window, settings->width.get(), settings->height.get());
         }
     
         double xPos, yPos;
