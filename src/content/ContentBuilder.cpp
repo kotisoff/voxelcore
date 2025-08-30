@@ -29,7 +29,7 @@ std::unique_ptr<Content> ContentBuilder::build() {
         def.rt.id = blockDefsIndices.size();
         def.rt.emissive = *reinterpret_cast<uint32_t*>(def.emission);
         for (const auto& tag : def.tags) {
-            def.rt.tags.push_back(tags.add(tag));
+            def.rt.tags.insert(tags.add(tag));
         }
 
         if (def.variants) {
@@ -96,7 +96,8 @@ std::unique_ptr<Content> ContentBuilder::build() {
         std::move(blockMaterials),
         std::move(skeletons),
         std::move(resourceIndices),
-        std::move(defaults)
+        std::move(defaults),
+        std::move(tags.map)
     );
 
     // Now, it's time to resolve foreign keys

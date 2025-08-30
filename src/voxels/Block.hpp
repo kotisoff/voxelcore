@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <set>
 
 #include "data/dv.hpp"
 #include "maths/UVRegion.hpp"
@@ -288,7 +289,7 @@ public:
 
         blockid_t surfaceReplacement = 0;
 
-        std::vector<int> tags;
+        std::set<int> tags;
     } rt {};
 
     Block(const std::string& name);

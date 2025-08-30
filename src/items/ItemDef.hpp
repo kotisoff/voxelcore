@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "data/dv.hpp"
 #include "typedefs.hpp"
@@ -73,7 +74,7 @@ struct ItemDef {
         ItemFuncsSet funcsset {};
         bool emissive = false;
 
-        std::vector<int> tags;
+        std::set<int> tags;
     } rt {};
 
     ItemDef(const std::string& name);
