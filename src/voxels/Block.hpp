@@ -261,6 +261,8 @@ public:
 
     std::unique_ptr<Variants> variants;
 
+    std::vector<std::string> tags;
+
     /// @brief Runtime indices (content indexing results)
     struct {
         /// @brief block runtime integer id
@@ -285,6 +287,8 @@ public:
         itemid_t pickingItem = 0;
 
         blockid_t surfaceReplacement = 0;
+
+        std::vector<int> tags;
     } rt {};
 
     Block(const std::string& name);

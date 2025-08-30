@@ -21,3 +21,17 @@ inline void process_properties(T& def, const std::string& name, const dv::value&
         process_method(def.properties, suffix, field, value);
     }
 }
+
+template <typename T>
+inline void process_tags(T& def, const dv::value& root) {
+    if (!root.has("tags")) {
+        return;
+    }
+    const auto& tags = root["tags"];
+    for (const auto& tagValue : tags) {
+        if (!tagValue.isString()) {
+            continue;
+        }
+        def.tags.push_back(tagValue.asString());
+    }
+}

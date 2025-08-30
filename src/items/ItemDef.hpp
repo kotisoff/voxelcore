@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <string>
+#include <vector>
 
 #include "data/dv.hpp"
 #include "typedefs.hpp"
@@ -64,11 +65,15 @@ struct ItemDef {
 
     std::string scriptFile;
 
+    std::vector<std::string> tags;
+
     struct {
         itemid_t id;
         blockid_t placingBlock;
         ItemFuncsSet funcsset {};
         bool emissive = false;
+
+        std::vector<int> tags;
     } rt {};
 
     ItemDef(const std::string& name);

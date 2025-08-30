@@ -28,6 +28,9 @@ std::unique_ptr<Content> ContentBuilder::build() {
         // Generating runtime info
         def.rt.id = blockDefsIndices.size();
         def.rt.emissive = *reinterpret_cast<uint32_t*>(def.emission);
+        for (const auto& tag : def.tags) {
+            def.rt.tags.push_back(tags.add(tag));
+        }
 
         if (def.variants) {
             for (auto& variant : def.variants->variants) {

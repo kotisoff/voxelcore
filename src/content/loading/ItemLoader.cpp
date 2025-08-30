@@ -19,6 +19,7 @@ template<> void ContentUnitLoader<ItemDef>::loadUnit(
 ) {
     auto root = io::read_json(file);
     process_properties(def, name, root);
+    process_tags(def, root);
 
     if (root.has("parent")) {
         const auto& parentName = root["parent"].asString();
