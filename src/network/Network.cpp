@@ -722,7 +722,6 @@ public:
 
 class SocketUdpServer : public UdpServer {
     u64id_t id;
-    Network* network;
     SOCKET descriptor;
     bool open = true;
     std::unique_ptr<std::thread> thread = nullptr;
@@ -731,13 +730,13 @@ class SocketUdpServer : public UdpServer {
 
 public:
     SocketUdpServer(u64id_t id, Network* network, SOCKET descriptor, int port)
-        : id(id), network(network), descriptor(descriptor), port(port) {}
+        : id(id), descriptor(descriptor), port(port) {}
 
     ~SocketUdpServer() override {
         SocketUdpServer::close();
     }
 
-    void startListen(ServerDatagramCallback handler) {
+    void startListen(ServerDatagramCallback handler) override {
         callback = std::move(handler);
 
         thread = std::make_unique<std::thread>([this]() {
