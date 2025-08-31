@@ -61,7 +61,7 @@ std::unique_ptr<Content> ContentBuilder::build() {
         }
 
         blockDefsIndices.push_back(&def);
-        groups->insert(def.defaults.drawGroup); // FIXME
+        groups->insert(def.defaults.drawGroup); // FIXME: variants
     }
 
     std::vector<ItemDef*> itemDefsIndices;
