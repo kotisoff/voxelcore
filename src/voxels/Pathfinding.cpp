@@ -75,7 +75,7 @@ bool Pathfinding::removeAgent(int id) {
 }
 
 void Pathfinding::performAllAsync(int stepsPerAgent) {
-    for (auto& [id, agent] : agents) {
+    for (auto& [_, agent] : agents) {
         if (agent.state.finished) {
             continue;
         }
@@ -215,7 +215,7 @@ const std::unordered_map<int, Agent>& Pathfinding::getAgents() const {
     return agents;
 }
 
-int Pathfinding::checkPoint(const Agent& agent, int x, int y, int z) {
+int Pathfinding::checkPoint(const Agent& agent, int x, int y, int z, int& cost) {
     auto vox = blocks_agent::get(chunks, x, y, z);
     if (vox == nullptr) {
         return OBSTACLE;
@@ -224,8 +224,9 @@ int Pathfinding::checkPoint(const Agent& agent, int x, int y, int z) {
     if (def.obstacle) {
         return OBSTACLE;
     }
-    for (int tagIndex : agent.avoidTags) {
-        if (def.rt.tags.find(tagIndex) != def.rt.tags.end()) {
+    for (const auto& pair : agent.avoidTags) {
+        if (def.rt.tags.find(pair.first) != def.rt.tags.end()) {
+            cost = pair.second;
             return NON_PASSABLE;
         }
     }
@@ -239,23 +240,27 @@ int Pathfinding::getSurfaceAt(
 
     int status;
     int surface = pos.y;
-    if ((status = checkPoint(agent, pos.x, surface, pos.z)) == OBSTACLE) {
-        if ((status = checkPoint(agent, pos.x, surface + 1, pos.z)) == OBSTACLE) {
+    int ncost = 0;
+    if ((status = checkPoint(agent, pos.x, surface, pos.z, ncost)) == OBSTACLE) {
+        if ((status = checkPoint(agent, pos.x, surface + 1, pos.z, ncost)) == OBSTACLE) {
             return NON_PASSABLE;
         } else if (status == NON_PASSABLE) {
-            ++cost;
+            cost += 5;
         }
+        cost += ncost;
         return surface + 1;
     } else {
         if (status == NON_PASSABLE) {
-            ++cost;
+            cost += 5;
         }
-        if ((status = checkPoint(agent, pos.x, surface - 1, pos.z)) == OBSTACLE) {
+        if ((status = checkPoint(agent, pos.x, surface - 1, pos.z, ncost)) == OBSTACLE) {
+            cost += ncost;
             return surface;
         } else if (status == NON_PASSABLE) {
-            ++cost;
+            cost += 5;
         }
-        if ((status = checkPoint(agent, pos.x, surface - 2, pos.z)) == OBSTACLE) {
+        if ((status = checkPoint(agent, pos.x, surface - 2, pos.z, ncost)) == OBSTACLE) {
+            cost += ncost;
             return surface - 1;
         }
         return NON_PASSABLE;
