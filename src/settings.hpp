@@ -87,7 +87,7 @@ struct GraphicsSettings {
 
 struct PathfindingSettings {
     /// @brief Max visited blocks by an agent per async tick
-    IntegerSetting stepsPerAsyncAgent {256, 1, 2048};
+    IntegerSetting stepsPerAsyncAgent {128, 1, 2048};
 };
 
 struct DebugSettings {
