@@ -160,7 +160,7 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
             auto pos = node.pos;
 
             int surface =
-                getSurfaceAt(pos + glm::ivec3(offset.x, 0, offset.y), 1);
+                getSurfaceAt(agent, pos + glm::ivec3(offset.x, 0, offset.y), 1);
 
             if (surface == -1) {
                 continue;
@@ -214,7 +214,7 @@ const std::unordered_map<int, Agent>& Pathfinding::getAgents() const {
     return agents;
 }
 
-int Pathfinding::checkPoint(int x, int y, int z) {
+int Pathfinding::checkPoint(const Agent& agent, int x, int y, int z) {
     auto vox = blocks_agent::get(chunks, x, y, z);
     if (vox == nullptr) {
         return OBSTACLE;
@@ -223,27 +223,29 @@ int Pathfinding::checkPoint(int x, int y, int z) {
     if (def.obstacle) {
         return OBSTACLE;
     }
-    if (def.translucent) {
-        return NON_PASSABLE;
+    for (int tagIndex : agent.avoidTags) {
+        if (def.rt.tags.find(tagIndex) != def.rt.tags.end()) {
+            return NON_PASSABLE;
+        }
     }
     return PASSABLE;
 }
 
-int Pathfinding::getSurfaceAt(const glm::ivec3& pos, int maxDelta) {
+int Pathfinding::getSurfaceAt(const Agent& agent, const glm::ivec3& pos, int maxDelta) {
     using namespace blocks_agent;
 
     int status;
     int surface = pos.y;
-    if (checkPoint(pos.x, surface, pos.z) <= 0) {
-        if (checkPoint(pos.x, surface + 1, pos.z) <= 0)
+    if (checkPoint(agent, pos.x, surface, pos.z) <= 0) {
+        if (checkPoint(agent, pos.x, surface + 1, pos.z) <= 0)
             return NON_PASSABLE;
         else
             return surface + 1;
-    } else if ((status = checkPoint(pos.x, surface - 1, pos.z)) <= 0) {
+    } else if ((status = checkPoint(agent, pos.x, surface - 1, pos.z)) <= 0) {
         if (status == NON_PASSABLE) 
             return NON_PASSABLE;
         return surface;
-    } else if (checkPoint(pos.x, surface - 2, pos.z) == 0) {
+    } else if (checkPoint(agent, pos.x, surface - 2, pos.z) == 0) {
         return surface - 1;
     }
     return NON_PASSABLE;

@@ -54,4 +54,7 @@ pathfinding.pull_route(agent: int) --> table<vec3> or nil
 
 --- Set the maximum number of visited blocks for the agent. Used to limit the amount of work of the pathfinding algorithm.
 pathfinding.set_max_visited(agent: int, max_visited: int)
+
+--- Set a list of tags defining avoided blocks
+pathfinding.set_avoided_tags(agent: int, tags: table<string>)
 ```

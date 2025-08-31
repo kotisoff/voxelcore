@@ -8,5 +8,5 @@
     "selectable": false,
     "replaceable": true,
     "translucent": true,
-    "tags": ["base:liquid"]
+    "tags": ["core:liquid"]
 }
