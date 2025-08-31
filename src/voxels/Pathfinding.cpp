@@ -159,10 +159,12 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
             auto offset = neighbors[i];
             auto pos = node.pos;
 
-            int surface =
-                getSurfaceAt(agent, pos + glm::ivec3(offset.x, 0, offset.y), 1);
+            float cost = glm::abs(node.pos.y - pos.y) * 10;
+            int surface = getSurfaceAt(
+                agent, pos + glm::ivec3(offset.x, 0, offset.y), 1, cost
+            );
 
-            if (surface == -1) {
+            if (surface == NON_PASSABLE) {
                 continue;
             }
             pos.y = surface;
@@ -180,9 +182,8 @@ Route Pathfinding::perform(Agent& agent, int maxVisited) {
                 continue;
             }
 
-            int score = glm::abs(node.pos.y - pos.y) * 10;
             float sum = glm::abs(offset.x) + glm::abs(offset.y);
-            float gScore = node.gScore + sum + score;
+            float gScore = node.gScore + sum + cost;
             const auto& found = state.parents.find(point);
             if (found == state.parents.end()) {
                 float hScore = heuristic(point, agent.target);
@@ -231,22 +232,33 @@ int Pathfinding::checkPoint(const Agent& agent, int x, int y, int z) {
     return PASSABLE;
 }
 
-int Pathfinding::getSurfaceAt(const Agent& agent, const glm::ivec3& pos, int maxDelta) {
+int Pathfinding::getSurfaceAt(
+    const Agent& agent, const glm::ivec3& pos, int maxDelta, float& cost
+) {
     using namespace blocks_agent;
 
     int status;
     int surface = pos.y;
-    if (checkPoint(agent, pos.x, surface, pos.z) <= 0) {
-        if (checkPoint(agent, pos.x, surface + 1, pos.z) <= 0)
+    if ((status = checkPoint(agent, pos.x, surface, pos.z)) == OBSTACLE) {
+        if ((status = checkPoint(agent, pos.x, surface + 1, pos.z)) == OBSTACLE) {
             return NON_PASSABLE;
-        else
-            return surface + 1;
-    } else if ((status = checkPoint(agent, pos.x, surface - 1, pos.z)) <= 0) {
-        if (status == NON_PASSABLE) 
-            return NON_PASSABLE;
-        return surface;
-    } else if (checkPoint(agent, pos.x, surface - 2, pos.z) == 0) {
-        return surface - 1;
+        } else if (status == NON_PASSABLE) {
+            ++cost;
+        }
+        return surface + 1;
+    } else {
+        if (status == NON_PASSABLE) {
+            ++cost;
+        }
+        if ((status = checkPoint(agent, pos.x, surface - 1, pos.z)) == OBSTACLE) {
+            return surface;
+        } else if (status == NON_PASSABLE) {
+            ++cost;
+        }
+        if ((status = checkPoint(agent, pos.x, surface - 2, pos.z)) == OBSTACLE) {
+            return surface - 1;
+        }
+        return NON_PASSABLE;
     }
     return NON_PASSABLE;
 }
