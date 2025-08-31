@@ -95,6 +95,8 @@ struct DebugSettings {
     FlagSetting generatorTestMode {false};
     /// @brief Write lights cache
     FlagSetting doWriteLights {true};
+    /// @brief Write preprocessed shaders code to user:export
+    FlagSetting doTraceShaders {false};
     /// @brief Enable experimental optimizations and features
     FlagSetting enableExperimental {false};
 };
