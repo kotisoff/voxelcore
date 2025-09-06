@@ -15,6 +15,20 @@ inline T angle(glm::vec<2, T> vec) {
     return val;
 }
 
+template <int n>
+static int l_mix(lua::State* L) {
+    uint argc = lua::check_argc(L, 3, 4);
+    auto a = lua::tovec<n, number_t>(L, 1);
+    auto b = lua::tovec<n, number_t>(L, 2);
+    auto t = lua::tonumber(L, 3);
+
+    if (argc == 3) {
+        return lua::pushvec(L, a * (1.0 - t) + b * t);
+    } else {
+        return lua::setvec(L, 4, a * (1.0 - t) + b * t);
+    }
+}
+
 template <int n, template <class> class Op>
 static int l_binop(lua::State* L) {
     uint argc = lua::check_argc(L, 2, 3);
@@ -200,6 +214,7 @@ const luaL_Reg vec2lib[] = {
     {"pow", lua::wrap<l_pow<2>>},
     {"dot", lua::wrap<l_dot<2>>},
     {"angle", lua::wrap<l_vec2_angle>},
+    {"mix", lua::wrap<l_mix<2>>},
     {NULL, NULL}};
 
 const luaL_Reg vec3lib[] = {
@@ -217,6 +232,7 @@ const luaL_Reg vec3lib[] = {
     {"pow", lua::wrap<l_pow<3>>},
     {"dot", lua::wrap<l_dot<3>>},
     {"spherical_rand", lua::wrap<l_spherical_rand>},
+    {"mix", lua::wrap<l_mix<3>>},
     {NULL, NULL}};
 
 const luaL_Reg vec4lib[] = {
@@ -233,4 +249,5 @@ const luaL_Reg vec4lib[] = {
     {"inverse", lua::wrap<l_inverse<4>>},
     {"pow", lua::wrap<l_pow<4>>},
     {"dot", lua::wrap<l_dot<4>>},
+    {"mix", lua::wrap<l_mix<4>>},
     {NULL, NULL}};
