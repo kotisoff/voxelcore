@@ -143,6 +143,16 @@ vecn.pow(v: vector, exponent: number, dst: vector)
 vecn.dot(a: vector, b: vector)
 ```
 
+#### Mixing - *vecn.mix(...)*
+
+```lua
+-- returns vector a * (1.0 - t) + b * t
+vecn.mix(a: vector, b: vector, t: number)
+
+-- writes to dst vector a * (1.0 - t) + b * t
+vecn.mix(a: vector, b: vector, t: number, dst: vector)
+```
+
 #### Convert to string - *vecn.tostring(...)*
 > [!WARNING]
 > Returns only if the content is a vector
@@ -222,3 +232,7 @@ print("pow: " .. vec3.tostring(result_pow)) -- {1, 4, 4}
 -- scalar product of vectors
 local result_dot = vec3.dot(v1_3d, v2_3d)
 print("dot: " ..result_dot) -- 250
+
+-- mixing vectors
+local result_mix = vec3.mix(v1_3d, v2_3d, 0.25)
+print("mix: " .. vec3.tostring(result_mix)) -- {3.25, 6.5, 11.5}
