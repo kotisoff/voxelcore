@@ -40,7 +40,7 @@ local function angle_delta(a, b)
     return normalize_angle(a - b)
 end
 
-local dir = {0, 0, -1}
+local dir = mat4.mul(tsf:get_rot(), {0, 0, -1})
 local flight = false
 
 function jump(multiplier)
@@ -156,7 +156,7 @@ function is_flight() return flight end
 
 function set_flight(flag) flight = flag end
 
-local prev_angle = 0.0
+local prev_angle = (vec2.angle({dir[3], dir[1]})) % 360
 
 function on_physics_update(tps)
     local delta = (1.0 / tps)
