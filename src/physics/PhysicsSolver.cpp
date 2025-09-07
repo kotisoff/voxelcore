@@ -45,11 +45,6 @@ void PhysicsSolver::step(
             colisionCalc(chunks, hitbox, vel, pos, half, 
                          (prevGrounded && gravityScale > 0.0f) ? 0.5f : 0.0f);
         }
-        vel.x /= 1.0f + dt * linearDamping;
-        vel.z /= 1.0f + dt * linearDamping;
-        if (hitbox.verticalDamping) {
-            vel.y /= 1.0f + dt * linearDamping;
-        }
 
         pos += vel * dt + gravity * gravityScale * dt * dt * 0.5f;
         if (hitbox.grounded && pos.y < py) {
@@ -89,6 +84,12 @@ void PhysicsSolver::step(
             hitbox.grounded = true;
         }
     }
+    vel.x /= 1.0f + delta * linearDamping;
+    vel.z /= 1.0f + delta * linearDamping;
+    if (hitbox.verticalDamping) {
+        vel.y /= 1.0f + delta * linearDamping;
+    }
+
     AABB aabb;
     aabb.a = hitbox.position - hitbox.halfsize;
     aabb.b = hitbox.position + hitbox.halfsize;

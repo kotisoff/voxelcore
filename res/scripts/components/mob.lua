@@ -50,13 +50,24 @@ function lower(speed, delta, vel)
         vec3.add(vel, {0, -speed * delta * props.movement_speed, 0}, vel))
 end
 
-function move_horizontal(speed, dir, vel)
+local function move_horizontal(speed, dir, vel)
     vel = vel or body:get_vel()
     if vec3.length(dir) > 0.0 then
         vec3.normalize(dir, dir)
 
-        vel[1] = dir[1] * speed
-        vel[3] = dir[3] * speed
+        local magnitude = vec3.length({vel[1], 0, vel[3]})
+
+        if magnitude <= 1e-4 or (magnitude < speed or vec3.dot(
+            {vel[1] / magnitude, 0.0, vel[3] / magnitude}, dir) < 0.9)
+        then
+            vel[1] = vel[1] + dir[1] * speed * 0.8
+            vel[3] = vel[3] + dir[3] * speed * 0.8
+        end
+        magnitude = vec3.length({vel[1], 0, vel[3]})
+        if vec3.dot({vel[1] / magnitude, 0.0, vel[3] / magnitude}, dir) > 0.5 then
+            vel[1] = vel[1] / magnitude * speed
+            vel[3] = vel[3] / magnitude * speed
+        end
     end
     body:set_vel(vel)
 end
@@ -76,7 +87,6 @@ end
 
 local prev_angle = 0.0
 local headIndex = rig:index("head")
-
 
 -- todo: move somewhere
 local watchtimer = math.random(0, 1000)
@@ -103,8 +113,6 @@ end
 
 local function follow_waypoints(pathfinding, delta)
     local pos = tsf:get_pos()
-    pathfinding.set_target(vec3.add(pos,
-        {math.random(-15, 15), math.random(-2, 2), math.random(-15, 15)}))
     local waypoint = pathfinding.next_waypoint()
     if not waypoint then
         return

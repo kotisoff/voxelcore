@@ -50,8 +50,8 @@ end
 
 function on_update()
     if not started then
+        frameid = frameid + 1
         if body:is_grounded() then
-            frameid = frameid + 1
             if target and (frameid % refresh_internal == 1 or not route) then
                 pathfinding.make_route_async(agent, tsf:get_pos(), target)
                 started = true
