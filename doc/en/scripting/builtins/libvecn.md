@@ -177,6 +177,12 @@ vec2.angle(v: vec2)
 
 -- returns the direction angle of the vector {x, y} in degrees [0, 360]
 vec2.angle(x: number, y: number)
+
+-- returns the vector rotated by an angle in degrees counterclockwise
+vec2.rotate(v: vec2, angle: number) -> vec2
+
+-- writes the vector rotated by an angle in degrees counterclockwise to dst
+vec2.rotate(v: vec2, angle: number, dst: vec2) -> vec2
 ```
 
 
