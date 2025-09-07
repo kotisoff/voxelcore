@@ -86,8 +86,8 @@ void PhysicsSolver::step(
     }
     vel.x /= 1.0f + delta * linearDamping;
     vel.z /= 1.0f + delta * linearDamping;
-    if (hitbox.verticalDamping) {
-        vel.y /= 1.0f + delta * linearDamping;
+    if (hitbox.verticalDamping > 0.0f) {
+        vel.y /= 1.0f + delta * linearDamping * hitbox.verticalDamping;
     }
 
     AABB aabb;

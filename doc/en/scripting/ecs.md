@@ -95,10 +95,12 @@ body:get_linear_damping() -> number
 -- Sets the linear velocity attenuation multiplier
 body:set_linear_damping(value: number)
 
--- Checks if vertical velocity attenuation is enabled
+-- Checks if vertical damping is enabled
 body:is_vdamping() -> bool
--- Enables/disables vertical velocity attenuation
-body:set_vdamping(enabled: bool)
+-- Returns the vertical damping multiplier
+body:get_vdamping() -> number
+-- Enables/disables vertical damping / sets vertical damping multiplier
+body:set_vdamping(enabled: bool | number)
 
 -- Checks if the entity is on the ground
 body:is_grounded() -> bool
