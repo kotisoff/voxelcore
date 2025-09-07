@@ -26,6 +26,20 @@ def_prop("crouch_speed_mul", 0.35)
 def_prop("flight_speed_mul", 4.0)
 def_prop("gravity_scale", 1.0)
 
+local function normalize_angle(angle)
+    while angle > 180 do
+        angle = angle - 360
+    end
+    while angle <= -180 do
+        angle = angle + 360
+    end
+    return angle
+end
+
+local function angle_delta(a, b)
+    return normalize_angle(a - b)
+end
+
 local dir = {0, 0, -1}
 local flight = false
 
@@ -86,21 +100,25 @@ end
 
 local headIndex = rig:index("head")
 
--- todo: move somewhere
-local function update_head(point)
+function look_at(point, change_dir)
     local pos = tsf:get_pos()
     local viewdir = vec3.normalize(vec3.sub(point, pos))
 
     local dot = vec3.dot(viewdir, dir)
-    if dot > 0.0 then
+    if dot < 0.0 and not change_dir then
+        viewdir = mat4.mul(tsf:get_rot(), {0, 0, -1})
+    else
         dir[1] = dir[1] * 0.8 + viewdir[1] * 0.2
         dir[3] = dir[3] * 0.8 + viewdir[3] * 0.2
-    else
-        viewdir = mat4.mul(tsf:get_rot(), {0, 0, -1})
+    end
+
+    if not headIndex then
+        return
     end
 
     local headrot = mat4.idt()
-    local curdir = mat4.mul(mat4.mul(tsf:get_rot(), rig:get_matrix(headIndex)), {0, 0, -1})
+    local curdir = mat4.mul(mat4.mul(tsf:get_rot(),
+        rig:get_matrix(headIndex)), {0, 0, -1})
 
     vec3.mix(curdir, viewdir, 0.2, viewdir)
 
@@ -140,20 +158,6 @@ function set_flight(flag) flight = flag end
 
 local prev_angle = 0.0
 
-local function normalize_angle(angle)
-    while angle > 180 do
-        angle = angle - 360
-    end
-    while angle <= -180 do
-        angle = angle + 360
-    end
-    return angle
-end
-
-local function angle_delta(a, b)
-    return normalize_angle(a - b)
-end
-
 function on_physics_update(tps)
     local delta = (1.0 / tps)
 
@@ -174,19 +178,13 @@ function on_physics_update(tps)
     local rotate_speed = entity:get_player() == -1 and 200 or 400
 
     if math.abs(adelta) > 5 then
-        if adelta > 0 then
-            angle = angle + delta * rotate_speed
-        else
-            angle = angle - delta * rotate_speed
-        end
+        angle = angle + delta * rotate_speed * (adelta > 0 and 1 or -1)
     end
+
     tsf:set_rot(mat4.rotate({0, 1, 0}, angle + 180))
     prev_angle = angle
 
     if entity:get_player() == -1 then
-        update_head({player.get_pos(hud.get_player())})
-    else
-        local cam = cameras.get("core:first-person")
-        update_head(vec3.add({player.get_pos(entity:get_player())}, cam:get_front()))
+        look_at({player.get_pos(hud.get_player())})
     end
 end
