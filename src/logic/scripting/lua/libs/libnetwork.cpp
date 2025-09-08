@@ -5,6 +5,19 @@
 
 using namespace scripting;
 
+static std::vector<std::string> read_headers(lua::State* L, int index) {
+    std::vector<std::string> headers;
+    if (lua::istable(L, index)) {
+        int len = lua::objlen(L, index);    
+        for (int i = 1; i <= len; i++) {
+            lua::rawgeti(L, i, index);
+            headers.push_back(lua::tostring(L, -1));
+            lua::pop(L);
+        }
+    }
+    return headers;
+}
+
 static int l_get(lua::State* L, network::Network& network) {
     std::string url(lua::require_lstring(L, 1));
 
@@ -20,16 +33,7 @@ static int l_get(lua::State* L, network::Network& network) {
         };
     }
 
-    std::vector<std::string> headers;
-
-    if (lua::istable(L, 4)) {
-        int len = lua::objlen(L, 4);    
-        for (int i = 1; i <= len; i++) {
-            lua::rawgeti(L, i, 4);
-            headers.push_back(lua::tostring(L, -1));
-            lua::pop(L);
-        }
-    }
+    auto headers = read_headers(L, 4);
 
     network.get(url, [onResponse](std::vector<char> bytes) {
         engine->postRunnable([=]() {
@@ -54,16 +58,7 @@ static int l_get_binary(lua::State* L, network::Network& network) {
         };
     }
 
-    std::vector<std::string> headers;
-
-    if (lua::istable(L, 4)) {
-        int len = lua::objlen(L, 4);    
-        for (int i = 1; i <= len; i++) {
-            lua::rawgeti(L, i, 4);
-            headers.push_back(lua::tostring(L, -1));
-            lua::pop(L);
-        }
-    }
+    auto headers = read_headers(L, 4);
 
     network.get(url, [onResponse](std::vector<char> bytes) {
         auto buffer = std::make_shared<util::Buffer<ubyte>>(
@@ -100,15 +95,7 @@ static int l_post(lua::State* L, network::Network& network) {
         string = json::stringify(data, false);
     }
 
-    std::vector<std::string> headers;
-    if (lua::istable(L, 5)) {
-        int len = lua::objlen(L, 5);    
-        for (int i = 1; i <= len; i++) {
-            lua::rawgeti(L, i, 5);
-            headers.push_back(lua::tostring(L, -1));
-            lua::pop(L);
-        }
-    }
+    auto headers = read_headers(L, 5);
 
     engine->getNetwork().post(url, string, [onResponse](std::vector<char> bytes) {
         auto buffer = std::make_shared<util::Buffer<ubyte>>(
