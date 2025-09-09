@@ -57,6 +57,7 @@ struct Request {
     long maxSize;
     bool followLocation = false;
     std::string data;
+    std::vector<std::string> headers;
 };
 
 class CurlRequests : public Requests {
@@ -86,10 +87,18 @@ public:
         const std::string& url,
         OnResponse onResponse,
         OnReject onReject,
+        std::vector<std::string> headers,
         long maxSize
     ) override {
         Request request {
-            RequestType::GET, url, onResponse, onReject, maxSize, false, ""};
+            RequestType::GET,
+            url,
+            onResponse,
+            onReject,
+            maxSize,
+            false,
+            "",
+            std::move(headers)};
         processRequest(std::move(request));
     }
 
@@ -98,10 +107,18 @@ public:
         const std::string& data,
         OnResponse onResponse,
         OnReject onReject=nullptr,
+        std::vector<std::string> headers = {},
         long maxSize=0
     ) override {
         Request request {
-            RequestType::POST, url, onResponse, onReject, maxSize, false, ""};
+            RequestType::POST,
+            url,
+            onResponse,
+            onReject,
+            maxSize,
+            false,
+            "",
+            std::move(headers)};
         request.data = data;
         processRequest(std::move(request));
     }
@@ -121,6 +138,10 @@ public:
         curl_easy_setopt(curl, CURLOPT_POST, request.type == RequestType::POST);
         
         curl_slist* hs = NULL;
+        
+        for (const auto& header : request.headers) {
+            hs = curl_slist_append(hs, header.c_str());
+        }
 
         switch (request.type) {
             case RequestType::GET:
@@ -817,9 +838,10 @@ void Network::get(
     const std::string& url,
     OnResponse onResponse,
     OnReject onReject,
+    std::vector<std::string> headers,
     long maxSize
 ) {
-    requests->get(url, onResponse, onReject, maxSize);
+    requests->get(url, onResponse, onReject, std::move(headers), maxSize);
 }
 
 void Network::post(
@@ -827,9 +849,12 @@ void Network::post(
     const std::string& fieldsData,
     OnResponse onResponse,
     OnReject onReject,
+    std::vector<std::string> headers,
     long maxSize
 ) {
-    requests->post(url, fieldsData, onResponse, onReject, maxSize);
+    requests->post(
+        url, fieldsData, onResponse, onReject, std::move(headers), maxSize
+    );
 }
 
 Connection* Network::getConnection(u64id_t id) {
