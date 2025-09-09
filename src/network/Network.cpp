@@ -642,19 +642,19 @@ public:
     ) {
         SOCKET descriptor = socket(AF_INET, SOCK_DGRAM, 0);
         if (descriptor == -1) {
-            throw std::runtime_error("could not create UDP socket");
+            throw std::runtime_error("could not create udp socket");
         }
 
         sockaddr_in serverAddr{};
         serverAddr.sin_family = AF_INET;
         if (inet_pton(AF_INET, address.c_str(), &serverAddr.sin_addr) <= 0) {
             closesocket(descriptor);
-            throw std::runtime_error("invalid UDP address: " + address);
+            throw std::runtime_error("invalid udp address: " + address);
         }
         serverAddr.sin_port = htons(port);
 
         if (::connect(descriptor, (sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-            auto err = handle_socket_error("UDP connect failed");
+            auto err = handle_socket_error("udp connect failed");
             closesocket(descriptor);
             throw err;
         }
@@ -810,7 +810,7 @@ public:
         u64id_t id, Network* network, int port, const ServerDatagramCallback& handler
     ) {
         SOCKET descriptor = socket(AF_INET, SOCK_DGRAM, 0);
-        if (descriptor == -1) throw std::runtime_error("Could not create UDP socket");
+        if (descriptor == -1) throw std::runtime_error("could not create udp socket");
 
         sockaddr_in address{};
         address.sin_family = AF_INET;
@@ -819,7 +819,7 @@ public:
 
         if (bind(descriptor, (sockaddr*)&address, sizeof(address)) < 0) {
             closesocket(descriptor);
-            throw std::runtime_error("Could not bind UDP port " + std::to_string(port));
+            throw std::runtime_error("could not bind udp port " + std::to_string(port));
         }
 
         auto server = std::make_shared<SocketUdpServer>(id, network, descriptor, port);
