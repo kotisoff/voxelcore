@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "api_lua.hpp"
 #include "coders/json.hpp"
 #include "engine/Engine.hpp"
@@ -263,8 +265,7 @@ struct NetworkDatagramEvent : NetworkEvent {
     NetworkDatagramSide side;
     std::string addr;
     int port;
-    const char* buffer;
-    size_t length;
+    std::vector<char> buffer;
 
     NetworkDatagramEvent(
         NetworkEventType datagram,
@@ -273,25 +274,25 @@ struct NetworkDatagramEvent : NetworkEvent {
         NetworkDatagramSide side,
         const std::string& addr,
         int port,
-        const char* data,
-        size_t length
+        std::vector<char> buffer
     ) : NetworkEvent(DATAGRAM, sid, cid) {
         this->side = side;
         this->addr = addr;
         this->port = port;
 
-        buffer = data;
-
-        this->length = length;
+        this->buffer = std::move(buffer);
     }
 };
 
 static std::vector<std::unique_ptr<NetworkEvent>> events_queue {};
+static std::mutex events_queue_mutex;
 
 static int l_connect_tcp(lua::State* L, network::Network& network) {
     std::string address = lua::require_string(L, 1);
     int port = lua::tointeger(L, 2);
     u64id_t id = network.connectTcp(address, port, [](u64id_t cid) {
+        std::lock_guard lock(events_queue_mutex);
+
         events_queue.push_back(std::make_unique<NetworkEvent>(CONNECTED_TO_SERVER, 0, cid));
     });
     return lua::pushinteger(L, id);
@@ -300,6 +301,8 @@ static int l_connect_tcp(lua::State* L, network::Network& network) {
 static int l_open_tcp(lua::State* L, network::Network& network) {
     int port = lua::tointeger(L, 1);
     u64id_t id = network.openTcpServer(port, [](u64id_t sid, u64id_t id) {
+        std::lock_guard lock(events_queue_mutex);
+
         events_queue.push_back(std::make_unique<NetworkEvent>(CLIENT_CONNECTED, sid, id));
     });
     return lua::pushinteger(L, id);
@@ -309,16 +312,20 @@ static int l_connect_udp(lua::State* L, network::Network& network) {
     std::string address = lua::require_string(L, 1);
     int port = lua::tointeger(L, 2);
     u64id_t id = network.connectUdp(address, port, [](u64id_t cid) {
+        std::lock_guard lock(events_queue_mutex);
+
         events_queue.push_back(std::make_unique<NetworkEvent>(CONNECTED_TO_SERVER, 0, cid));
     }, [address, port](
         u64id_t cid,
         const char* buffer,
         size_t length
     ) {
+        std::lock_guard lock(events_queue_mutex);
+
         events_queue.push_back(
             std::make_unique<NetworkDatagramEvent>(
                 DATAGRAM, 0, cid, ON_CLIENT,
-                address, port, buffer, length
+                address, port, std::vector(buffer, buffer + length)
             )
         );
     });
@@ -333,10 +340,12 @@ static int l_open_udp(lua::State* L, network::Network& network) {
         int port,
         const char* buffer,
         size_t length) {
+        std::lock_guard lock(events_queue_mutex);
+
         events_queue.push_back(
             std::make_unique<NetworkDatagramEvent>(
                 DATAGRAM, sid, 0, ON_SERVER,
-                addr, port, buffer, length
+                addr, port, std::vector(buffer, buffer + length)
             )
         );
     });
@@ -403,20 +412,27 @@ static int l_get_total_download(lua::State* L, network::Network& network) {
 }
 
 static int l_pull_events(lua::State* L, network::Network& network) {
-    lua::createtable(L, events_queue.size(), 0);
+    std::vector<std::unique_ptr<NetworkEvent>> local_queue;
 
-    for (size_t i = 0; i < events_queue.size(); i++) {
-        const auto* datagramEvent = dynamic_cast<NetworkDatagramEvent*>(events_queue[i].get());
+    {
+        std::lock_guard lock(events_queue_mutex);
+        local_queue.swap(events_queue);
+    }
+
+    lua::createtable(L, local_queue.size(), 0);
+
+    for (size_t i = 0; i < local_queue.size(); i++) {
+        const auto* datagramEvent = dynamic_cast<NetworkDatagramEvent*>(local_queue[i].get());
 
         lua::createtable(L, datagramEvent ? 7 : 3, 0);
 
-        lua::pushinteger(L, events_queue[i]->type);
+        lua::pushinteger(L, local_queue[i]->type);
         lua::rawseti(L, 1);
 
-        lua::pushinteger(L, events_queue[i]->server);
+        lua::pushinteger(L, local_queue[i]->server);
         lua::rawseti(L, 2);
 
-        lua::pushinteger(L, events_queue[i]->client);
+        lua::pushinteger(L, local_queue[i]->client);
         lua::rawseti(L, 3);
 
         if (datagramEvent) {
@@ -429,13 +445,13 @@ static int l_pull_events(lua::State* L, network::Network& network) {
             lua::pushinteger(L, datagramEvent->side);
             lua::rawseti(L, 6);
 
-            lua::create_bytearray(L, datagramEvent->buffer, datagramEvent->length);
+            lua::create_bytearray(L, datagramEvent->buffer.data(), datagramEvent->buffer.size());
             lua::rawseti(L, 7);
         }
         
         lua::rawseti(L, i + 1);
     }
-    events_queue.clear();
+
     return 1;
 }
 
