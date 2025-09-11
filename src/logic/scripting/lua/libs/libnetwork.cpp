@@ -86,7 +86,7 @@ static int perform_get(lua::State* L, network::Network& network, bool binary) {
     std::string url(lua::require_lstring(L, 1));
     auto headers = read_headers(L, 2);
 
-    int currentRequestId = request_id;
+    int currentRequestId = request_id++;
 
     network.get(url, [currentRequestId, binary](std::vector<char> bytes) {
         push_event(NetworkEvent(
@@ -109,7 +109,7 @@ static int perform_get(lua::State* L, network::Network& network, bool binary) {
             }
         ));
     }, std::move(headers));
-    return lua::pushinteger(L, request_id++);
+    return lua::pushinteger(L, currentRequestId);
 }
 
 static int l_get(lua::State* L, network::Network& network) {
@@ -132,7 +132,7 @@ static int l_post(lua::State* L, network::Network& network) {
     }
 
     auto headers = read_headers(L, 3);
-    int currentRequestId = request_id;
+    int currentRequestId = request_id++;
 
     engine->getNetwork().post(
         url,
@@ -157,7 +157,7 @@ static int l_post(lua::State* L, network::Network& network) {
         },
         std::move(headers)
     );
-    return 0;
+    return lua::pushinteger(L, currentRequestId);
 }
 
 static int l_close(lua::State* L, network::Network& network) {
