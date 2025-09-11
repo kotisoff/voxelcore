@@ -183,8 +183,4 @@ function on_physics_update(tps)
 
     tsf:set_rot(mat4.rotate({0, 1, 0}, angle + 180))
     prev_angle = angle
-
-    if entity:get_player() == -1 then
-        look_at({player.get_pos(hud.get_player())})
-    end
 end
