@@ -42,9 +42,9 @@ local function process_player_inputs(pid, delta)
 
     if mob.is_flight() then
         if isjump then
-            mob.move_vertical(speed * 8)
+            mob.move_vertical(speed * 4)
         elseif iscrouch then
-            mob.move_vertical(-speed * 8)
+            mob.move_vertical(-speed * 4)
         end
     elseif body:is_grounded() and isjump then
         mob.jump()

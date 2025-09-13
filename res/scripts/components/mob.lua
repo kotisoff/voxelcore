@@ -51,7 +51,7 @@ end
 
 function move_vertical(speed, vel)
     vel = vel or body:get_vel()
-    vel[2] = vel[2] * 0.2 + speed * 0.8
+    vel[2] = vel[2] * 0.2 + props.movement_speed * speed * 0.8
     body:set_vel(vel)
 end
 
