@@ -51,8 +51,7 @@ local function process_player_inputs(pid, delta)
     end
 end
 
-function on_physics_update(tps)
-    local delta = (1.0 / tps)
+function on_physics_update(delta)
     local pid = entity:get_player()
     if pid ~= -1 then
         local pos = tsf:get_pos()

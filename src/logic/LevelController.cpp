@@ -95,7 +95,6 @@ void LevelController::update(float delta, bool pause) {
     if (!pause) {
         // update all objects that needed
         blocks->update(delta, settings.chunks.padding.get());
-        level->entities->updatePhysics(delta);
         level->entities->update(delta);
         for (const auto& [_, player] : *level->players) {
             if (player->isSuspended()) {

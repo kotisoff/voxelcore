@@ -27,8 +27,7 @@ static debug::Logger logger("entities");
 Entities::Entities(Level& level)
     : level(level),
       sensorsTickClock(20, 3),
-      updateTickClock(20, 3),
-      physicsTickClock(60, 1) {
+      updateTickClock(20, 3) {
 }
 
 std::optional<Entity> Entities::get(entityid_t id) {
@@ -323,13 +322,8 @@ void Entities::update(float delta) {
             updateTickClock.getPart()
         );
     }
-    if (physicsTickClock.update(delta)) {
-        scripting::on_entities_physics_update(
-            physicsTickClock.getTickRate(),
-            physicsTickClock.getParts(),
-            physicsTickClock.getPart()
-        );
-    }
+    updatePhysics(delta);
+    scripting::on_entities_physics_update(delta);
 }
 
 static void debug_render_skeleton(
