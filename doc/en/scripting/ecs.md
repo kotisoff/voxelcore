@@ -193,6 +193,12 @@ function on_update(tps: int)
 Called every entities tick (currently 20 times per second).
 
 ```lua
+function on_physics_update(delta: number)
+```
+
+Called after each physics step
+
+```lua
 function on_render(delta: number)
 ```
 
