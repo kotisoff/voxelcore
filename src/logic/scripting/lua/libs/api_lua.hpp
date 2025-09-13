@@ -38,6 +38,7 @@ extern const luaL_Reg mat4lib[];
 extern const luaL_Reg networklib[];
 extern const luaL_Reg packlib[];
 extern const luaL_Reg particleslib[]; // gfx.particles
+extern const luaL_Reg pathfindinglib[];
 extern const luaL_Reg playerlib[];
 extern const luaL_Reg posteffectslib[]; // gfx.posteffects
 extern const luaL_Reg quatlib[];
