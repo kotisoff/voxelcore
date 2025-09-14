@@ -96,7 +96,7 @@ public:
             onResponse,
             onReject,
             maxSize,
-            false,
+            true,
             "",
             std::move(headers)};
         processRequest(std::move(request));
@@ -590,10 +590,12 @@ public:
         }
         int opt = 1;
         int flags = SO_REUSEADDR;
-#       ifndef _WIN32
+#       if !defined(_WIN32) && !defined(__APPLE__)
             flags |= SO_REUSEPORT;
 #       endif
         if (setsockopt(descriptor, SOL_SOCKET, flags, (const char*)&opt, sizeof(opt))) {
+            logger.error() << "setsockopt(SO_REUSEADDR) failed with errno: "
+             << errno << "(" << std::strerror(errno) << ")";
             closesocket(descriptor);
             throw std::runtime_error("setsockopt");
         }
