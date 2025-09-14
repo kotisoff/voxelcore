@@ -191,7 +191,7 @@ static constexpr inline uint8_t segment_to_int(int sx, int sy, int sz) {
 /// @param y origin position Y
 /// @param z origin position Z
 template <class Storage>
-inline void repair_segments(
+inline void restore_segments(
     Storage& chunks, const Block& def, blockstate state, int x, int y, int z
 ) {
     const auto& rotation = def.rotations.variants[state.rotation];

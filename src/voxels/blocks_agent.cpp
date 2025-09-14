@@ -7,62 +7,10 @@
 using namespace blocks_agent;
 
 template <class Storage>
-static inline bool set_block(
-    Storage& chunks,
-    int32_t x,
-    int32_t y,
-    int32_t z,
-    uint32_t id,
-    blockstate state
+static void mark_neighboirs_modified(
+    Storage& chunks, int32_t cx, int32_t cz, int32_t lx, int32_t lz
 ) {
-    if (y < 0 || y >= CHUNK_H) {
-        return false;
-    }
-    const auto& indices = chunks.getContentIndices();
-    int cx = floordiv<CHUNK_W>(x);
-    int cz = floordiv<CHUNK_D>(z);
-    Chunk* chunk = get_chunk(chunks, cx, cz);
-    if (chunk == nullptr) {
-        return false;
-    }
-    int lx = x - cx * CHUNK_W;
-    int lz = z - cz * CHUNK_D;
-    size_t index = vox_index(lx, y, lz);
-
-    // block finalization
-    voxel& vox = chunk->voxels[(y * CHUNK_D + lz) * CHUNK_W + lx];
-    const auto& prevdef = indices.blocks.require(vox.id);
-    if (prevdef.inventorySize != 0) {
-        chunk->removeBlockInventory(lx, y, lz);
-    }
-    if (prevdef.rt.extended && !vox.state.segment) {
-        erase_segments(chunks, prevdef, vox.state, x, y, z);
-    }
-    if (prevdef.dataStruct) {
-        if (auto found = chunk->blocksMetadata.find(index)) {
-            chunk->blocksMetadata.free(found);
-            chunk->flags.unsaved = true;
-            chunk->flags.blocksData = true;
-        }
-    }
-
-    // block initialization
-    const auto& newdef = indices.blocks.require(id);
-    vox.id = id;
-    vox.state = state;
-    chunk->setModifiedAndUnsaved();
-    if (!state.segment && newdef.rt.extended) {
-        repair_segments(chunks, newdef, state, x, y, z);
-    }
-
-    if (y < chunk->bottom)
-        chunk->bottom = y;
-    else if (y + 1 > chunk->top)
-        chunk->top = y + 1;
-    else if (id == 0)
-        chunk->flags.dirtyHeights = true;
-
-
+    Chunk* chunk;
     if (lx == 0 && (chunk = get_chunk(chunks, cx - 1, cz))) {
         chunk->flags.modified = true;
     }
@@ -75,6 +23,92 @@ static inline bool set_block(
     if (lz == CHUNK_D - 1 && (chunk = get_chunk(chunks, cx, cz + 1))) {
         chunk->flags.modified = true;
     }
+}
+
+static void refresh_chunk_heights(Chunk& chunk, bool isAir, int y) {
+    if (y < chunk.bottom)
+        chunk.bottom = y;
+    else if (y + 1 > chunk.top)
+        chunk.top = y + 1;
+    else if (isAir)
+        chunk.flags.dirtyHeights = true;
+}
+
+template <class Storage>
+static void finalize_block(
+    Storage& chunks,
+    Chunk& chunk,
+    voxel& vox,
+    int32_t x, int32_t y, int32_t z,
+    int32_t lx, int32_t lz
+) {
+    size_t index = vox_index(lx, y, lz);
+    const auto& indices = chunks.getContentIndices();
+    const auto& def = indices.blocks.require(vox.id);
+    if (def.inventorySize != 0) {
+        chunk.removeBlockInventory(lx, y, lz);
+    }
+    if (def.rt.extended && !vox.state.segment) {
+        erase_segments(chunks, def, vox.state, x, y, z);
+    }
+    if (def.dataStruct) {
+        if (auto found = chunk.blocksMetadata.find(index)) {
+            chunk.blocksMetadata.free(found);
+            chunk.flags.unsaved = true;
+            chunk.flags.blocksData = true;
+        }
+    }
+}
+
+template <class Storage>
+static void initialize_block(
+    Storage& chunks,
+    Chunk& chunk,
+    voxel& vox,
+    blockid_t id,
+    blockstate state,
+    int32_t x, int32_t y, int32_t z,
+    int32_t lx, int32_t lz,
+    int32_t cx, int32_t cz
+) {
+    const auto& indices = chunks.getContentIndices();
+    const auto& def = indices.blocks.require(id);
+    vox.id = id;
+    vox.state = state;
+    chunk.setModifiedAndUnsaved();
+    if (!state.segment && def.rt.extended) {
+        restore_segments(chunks, def, state, x, y, z);
+    }
+
+    refresh_chunk_heights(chunk, id == BLOCK_AIR, y);
+    mark_neighboirs_modified(chunks, cx, cz, lx, lz);
+}
+
+template <class Storage>
+static inline bool set_block(
+    Storage& chunks,
+    int32_t x,
+    int32_t y,
+    int32_t z,
+    blockid_t id,
+    blockstate state
+) {
+    if (y < 0 || y >= CHUNK_H) {
+        return false;
+    }
+    int cx = floordiv<CHUNK_W>(x);
+    int cz = floordiv<CHUNK_D>(z);
+    Chunk* chunk = get_chunk(chunks, cx, cz);
+    if (chunk == nullptr) {
+        return false;
+    }
+    int lx = x - cx * CHUNK_W;
+    int lz = z - cz * CHUNK_D;
+
+    voxel& vox = chunk->voxels[(y * CHUNK_D + lz) * CHUNK_W + lx];
+
+    finalize_block(chunks, *chunk, vox, x, y, z, lx, lz);
+    initialize_block(chunks, *chunk, vox, id, state, x, y, z, lx, lz, cx, cz);
     return true;
 }
 
