@@ -174,6 +174,7 @@ if enable_experimental then
     require "core:internal/maths_inline"
 end
 
+asserts = require "core:internal/asserts"
 events = require "core:internal/events"
 
 function pack.unload(prefix)
