@@ -174,12 +174,13 @@ block.__perform_ticks = function(delta)
         end
         entry.timer = 0.0
         local event = entry.event
+        local tps = entry.tps
         for i=1, steps do
             local x = entry[entry.pointer + 1]
             local y = entry[entry.pointer + 2]
             local z = entry[entry.pointer + 3]
             entry.pointer = (entry.pointer + 3) % #entry
-            events.emit(event, x, y, z)
+            events.emit(event, x, y, z, tps)
         end
         ::continue::
     end
@@ -203,7 +204,8 @@ block.__process_register_events = function()
             if not list then
                 list = {}
                 list.event = block.name(id) .. ".blocktick"
-                list.delta = 1.0 / (20.0 / (block.properties[id]["tick-interval"] or 1))
+                list.tps = 20 / (block.properties[id]["tick-interval"] or 1)
+                list.delta = 1.0 / list.tps
                 list.timer = 0.0
                 list.pointer = 0
                 updating_blocks[id] = list
