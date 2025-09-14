@@ -96,7 +96,7 @@ public:
             onResponse,
             onReject,
             maxSize,
-            false,
+            true,
             "",
             std::move(headers)};
         processRequest(std::move(request));
