@@ -37,7 +37,8 @@ DependencyVersionOperator Version::string_to_operator(const std::string& op) {
         return DependencyVersionOperator::more_or_equal;
     else if (op == "<=" || op == "=<")
         return DependencyVersionOperator::less_or_equal;
-    else return DependencyVersionOperator::equal;
+    else
+        return DependencyVersionOperator::equal;
 }
 
 bool isNumber(const std::string& s) {
