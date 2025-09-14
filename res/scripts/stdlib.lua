@@ -79,12 +79,19 @@ local function complete_app_lib(app)
         coroutine.yield()
     end
 
-    function app.sleep_until(predicate, max_ticks)
+    function app.sleep_until(predicate, max_ticks, max_time)
         max_ticks = max_ticks or 1e9
+        max_time = max_time or 1e9
         local ticks = 0
-        while ticks < max_ticks and not predicate() do
+        local start_time = os.clock()
+        while ticks < max_ticks and
+            os.clock() - start_time < max_time
+            and not predicate() do
             app.tick()
             ticks = ticks + 1
+        end
+        if os.clock() - start_time >= max_time then
+            error("timeout")
         end
         if ticks == max_ticks then
             error("max ticks exceed")
