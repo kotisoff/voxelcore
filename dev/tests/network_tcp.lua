@@ -40,6 +40,6 @@ for i=1,3 do
         end, "data-sender")
     end)
 
-    app.sleep_until(function () return complete end, 1000000)
+    app.sleep_until(function () return complete end, nil, 5)
     server:close()
 end
