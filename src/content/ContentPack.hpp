@@ -26,14 +26,14 @@ public:
 };
 
 enum class DependencyVersionOperator {
-    equal, more, less,
-    more_or_equal, less_or_equal
+    EQUAL, GREATHER, LESS,
+    GREATHER_OR_EQUAL, LESS_OR_EQUAL
 };
 
 enum class DependencyLevel {
-    required,  // dependency must be installed
-    optional,  // dependency will be installed if found
-    weak,      // only affects packs order
+    REQUIRED,  // dependency must be installed
+    OPTIONAL,  // dependency will be installed if found
+    WEAK,      // only affects packs order
 };
 
 /// @brief Content-pack that should be installed earlier the dependent

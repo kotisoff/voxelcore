@@ -102,13 +102,13 @@ static int l_pack_get_info(
             auto& dpack = pack.dependencies[i];
             std::string prefix;
             switch (dpack.level) {
-                case DependencyLevel::required:
+                case DependencyLevel::REQUIRED:
                     prefix = "!";
                     break;
-                case DependencyLevel::optional:
+                case DependencyLevel::OPTIONAL:
                     prefix = "?";
                     break;
-                case DependencyLevel::weak:
+                case DependencyLevel::WEAK:
                     prefix = "~";
                     break;
                 default:

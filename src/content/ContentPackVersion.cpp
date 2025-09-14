@@ -28,17 +28,17 @@ Version::Version(const std::string& version) {
 
 DependencyVersionOperator Version::string_to_operator(const std::string& op) {
     if (op == "=")
-        return DependencyVersionOperator::equal;
+        return DependencyVersionOperator::EQUAL;
     else if (op == ">")
-        return DependencyVersionOperator::more;
+        return DependencyVersionOperator::GREATHER;
     else if (op == "<")
-        return DependencyVersionOperator::less;
+        return DependencyVersionOperator::LESS;
     else if (op == ">=" || op == "=>")
-        return DependencyVersionOperator::more_or_equal;
+        return DependencyVersionOperator::GREATHER_OR_EQUAL;
     else if (op == "<=" || op == "=<")
-        return DependencyVersionOperator::less_or_equal;
+        return DependencyVersionOperator::LESS_OR_EQUAL;
     else
-        return DependencyVersionOperator::equal;
+        return DependencyVersionOperator::EQUAL;
 }
 
 bool isNumber(const std::string& s) {

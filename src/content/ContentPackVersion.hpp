@@ -37,15 +37,15 @@ public:
         auto dep_op = Version::string_to_operator(op);
 
         switch (dep_op) {
-            case DependencyVersionOperator::equal:
+            case DependencyVersionOperator::EQUAL:
                 return *this == other;
-            case DependencyVersionOperator::more:
+            case DependencyVersionOperator::GREATHER:
                 return *this > other;
-            case DependencyVersionOperator::less:
+            case DependencyVersionOperator::LESS:
                 return *this < other;
-            case DependencyVersionOperator::less_or_equal:
+            case DependencyVersionOperator::LESS_OR_EQUAL:
                 return *this <= other;
-            case DependencyVersionOperator::more_or_equal:
+            case DependencyVersionOperator::GREATHER_OR_EQUAL:
                 return *this >= other;
             default:
                 return false;

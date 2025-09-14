@@ -118,18 +118,18 @@ ContentPack ContentPack::read(const io::path& folder) {
         const auto& dependencies = *found;
         for (const auto& elem : dependencies) {
             std::string depName = elem.asString();
-            auto level = DependencyLevel::required;
+            auto level = DependencyLevel::REQUIRED;
             switch (depName.at(0)) {
                 case '!':
                     depName = depName.substr(1);
                     break;
                 case '?':
                     depName = depName.substr(1);
-                    level = DependencyLevel::optional;
+                    level = DependencyLevel::OPTIONAL;
                     break;
                 case '~':
                     depName = depName.substr(1);
-                    level = DependencyLevel::weak;
+                    level = DependencyLevel::WEAK;
                     break;
             }
 

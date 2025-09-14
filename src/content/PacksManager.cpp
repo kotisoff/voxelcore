@@ -91,7 +91,7 @@ static bool resolve_dependencies(
         }
         auto found = packs.find(dep.id);
         bool exists = found != packs.end();
-        if (!exists && dep.level == DependencyLevel::required) {
+        if (!exists && dep.level == DependencyLevel::REQUIRED) {
             throw contentpack_error(
                 dep.id, io::path(), "dependency of '" + pack->id + "'"
             );
@@ -100,7 +100,7 @@ static bool resolve_dependencies(
             // ignored for optional or weak dependencies
             continue;
         }
-        if (resolveWeaks && dep.level == DependencyLevel::weak) {
+        if (resolveWeaks && dep.level == DependencyLevel::WEAK) {
             // dependency pack is found but not added yet
             // resolveWeaks is used on second iteration, so it's will not be
             // added
@@ -125,7 +125,7 @@ static bool resolve_dependencies(
         }
 
         if (!util::contains(allNames, dep.id) &&
-            dep.level != DependencyLevel::weak) {
+            dep.level != DependencyLevel::WEAK) {
             allNames.push_back(dep.id);
             queue.push(&found->second);
         }
