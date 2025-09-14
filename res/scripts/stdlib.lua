@@ -588,6 +588,8 @@ function __process_post_runnables()
     end
 
     network.__process_events()
+    block.__process_register_events()
+    block.__perform_ticks(time.delta())
 end
 
 function time.post_runnable(runnable)

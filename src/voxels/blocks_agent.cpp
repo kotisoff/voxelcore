@@ -6,6 +6,49 @@
 
 using namespace blocks_agent;
 
+static std::vector<BlockRegisterEvent> block_register_events {};
+
+std::vector<BlockRegisterEvent> blocks_agent::pull_register_events() {
+    auto events = block_register_events;
+    block_register_events.clear();
+    return events;
+}
+
+static void on_chunk_register_event(
+    const ContentIndices& indices,
+    const Chunk& chunk,
+    BlockRegisterEvent::Type type
+) {
+    for (int i = 0; i < CHUNK_VOL; i++) {
+        const auto& def =
+            indices.blocks.require(chunk.voxels[i].id);
+        if (def.rt.funcsset.onblocktick) {
+            int x = i % CHUNK_W + chunk.x * CHUNK_W;
+            int z = (i / CHUNK_W) % CHUNK_D + chunk.z * CHUNK_D;
+            int y = (i / CHUNK_W / CHUNK_D);
+            block_register_events.push_back(BlockRegisterEvent {
+                type, def.rt.id, {x, y, z}
+            });
+        }
+    }
+}
+
+void blocks_agent::on_chunk_present(
+    const ContentIndices& indices, const Chunk& chunk
+) {
+    on_chunk_register_event(
+        indices, chunk, BlockRegisterEvent::Type::REGISTER_UPDATING
+    );
+}
+
+void blocks_agent::on_chunk_remove(
+    const ContentIndices& indices, const Chunk& chunk
+) {
+    on_chunk_register_event(
+        indices, chunk, BlockRegisterEvent::Type::UNREGISTER_UPDATING
+    );
+}
+
 template <class Storage>
 static void mark_neighboirs_modified(
     Storage& chunks, int32_t cx, int32_t cz, int32_t lx, int32_t lz
@@ -58,6 +101,11 @@ static void finalize_block(
             chunk.flags.blocksData = true;
         }
     }
+    if (def.rt.funcsset.onblocktick) {
+        block_register_events.push_back(BlockRegisterEvent {
+            BlockRegisterEvent::Type::UNREGISTER_UPDATING, def.rt.id, {x, y, z}
+        });
+    }
 }
 
 template <class Storage>
@@ -82,6 +130,12 @@ static void initialize_block(
 
     refresh_chunk_heights(chunk, id == BLOCK_AIR, y);
     mark_neighboirs_modified(chunks, cx, cz, lx, lz);
+
+    if (def.rt.funcsset.onblocktick) {
+        block_register_events.push_back(BlockRegisterEvent {
+            BlockRegisterEvent::Type::REGISTER_UPDATING, def.rt.id, {x, y, z}
+        });
+    }
 }
 
 template <class Storage>
