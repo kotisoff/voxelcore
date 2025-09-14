@@ -594,6 +594,8 @@ public:
             flags |= SO_REUSEPORT;
 #       endif
         if (setsockopt(descriptor, SOL_SOCKET, flags, (const char*)&opt, sizeof(opt))) {
+            logger.error() << "setsockopt(SO_REUSEADDR) failed with errno: "
+             << errno << "(" << std::strerror(errno) << ")";
             closesocket(descriptor);
             throw std::runtime_error("setsockopt");
         }
