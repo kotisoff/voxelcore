@@ -590,7 +590,7 @@ public:
         }
         int opt = 1;
         int flags = SO_REUSEADDR;
-#       ifndef _WIN32
+#       if !defined(_WIN32) && !defined(__APPLE__)
             flags |= SO_REUSEPORT;
 #       endif
         if (setsockopt(descriptor, SOL_SOCKET, flags, (const char*)&opt, sizeof(opt))) {
