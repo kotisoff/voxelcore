@@ -531,15 +531,18 @@ function start_coroutine(chunk, name)
     local co = coroutine.create(function()
         local status, error = xpcall(chunk, function(err)
             local fullmsg = "error: "..string.match(err, ": (.+)").."\n"..debug.traceback()
-            gui.alert(fullmsg, function()
-                if world.is_open() then
-                    __vc_app.close_world()
-                else
-                    __vc_app.reset_content()
-                    menu:reset()
-                    menu.page = "main"
-                end
-            end)
+            
+            if hud then
+                gui.alert(fullmsg, function()
+                    if world.is_open() then
+                        __vc_app.close_world()
+                    else
+                        __vc_app.reset_content()
+                        menu:reset()
+                        menu.page = "main"
+                    end
+                end)
+            end
             return fullmsg
         end)
         if not status then
