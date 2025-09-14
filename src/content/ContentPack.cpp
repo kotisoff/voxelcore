@@ -132,7 +132,44 @@ ContentPack ContentPack::read(const io::path& folder) {
                     level = DependencyLevel::weak;
                     break;
             }
-            pack.dependencies.push_back({level, depName});
+
+            std::string depVer = "*";
+            std::string depVerOperator = "=";
+
+            size_t versionPos = depName.rfind("@");
+            if (versionPos != std::string::npos) {
+                depVer = depName.substr(versionPos + 1);
+                depName = depName.substr(0, versionPos);
+
+                if (depVer.size() >= 2) {
+                    std::string op = depVer.substr(0, 2);
+                    std::uint8_t op_size = 0;
+
+                    // Two symbol operators
+                    if (op == ">=" || op == "=>" || op == "<=" || op == "=<") {
+                        op_size = 2;
+                        depVerOperator = op;
+                    }
+
+                    // One symbol operators
+                    else {
+                        op = depVer.substr(0, 1);
+
+                        if (op == ">" || op == "<") {
+                            op_size = 1;
+                            depVerOperator = op;
+                        }
+                    }
+
+                    depVer = depVer.substr(op_size);
+                } else {
+                    if (depVer == ">" || depVer == "<"){
+                        depVer = "*";
+                    }
+                }
+            }
+            
+            pack.dependencies.push_back({level, depName, depVer, depVerOperator});
         }
     }
 

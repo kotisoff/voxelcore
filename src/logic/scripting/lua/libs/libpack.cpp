@@ -114,7 +114,8 @@ static int l_pack_get_info(
                 default:
                     throw std::runtime_error("");
             }
-            lua::pushfstring(L, "%s%s", prefix.c_str(), dpack.id.c_str());
+
+            lua::pushfstring(L, "%s%s@%s%s", prefix.c_str(), dpack.id.c_str(), dpack.op.c_str(), dpack.version.c_str());
             lua::rawseti(L, i + 1);
         }
         lua::setfield(L, "dependencies");
