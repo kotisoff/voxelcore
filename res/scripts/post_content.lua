@@ -6,7 +6,7 @@ local names = {
     "shadeless", "ambient-occlusion", "breakable", "selectable", "grounded",
     "hidden", "draw-group", "picking-item", "surface-replacement", "script-name",
     "ui-layout", "inventory-size", "tick-interval", "overlay-texture",
-    "translucent", "fields", "particles", "icon-type", "icon", "placing-block", 
+    "translucent", "fields", "particles", "icon-type", "icon", "placing-block",
     "stack-size", "name", "script-file", "culling"
 }
 for name, _ in pairs(user_props) do

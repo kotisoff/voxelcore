@@ -24,6 +24,7 @@
 #include "util/timeutil.hpp"
 #include "voxels/Block.hpp"
 #include "voxels/Chunk.hpp"
+#include "voxels/blocks_agent.hpp"
 #include "world/Level.hpp"
 #include "world/World.hpp"
 #include "interfaces/Process.hpp"
@@ -464,6 +465,7 @@ void scripting::on_chunk_present(const Chunk& chunk, bool loaded) {
             );
         }
     }
+    blocks_agent::on_chunk_present(*content->getIndices(), chunk);
 }
 
 void scripting::on_chunk_remove(const Chunk& chunk) {
@@ -478,6 +480,7 @@ void scripting::on_chunk_remove(const Chunk& chunk) {
             );
         }
     }
+    blocks_agent::on_chunk_remove(*content->getIndices(), chunk);
 }
 
 void scripting::on_inventory_open(const Player* player, const Inventory& inventory) {
@@ -648,6 +651,8 @@ void scripting::load_content_script(
         register_event(env, "on_replaced", prefix + ".replaced");
     funcsset.oninteract =
         register_event(env, "on_interact", prefix + ".interact");
+    funcsset.onblocktick =
+        register_event(env, "on_block_tick", prefix + ".blocktick");
     funcsset.onblockstick =
         register_event(env, "on_blocks_tick", prefix + ".blockstick");
 }
