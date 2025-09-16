@@ -12,11 +12,11 @@ static int l_random(lua::State* L) {
         std::uniform_real_distribution<> dist(0.0, 1.0);
         return lua::pushnumber(L, dist(randomEngine));
     } else if (argc == 1) {
-        std::uniform_int_distribution<integer_t> dist(0, lua::tointeger(L, 1) - 1);
+        std::uniform_int_distribution<integer_t> dist(0, lua::tointeger(L, 1));
         return lua::pushinteger(L, dist(randomEngine));
     } else {
         std::uniform_int_distribution<integer_t> dist(
-            lua::tointeger(L, 1), lua::tointeger(L, 2) - 1
+            lua::tointeger(L, 1), lua::tointeger(L, 2)
         );
         return lua::pushinteger(L, dist(randomEngine));
     }
