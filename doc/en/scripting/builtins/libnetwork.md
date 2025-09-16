@@ -11,9 +11,9 @@ network.get(
     -- Function to call when response is received
     callback: function(str),
     -- Error handler
-    [optional] onfailure: function(int),
+    [optional] onfailure: function(int, str),
     -- List of additional request headers
-    [optional] headers: table<string>
+    [optional] headers: table<str>
 )
 
 -- Example:
@@ -24,9 +24,9 @@ end)
 -- A variant for binary files, with a byte array instead of a string in the response.
 network.get_binary(
     url: str,
-    callback: function(table|ByteArray),
-    [optional] onfailure: function(int),
-    [optional] headers: table<string>
+    callback: function(ByteArray),
+    [optional] onfailure: function(int, str),
+    [optional] headers: table<str>
 )
 
 -- Performs a POST request to the specified URL.
@@ -36,13 +36,13 @@ network.get_binary(
 network.post(
     url: str,
     -- Request body as a table (will be converted to JSON) or string
-    body: table|string,
+    body: table|str,
     -- Function called when response is received
     callback: function(str),
     -- Error handler
-    [optional] onfailure: function(int),
+    [optional] onfailure: function(int, str),
     -- List of additional request headers
-    [optional] headers: table<string>
+    [optional] headers: table<str>
 )
 ```
 
