@@ -53,7 +53,7 @@ end
 
 function on_physics_update(delta)
     local pid = entity:get_player()
-    if pid ~= -1 then
+    if pid ~= -1 and (hud and pid == hud.get_player()) then
         local pos = tsf:get_pos()
         local cam = cameras.get("core:first-person")
         process_player_inputs(pid, delta)
