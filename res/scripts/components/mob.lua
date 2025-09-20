@@ -51,6 +51,7 @@ end
 
 function move_vertical(speed, vel)
     vel = vel or body:get_vel()
+    speed = speed or 1.0
     vel[2] = vel[2] * 0.2 + props.movement_speed * speed * 0.8
     body:set_vel(vel)
 end
@@ -143,6 +144,10 @@ end
 
 function set_dir(new_dir)
     dir = new_dir
+end
+
+function get_dir()
+    return dir
 end
 
 function is_flight() return flight end
