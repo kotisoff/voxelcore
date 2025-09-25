@@ -674,6 +674,9 @@ function __vc_create_random_methods(random_methods)
     local buffer = nil
     local buffer_size = 64
 
+    local seed_func = random_methods.seed
+    local random_func = random_methods.random
+
     function random_methods:bytes(n)
         local bytes = Bytearray(n)
         for i=1,n do
@@ -682,9 +685,14 @@ function __vc_create_random_methods(random_methods)
         return bytes
     end
 
+    function random_methods:seed(x)
+        seed_func(self, x)
+        buffer = nil
+    end
+
     function random_methods:random(a, b)
         if not buffer or index > #buffer then
-            buffer = self:generate(buffer_size)
+            buffer = random_func(self, buffer_size)
             index = 1
         end
         local value = buffer[index]

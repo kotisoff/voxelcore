@@ -6,7 +6,7 @@
 using namespace lua;
 using namespace std::chrono;
 
-static int l_generate(lua::State* L) {
+static int l_random(lua::State* L) {
     std::uniform_int_distribution<> dist(0, std::numeric_limits<int>::max());
 
     auto& rng = require_userdata<LuaRandom>(L, 1).rng;
@@ -18,6 +18,11 @@ static int l_generate(lua::State* L) {
         rawseti(L, i + 1);
     }
     return 1;
+}
+
+static int l_seed(lua::State* L) {
+    require_userdata<LuaRandom>(L, 1).rng = std::mt19937(lua::touinteger(L, 2));
+    return 0;
 }
 
 static int l_meta_meta_call(lua::State* L) {
@@ -35,8 +40,10 @@ int LuaRandom::createMetatable(lua::State* L) {
 
     requireglobal(L, "__vc_create_random_methods");
     createtable(L, 0, 0);
-    pushcfunction(L, wrap<l_generate>);
-    setfield(L, "generate");
+    pushcfunction(L, wrap<l_random>);
+    setfield(L, "random");
+    pushcfunction(L, wrap<l_seed>);
+    setfield(L, "seed");
     call(L, 1, 1);
 
     setfield(L, "__index");
