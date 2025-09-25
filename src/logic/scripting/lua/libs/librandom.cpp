@@ -22,7 +22,7 @@ static int l_random(lua::State* L) {
     }
 }
 
-static int l_bytes(lua::State* L) {
+static int l_generate(lua::State* L) {
     size_t size = lua::tointeger(L, 1);
 
     auto randomEngine = util::seeded_random_engine(random_device);
@@ -40,7 +40,7 @@ static int l_uuid(lua::State* L) {
 
 const luaL_Reg randomlib[] = {
     {"random", lua::wrap<l_random>},
-    {"bytes", lua::wrap<l_bytes>},
+    {"bytes", lua::wrap<l_generate>},
     {"uuid", lua::wrap<l_uuid>},
     {NULL, NULL}
 };
