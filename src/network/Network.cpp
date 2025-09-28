@@ -379,7 +379,6 @@ public:
                 }
                 totalDownload += size;
             }
-            logger.debug() << "read " << size << " bytes from " << to_string(addr);
         }
     }
 
