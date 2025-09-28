@@ -696,7 +696,8 @@ public:
             while (open) {
                 int size = recv(descriptor, buffer.data(), buffer.size(), 0);
                 if (size <= 0) {
-                    logger.error() <<id <<"udp connection " << id << handle_socket_error(" recv error").what();
+                    logger.error() << "udp connection " << id
+                                   << handle_socket_error(" recv error").what();
                     if (!open) break;
                     closesocket(descriptor);
                     state = ConnectionState::CLOSED;

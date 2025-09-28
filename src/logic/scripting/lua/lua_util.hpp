@@ -773,7 +773,7 @@ namespace lua {
         lua::pushvalue(L, -2);
         lua::call(L, 1, 1);
         auto view = lua::tolstring(L, -1);
-        lua::pop(L);
+        lua::pop(L, 2);
         return view;
     }
 }
