@@ -560,7 +560,6 @@ local internal_locked = false
 -- nocache - ignore cached script, load anyway
 local function __load_script(path, nocache, env)
     local packname, filename = parse_path(path)
-    print(packname, filename, env)
 
     if internal_locked and (packname == "res" or packname == "core") 
        and filename:starts_with("modules/internal") then
