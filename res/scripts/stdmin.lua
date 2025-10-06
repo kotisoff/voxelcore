@@ -558,8 +558,9 @@ local internal_locked = false
 --     Example `base:scripts/tests.lua`
 --
 -- nocache - ignore cached script, load anyway
-function __load_script(path, nocache)
+local function __load_script(path, nocache, env)
     local packname, filename = parse_path(path)
+    print(packname, filename, env)
 
     if internal_locked and (packname == "res" or packname == "core") 
        and filename:starts_with("modules/internal") then
@@ -578,6 +579,9 @@ function __load_script(path, nocache)
     if script == nil then
         error(err)
     end
+    if env then
+        script = setfenv(script, env)
+    end
     local result = script()
     if not nocache then
         __cached_scripts[path] = script
@@ -593,10 +597,11 @@ end
 function require(path)
     if not string.find(path, ':') then
         local prefix, _ = parse_path(_debug_getinfo(2).source)
-        return require(prefix..':'..path)
+        return require(prefix .. ':' .. path)
     end
     local prefix, file = parse_path(path)
-    return __load_script(prefix..":modules/"..file..".lua")
+    local env = __vc__pack_envs[prefix]
+    return __load_script(prefix .. ":modules/" .. file .. ".lua", nil, env)
 end
 
 function __scripts_cleanup()
