@@ -270,6 +270,10 @@ dv::value Parser::parseArray(int indent) {
             dv::value object = dv::object();
             object[std::string(name)] = parseFullValue(next_indent);
             skipEmptyLines();
+            if (!hasNext()) {
+                list.add(std::move(object));
+                break;
+            }
             next_indent = countIndent();
             if (next_indent > indent) {
                 pos = linestart;
