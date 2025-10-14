@@ -347,12 +347,6 @@ function refresh()
         packs_info[id] = {packinfo.id, packinfo.title}
     end
 
-    for i,id in ipairs(packs_installed) do
-        if table.has(required, id) then
-            document["pack_"..id].enabled = false
-        end
-    end
-
     if #packs_excluded == 0 then packs_excluded = table.copy(packs_available) end
     if #packs_included == 0 then packs_included = table.copy(packs_installed) end
 
@@ -370,6 +364,12 @@ function refresh()
         callback = string.format('move_pack("%s")', id)
         packinfo.error = check_dependencies(packinfo)
         place_pack(packs_add, packinfo, callback, string.format('reposition_func("%s")', packinfo.id))
+    end
+
+    for i,id in ipairs(packs_installed) do
+        if table.has(required, id) then
+            document["pack_"..id].enabled = false
+        end
     end
 
     check_deleted()
