@@ -194,42 +194,49 @@ function Version.__equal(ver1, ver2)
     return ver1[1] == ver2[1] and ver1[2] == ver2[2] and ver1[3] == ver2[3];
 end
 
-function Version.__more(ver1, ver2)
+function Version.__greater(ver1, ver2)
     if ver1[1] ~= ver2[1] then return ver1[1] > ver2[1] end;
     if ver1[2] ~= ver2[2] then return ver1[2] > ver2[2] end;
     return ver1[3] > ver2[3];
 end
 
 function Version.__less(ver1, ver2)
-    return Version.__more(ver2, ver1);
+    return Version.__greater(ver2, ver1);
 end
 
-function Version.__more_or_equal(ver1, ver2)
+function Version.__greater_or_equal(ver1, ver2)
     return not Version.__less(ver1, ver2);
 end
 
 function Version.__less_or_equal(ver1, ver2)
-    return not Version.__more(ver1, ver2);
+    return not Version.__greater(ver1, ver2);
 end
+
+Version.operators = {
+    ["="] = Version.__equal,
+    [">"] = Version.__greater,
+    ["<"] = Version.__less,
+    [">="] = Version.__greater_or_equal,
+    ["<="] = Version.__less_or_equal
+}
 
 function Version.compare(op, ver1, ver2)
     ver1 = string.split(ver1, ".");
     ver2 = string.split(ver2, ".");
 
-    if op == "=" then return Version.__equal(ver1, ver2);
-    elseif op == ">" then return Version.__more(ver1, ver2);
-    elseif op == "<" then return Version.__less(ver1, ver2);
-    elseif op == ">=" then return Version.__more_or_equal(ver1, ver2);
-    elseif op == "<=" then return Version.__less_or_equal(ver1, ver2);
-    else return false; end
+    local comparison_func = Version.operators[op];
+
+    if comparison_func then
+        return comparison_func(ver1, ver2);
+    else
+        return false;
+    end
 end
 
-function Version.parse(version)    
+function Version.parse(version)
     local op = string.sub(version, 1, 2);
-    if op == ">=" or op == "=>" then
-        return ">=", string.sub(version, #op + 1);
-    elseif op == "<=" or op == "=<" then
-        return "<=", string.sub(version, #op + 1);
+    if op == ">=" or op == "<=" then
+        return op, string.sub(version, #op + 1);
     end
 
     op = string.sub(version, 1, 1);
