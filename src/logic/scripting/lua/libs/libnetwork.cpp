@@ -125,16 +125,6 @@ static int l_request(lua::State* L, network::Network& network) {
                 std::move(response.body)}
         ));
     };
-    request.onReject = [currentRequestId](network::HttpResponse response) {
-        push_event(NetworkEvent(
-            RESPONSE,
-            ResponseEventDto {
-                response.status,
-                false,
-                currentRequestId,
-                std::move(response.body)}
-        ));
-    };
 
     network.request(std::move(request));
     return lua::pushinteger(L, currentRequestId);

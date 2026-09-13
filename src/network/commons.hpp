@@ -13,7 +13,6 @@ namespace network {
     struct HttpResponse;
 
     using OnResponse = std::function<void(HttpResponse)>;
-    using OnReject = std::function<void(HttpResponse)>;
     using ConnectCallback = std::function<void(u64id_t, u64id_t)>;
     using ConnectErrorCallback = std::function<void(u64id_t, std::string)>;
     using ServerDatagramCallback = std::function<void(u64id_t sid, const std::string& addr, int port, const char* buffer, size_t length)>;
@@ -26,7 +25,6 @@ namespace network {
         std::vector<std::string> headers;
 
         OnResponse onResponse;
-        OnReject onReject;
         bool followLocation = false;
         bool verifySSL = true;
         long maxSize = -1;
