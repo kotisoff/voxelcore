@@ -146,7 +146,7 @@ public:
             multiHandle,
             nullptr,
             0,
-            1000,
+            0,
             nullptr
         )) {
             auto message = curl_multi_strerror(res);
