@@ -115,16 +115,24 @@ static int l_request(lua::State* L, network::Network& network) {
     }
 
     int currentRequestId = request_id++;
-    request.onResponse = [currentRequestId](std::vector<char> bytes) {
+    request.onResponse = [currentRequestId](network::HttpResponse response) {
         push_event(NetworkEvent(
             RESPONSE,
-            ResponseEventDto {200, false, currentRequestId, std::move(bytes)}
+            ResponseEventDto {
+                response.status,
+                false,
+                currentRequestId,
+                std::move(response.body)}
         ));
     };
-    request.onReject = [currentRequestId](int code, std::vector<char> bytes) {
+    request.onReject = [currentRequestId](network::HttpResponse response) {
         push_event(NetworkEvent(
             RESPONSE,
-            ResponseEventDto {code, false, currentRequestId, std::move(bytes)}
+            ResponseEventDto {
+                response.status,
+                false,
+                currentRequestId,
+                std::move(response.body)}
         ));
     };
 

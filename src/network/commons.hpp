@@ -10,8 +10,10 @@
 #include <mutex>
 
 namespace network {
-    using OnResponse = std::function<void(std::vector<char>)>;
-    using OnReject = std::function<void(int, std::vector<char>)>;
+    struct HttpResponse;
+
+    using OnResponse = std::function<void(HttpResponse)>;
+    using OnReject = std::function<void(HttpResponse)>;
     using ConnectCallback = std::function<void(u64id_t, u64id_t)>;
     using ConnectErrorCallback = std::function<void(u64id_t, std::string)>;
     using ServerDatagramCallback = std::function<void(u64id_t sid, const std::string& addr, int port, const char* buffer, size_t length)>;
@@ -29,6 +31,12 @@ namespace network {
         bool verifySSL = true;
         long maxSize = -1;
         long timeoutMs = 0;
+    };
+
+    struct HttpResponse {
+        int status;
+        std::vector<std::string> headers;
+        std::vector<char> body;
     };
 
     class Requests {

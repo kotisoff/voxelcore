@@ -10,11 +10,12 @@ TEST(curltest, curltest) {
     network::HttpRequest request {};
     request.url = "https://raw.githubusercontent.com/MihailRis/VoxelEngine-Cpp/refs/"
                   "heads/curl/res/content/base/blocks/lamp.json";
-    request.onResponse = [](std::vector<char> data) {
-        if (data.empty()) {
+    request.onResponse = [](network::HttpResponse response) {
+        if (response.body.empty()) {
             return;
         }
-        auto view = std::string_view(data.data(), data.size());
+        auto view =
+            std::string_view(response.body.data(), response.body.size());
         auto value = json::parse(view);
         std::cout << value << std::endl;
     };
