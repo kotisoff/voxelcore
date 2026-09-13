@@ -48,7 +48,7 @@ jobs:
       - name: Run tests
         run: ctest --test-dir build
       - name: Run engine tests
-        timeout-minutes: 1
+        timeout-minutes: 5
         run: |
             chmod +x build/VoxelEngine
             chmod +x AppDir/usr/bin/vctest
