@@ -114,26 +114,49 @@ public:
         } else {
             curl_easy_setopt(curl, CURLOPT_MAXFILESIZE, request.maxSize);
         }
-        curl_multi_add_handle(multiHandle, curl);
-        int running;
-        CURLMcode res = curl_multi_perform(multiHandle, &running);
-        if (res != CURLM_OK) {
-            auto message = curl_multi_strerror(res);
-            logger.error() << message << " (" << request.url << ")";
-            if (request.onResponse) {
-                request.onResponse({0, {}, {}});
+        {
+            CURLMcode res = curl_multi_add_handle(multiHandle, curl);
+            if (res != CURLM_OK) {
+                auto message = curl_multi_strerror(res);
+                logger.error() << message << " (" << request.url << ")";
+                if (request.onResponse) {
+                    request.onResponse({0, {}, {}});
+                }
+                return;
             }
-            return;
+        }
+        {
+        int running;
+            CURLMcode res = curl_multi_perform(multiHandle, &running);
+            if (res != CURLM_OK) {
+                auto message = curl_multi_strerror(res);
+                logger.error() << message << " (" << request.url << ")";
+                if (request.onResponse) {
+                    request.onResponse({0, {}, {}});
+                }
+                return;
+            }
         }
         entry->request = std::move(request);
         requests.push_back(std::move(entry));
     }
 
     void update() override {
+        if (CURLMcode res = curl_multi_poll(
+            multiHandle,
+            nullptr,
+            0,
+            1000,
+            nullptr
+        )) {
+            auto message = curl_multi_strerror(res);
+            logger.error() << message;
+            return;
+        }
+
         int messagesLeft;
         int running;
-        CURLMcode res = curl_multi_perform(multiHandle, &running);
-        if (res != CURLM_OK) {
+        if (CURLMcode res = curl_multi_perform(multiHandle, &running)) {
             auto message = curl_multi_strerror(res);
             logger.error() << message;
             return;
@@ -155,6 +178,7 @@ public:
             return;
         }
         auto entry = std::move(*found);
+        auto& req = entry->request;
         requests.erase(found);
 
         int response = -1;
@@ -163,9 +187,9 @@ public:
         auto headers = std::move(entry->headers);
         if (response == 0) {
             auto message = std::string(curl_easy_strerror(result));
-            logger.error() << message << " (" << entry->request.url << ")";
-            if (entry->request.onResponse) {
-                entry->request.onResponse(
+            logger.error() << message << " (" << req.url << ")";
+            if (req.onResponse) {
+                req.onResponse(
                     {response,
                      std::move(headers),
                      std::vector<char>(
@@ -182,8 +206,8 @@ public:
                 totalDownload += size;
             }
             totalDownload += entry->buffer.size();
-            if (entry->request.onResponse) {
-                entry->request.onResponse({
+            if (req.onResponse) {
+                req.onResponse({
                     response,
                     std::move(headers),
                     std::move(entry->buffer),
