@@ -4,7 +4,6 @@
 
 #define NOMINMAX
 #include <curl/curl.h>
-#include <queue>
 
 using namespace network;
 
@@ -50,9 +49,41 @@ struct ProcessingRequest {
         curl = curl_easy_init();
     }
 
+    ProcessingRequest(const ProcessingRequest&) = delete;
+    ProcessingRequest& operator=(const ProcessingRequest&) = delete;
+
+    ProcessingRequest(ProcessingRequest&& other) noexcept
+        : multiHandle(other.multiHandle),
+          curl(other.curl),
+          request(std::move(other.request)),
+          buffer(std::move(other.buffer)),
+          headers(std::move(other.headers)) {
+        other.curl = nullptr;
+        other.multiHandle = nullptr;
+    }
+
+    ProcessingRequest& operator=(ProcessingRequest&& other) noexcept {
+        if (this != &other) {
+            if (curl) {
+                curl_multi_remove_handle(multiHandle, curl);
+                curl_easy_cleanup(curl);
+            }
+            multiHandle = other.multiHandle;
+            curl = other.curl;
+            request = std::move(other.request);
+            buffer = std::move(other.buffer);
+            headers = std::move(other.headers);
+            other.curl = nullptr;
+            other.multiHandle = nullptr;
+        }
+        return *this;
+    }
+
     ~ProcessingRequest() {
-        curl_multi_remove_handle(multiHandle, curl);
-        curl_easy_cleanup(curl);
+        if (curl) {
+            curl_multi_remove_handle(multiHandle, curl);
+            curl_easy_cleanup(curl);
+        }
     }
 };
 
@@ -88,14 +119,14 @@ public:
             hs = curl_slist_append(hs, header.c_str());
         }
 
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, request.body.length());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, static_cast<long>(request.body.length()));
         if (!request.body.empty()) {
             curl_easy_setopt(curl, CURLOPT_COPYPOSTFIELDS, request.body.data());
         }
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, request.verifySSL);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, request.verifySSL);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, static_cast<long>(request.verifySSL));
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, static_cast<long>(request.verifySSL));
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, hs);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, request.followLocation);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, static_cast<long>(request.followLocation));
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &entry->buffer);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
@@ -162,7 +193,7 @@ public:
             return;
         }
         CURLMsg* msg = curl_multi_info_read(multiHandle, &messagesLeft);
-        if (msg == nullptr) {
+        if (msg == nullptr || msg->msg != CURLMSG_DONE) {
             return;
         }
         auto curl = msg->easy_handle;
@@ -225,13 +256,8 @@ public:
     }
 
     static std::unique_ptr<CurlRequests> create() {
-        auto curl = curl_easy_init();
-        if (curl == nullptr) {
-            throw std::runtime_error("could not initialize cURL");
-        }
         auto multiHandle = curl_multi_init();
         if (multiHandle == nullptr) {
-            curl_easy_cleanup(curl);
             throw std::runtime_error("could not initialize cURL-multi");
         }
         return std::make_unique<CurlRequests>(multiHandle);
