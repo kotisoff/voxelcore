@@ -6,7 +6,7 @@ A library for working with the network.
 
 There is a configurable function `network.request` that allows performing HTTP requests with various methods (GET, POST, PUT, DELETE, etc.) and configuring headers, request body, timeout, and other parameters.
 
->[!NOTE] To pass binary data in the request body, use a byte array (Bytearray) or a string. In `on_response`, the `body` string can be converted to a byte array using `Bytearray(response.body)`.
+> To pass binary data in the request body, use a byte array (Bytearray) or a string. In `on_response`, the `body` string can be converted to a byte array using `Bytearray(response.body)`.
 
 ```lua
 network.request(
