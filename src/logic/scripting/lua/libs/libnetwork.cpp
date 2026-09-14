@@ -102,7 +102,11 @@ static int l_request(lua::State* L, network::Network& network) {
         lua::pop(L);
     }
     if (lua::getfield(L, "body", 2)) {
-        request.body = lua::require_lstring(L, -1);
+        if (lua::type(L, -1) == LUA_TCDATA) {
+            request.body = lua::bytearray_as_string(L, -1);
+        } else {
+            request.body = lua::require_lstring(L, -1);
+        }
         lua::pop(L);
     }
     if (lua::getfield(L, "follow_location", 2)) {
