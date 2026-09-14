@@ -49,7 +49,7 @@ jobs:
         run: |
           chmod +x build/VoxelEngine
           chmod +x AppDir/usr/bin/vctest
-          AppDir/usr/bin/vctest -e build/VoxelEngine -d dev/tests -u build --output-always --memchecker "lldb -batch -o 'run' -o 'thread backtrace all' -o 'quit' -- "
+          AppDir/usr/bin/vctest -e build/VoxelEngine -d dev/tests -u build --output-always --debugger "lldb -batch -o 'run' -o 'thread backtrace all' -o 'quit' -- "
       - name: Create DMG
         run: |
           mkdir VoxelEngineDmgContent
