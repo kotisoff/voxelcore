@@ -28,7 +28,7 @@ struct ResponseEventDto {
     int status;
     bool binary;
     int requestId;
-    std::vector<char> bytes;
+    network::HttpResponse response;
 };
 
 enum NetworkDatagramSide {
@@ -122,7 +122,7 @@ static int l_request(lua::State* L, network::Network& network) {
                 response.status,
                 false,
                 currentRequestId,
-                std::move(response.body)}
+                std::move(response)}
         ));
     };
 
@@ -493,11 +493,31 @@ static int l_pull_events(lua::State* L) {
                 lua::pushinteger(L, dto.requestId);
                 lua::rawseti(L, 3);
 
+                lua::createtable(L, 0, 2);
+                lua::pushinteger(L, dto.response.status);
+                lua::setfield(L, "status");
+                
                 if (dto.binary) {
-                    lua::create_bytearray(L, dto.bytes.data(), dto.bytes.size());
+                    lua::create_bytearray(
+                        L, dto.response.body.data(), dto.response.body.size()
+                    );
                 } else {
-                    lua::pushlstring(L, std::string_view(dto.bytes.data(), dto.bytes.size()));
+                    lua::pushlstring(
+                        L,
+                        std::string_view(
+                            dto.response.body.data(), dto.response.body.size()
+                        )
+                    );
                 }
+                lua::setfield(L, "body");
+
+                lua::createtable(L, dto.response.headers.size(), 0);
+                for (int i = 0; i < dto.response.headers.size(); i++) {
+                    lua::pushlstring(L, dto.response.headers[i]);
+                    lua::rawseti(L, i + 1);
+                }
+                lua::setfield(L, "headers");
+
                 lua::rawseti(L, 4);
                 break;
             }

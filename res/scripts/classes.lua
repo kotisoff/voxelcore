@@ -127,8 +127,12 @@ network.get = function(url, callback, errorCallback, headers)
     return request(url, {
         method = "GET",
         headers = headers,
-        on_response = callback,
-        on_error = errorCallback,
+        on_response = function(response)
+            callback(response.body)
+        end,
+        on_error = function(response)
+            errorCallback(response.status, response.body)
+        end,
         follow_location = true,
     })
 end
@@ -137,8 +141,12 @@ network.get_binary = function(url, callback, errorCallback, headers)
     return request(url, {
         method = "GET",
         headers = headers,
-        on_response = callback and (function (response) return callback(Bytearray(response)) end),
-        on_error = errorCallback,
+        on_response = callback and (function (response)
+            return callback(Bytearray(response.body))
+        end),
+        on_error = function(response)
+            errorCallback(response.status, response.body)
+        end,
         follow_location = true,
     })
 end
@@ -150,8 +158,12 @@ network.post = function(url, body, callback, errorCallback, headers)
             "Content-Type: application/json"
         }, headers),
         body = body,
-        on_response = callback,
-        on_error = errorCallback,
+        on_response = function(response)
+            callback(response.body)
+        end,
+        on_error = function(response)
+            errorCallback(response.status, response.body)
+        end,
     })
 end
 
