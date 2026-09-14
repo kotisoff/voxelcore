@@ -98,7 +98,6 @@ local _udp_server_callbacks = {}
 local _udp_client_datagram_callbacks = {}
 local _udp_client_open_callbacks = {}
 local _http_response_callbacks = {}
-local _http_error_callbacks = {}
 
 local http_request = network.__request
 local open_tcp = network.__open_tcp
@@ -116,9 +115,6 @@ local function request(url, params)
     if params.on_response then
         _http_response_callbacks[id] = params.on_response
     end
-    if params.on_error then
-        _http_error_callbacks[id] = params.on_error
-    end
 end
 
 network.request = request
@@ -128,7 +124,11 @@ network.get = function(url, callback, errorCallback, headers)
         method = "GET",
         headers = headers,
         on_response = function(response)
-            callback(response.body)
+            if response.status / 100 == 2 then
+                return callback(response.body)
+            else
+                return errorCallback(response.status, response.body)
+            end
         end,
         on_error = function(response)
             errorCallback(response.status, response.body)
@@ -142,11 +142,12 @@ network.get_binary = function(url, callback, errorCallback, headers)
         method = "GET",
         headers = headers,
         on_response = callback and (function (response)
-            return callback(Bytearray(response.body))
+            if response.code / 100 == 2 then
+                return callback(Bytearray(response.body))
+            else
+                return errorCallback(response.status, response.body)
+            end
         end),
-        on_error = function(response)
-            errorCallback(response.status, response.body)
-        end,
         follow_location = true,
     })
 end
@@ -159,11 +160,13 @@ network.post = function(url, body, callback, errorCallback, headers)
         }, headers),
         body = body,
         on_response = function(response)
-            callback(response.body)
+            if response.code / 100 == 2 then
+                return callback(Bytearray(response.body))
+            else
+                return errorCallback(response.status, response.body)
+            end
         end,
-        on_error = function(response)
-            errorCallback(response.status, response.body)
-        end,
+        follow_location = true,
     })
 end
 
@@ -276,20 +279,10 @@ network.__process_events = function()
                 end
             end
         elseif etype == RESPONSE then
-            if event[2] / 100 == 2 then
-                local callback = _http_response_callbacks[event[3]]
-                _http_response_callbacks[event[3]] = nil
-                _http_error_callbacks[event[3]] = nil
-                if callback then
-                    callback(event[4])
-                end
-            else
-                local callback = _http_error_callbacks[event[3]]
-                _http_response_callbacks[event[3]] = nil
-                _http_error_callbacks[event[3]] = nil
-                if callback then
-                    callback(event[4])
-                end
+            local callback = _http_response_callbacks[event[3]]
+            _http_response_callbacks[event[3]] = nil
+            if callback then
+                callback(event[4])
             end
         end
 
