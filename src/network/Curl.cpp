@@ -126,7 +126,7 @@ public:
             }
         }
         {
-        int running;
+            int running;
             CURLMcode res = curl_multi_perform(multiHandle, &running);
             if (res != CURLM_OK) {
                 auto message = curl_multi_strerror(res);
@@ -181,7 +181,7 @@ public:
         auto& req = entry->request;
         requests.erase(found);
 
-        int response = -1;
+        long response = -1;
         CURLcode result = msg->data.result;
         curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &response);
         auto headers = std::move(entry->headers);
@@ -190,7 +190,7 @@ public:
             logger.error() << message << " (" << req.url << ")";
             if (req.onResponse) {
                 req.onResponse(
-                    {response,
+                    {static_cast<int>(response),
                      std::move(headers),
                      std::vector<char>(
                          message.data(), message.data() + message.size()
@@ -208,7 +208,7 @@ public:
             totalDownload += entry->buffer.size();
             if (req.onResponse) {
                 req.onResponse({
-                    response,
+                    static_cast<int>(response),
                     std::move(headers),
                     std::move(entry->buffer),
                 });

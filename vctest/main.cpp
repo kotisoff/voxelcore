@@ -183,8 +183,8 @@ static bool run_test(const Config& config, const fs::path& path, bool memcheck =
     auto name = path.stem();
     std::stringstream ss;
     if (memcheck) {
-        ss << config.memchecker << " --log-file="
-           << fix_path(memcheckLogFile.string()) << " ";
+        ss << config.memchecker << /*" --log-file="
+           << fix_path(memcheckLogFile.string()) <<*/ " ";
     }
     ss << fs::canonical(config.executable) << " --headless";
     ss << " --test " << fix_path(path.string());
