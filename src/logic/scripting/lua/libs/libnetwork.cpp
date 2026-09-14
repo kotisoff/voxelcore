@@ -113,6 +113,10 @@ static int l_request(lua::State* L, network::Network& network) {
         request.timeoutMs = lua::tointeger(L, -1);
         lua::pop(L);
     }
+    if (lua::getfield(L, "verify_ssl", 2)) {
+        request.verifySSL = lua::toboolean(L, -1);
+        lua::pop(L);
+    }
 
     int currentRequestId = request_id++;
     request.onResponse = [currentRequestId](network::HttpResponse response) {
