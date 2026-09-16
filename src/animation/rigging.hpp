@@ -86,6 +86,7 @@ namespace rigging {
         std::vector<ModelReference> modelOverrides;
         bool visible;
         glm::vec4 tint {1.0f, 1.0f, 1.0f, 1.0f};
+        std::vector<glm::vec4> boneTints;
 
         util::VecInterpolation<3, float> interpolation {false};
 
