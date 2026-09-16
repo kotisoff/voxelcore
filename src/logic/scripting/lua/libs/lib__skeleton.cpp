@@ -147,8 +147,19 @@ static int l_set_visible(lua::State* L) {
     return 0;
 }
 
+static glm::vec4 to_color(lua::State* L, int idx) {
+    if (lua::objlen(L, idx) > 3) {
+        return lua::tovec4(L, idx);
+    }
+    return glm::vec4(lua::tovec3(L, idx), 1.0f);
+}
+
 static int l_get_color(lua::State* L) {
     if (auto skeleton = get_skeleton(L)) {
+        if (lua::isnumber(L, 2)) {
+            auto index = index_range_check(*skeleton, lua::tointeger(L, 2));
+            return lua::pushvec(L, skeleton->boneTints[index]);
+        }
         return lua::pushvec(L, skeleton->tint);
     }
     return 0;
@@ -156,9 +167,12 @@ static int l_get_color(lua::State* L) {
 
 static int l_set_color(lua::State* L) {
     if (auto skeleton = get_skeleton(L)) {
-        skeleton->tint = lua::objlen(L, 2) > 3
-                             ? lua::tovec4(L, 2)
-                             : glm::vec4(lua::tovec3(L, 2), 1.0f);
+        if (lua::isnumber(L, 2)) {
+            auto index = index_range_check(*skeleton, lua::tointeger(L, 2));
+            skeleton->boneTints[index] = to_color(L, 3);
+        } else {
+            skeleton->tint = to_color(L, 2);
+        }
     }
     return 0;
 }
