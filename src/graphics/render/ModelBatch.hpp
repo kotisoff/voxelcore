@@ -21,6 +21,25 @@ namespace model {
 using TextureNamesMap = std::unordered_map<std::string, std::string>;
 
 class ModelBatch {
+public:
+    ModelBatch(
+        size_t capacity,
+        const Assets& assets,
+        const Chunks& chunks,
+        const EngineSettings& settings
+    );
+    ~ModelBatch();
+
+    void draw(
+        const glm::mat4& matrix,
+        const glm::vec4& tint,
+        const model::Model* model,
+        const TextureNamesMap* varTextures
+    );
+    void render();
+
+    void setLightsOffset(const glm::vec3& offset);
+private:
     const Assets& assets;
     const Chunks& chunks;
 
@@ -51,22 +70,4 @@ class ModelBatch {
         const TextureNamesMap* varTextures;
     };
     std::vector<DrawEntry> entries;
-public:
-    ModelBatch(
-        size_t capacity,
-        const Assets& assets,
-        const Chunks& chunks,
-        const EngineSettings& settings
-    );
-    ~ModelBatch();
-
-    void draw(
-        const glm::mat4& matrix,
-        const glm::vec4& tint,
-        const model::Model* model,
-        const TextureNamesMap* varTextures
-    );
-    void render();
-
-    void setLightsOffset(const glm::vec3& offset);
 };

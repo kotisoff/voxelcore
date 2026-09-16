@@ -31,16 +31,6 @@ struct MainBatchVertex {
 };
 
 class MainBatch {
-    std::unique_ptr<MainBatchVertex[]> const buffer;
-    size_t const capacity;
-    size_t index;
-
-    UVRegion region {0.0f, 0.0f, 1.0f, 1.0f};
-
-    std::unique_ptr<Mesh<MainBatchVertex>> mesh;
-    std::unique_ptr<Texture> blank;
-
-    const Texture* texture = nullptr;
 public:
     /// xyz, uv, color, compressed lights
 
@@ -84,7 +74,7 @@ public:
         index++;
     }
 
-    inline void quad(
+    void quad(
         const glm::vec3& pos,
         const glm::vec3& right,
         const glm::vec3& up,
@@ -94,58 +84,7 @@ public:
         const glm::vec4& tint,
         const UVRegion& subregion,
         float emission = 0.0f
-    ) {
-        prepare(6);
-        vertex(
-            pos - right * size.x * 0.5f - up * size.y * 0.5f,
-            {subregion.u1, subregion.v1},
-            light,
-            tint,
-            normal,
-            emission
-        );
-        vertex(
-            pos + right * size.x * 0.5f - up * size.y * 0.5f,
-            {subregion.u2, subregion.v1},
-            light,
-            tint,
-            normal,
-            emission
-        );
-        vertex(
-            pos + right * size.x * 0.5f + up * size.y * 0.5f,
-            {subregion.u2, subregion.v2},
-            light,
-            tint,
-            normal,
-            emission
-        );
-
-        vertex(
-            pos - right * size.x * 0.5f - up * size.y * 0.5f,
-            {subregion.u1, subregion.v1},
-            light,
-            tint,
-            normal,
-            emission
-        );
-        vertex(
-            pos + right * size.x * 0.5f + up * size.y * 0.5f,
-            {subregion.u2, subregion.v2},
-            light,
-            tint,
-            normal,
-            emission
-        );
-        vertex(
-            pos - right * size.x * 0.5f + up * size.y * 0.5f,
-            {subregion.u1, subregion.v2},
-            light,
-            tint,
-            normal,
-            emission
-        );
-    }
+    );
 
     void cube(
         const glm::vec3& coord,
@@ -156,4 +95,15 @@ public:
         float emission,
         uint8_t cullingBits = 0xFF
     );
+private:
+    std::unique_ptr<MainBatchVertex[]> const buffer;
+    size_t const capacity;
+    size_t index;
+
+    UVRegion region {0.0f, 0.0f, 1.0f, 1.0f};
+
+    std::unique_ptr<Mesh<MainBatchVertex>> mesh;
+    std::unique_ptr<Texture> blank;
+
+    const Texture* texture = nullptr;
 };
