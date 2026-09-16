@@ -46,7 +46,8 @@ Skeleton::Skeleton(std::shared_ptr<const SkeletonConfig> config)
       flags(config ? config->getBones().size() : 0),
       textures(),
       modelOverrides(config ? config->getBones().size() : 0),
-      visible(true) {
+      visible(true),
+      boneTints(config ? config->getBones().size() : 0, glm::vec4(1.0f)) {
     if (config == nullptr) {
         return;
     }
@@ -99,6 +100,7 @@ void Skeleton::setConfig(std::shared_ptr<const SkeletonConfig> rigConfig) {
 
     modelOverrides.resize(bonesCount);
     flags.resize(bonesCount);
+    boneTints.resize(bonesCount, glm::vec4(1.0f));
 
     for (size_t i = 0; i < bonesCount; i++) {
         flags[i].visible = true;
@@ -204,7 +206,7 @@ void SkeletonConfig::render(
         if (model) {
             batch.draw(
                 skeleton.calculated.matrices[i],
-                skeleton.tint,
+                skeleton.tint * skeleton.boneTints[i],
                 model,
                 &skeleton.textures
             );
