@@ -197,7 +197,7 @@ rig:get_color(index: int) -> vec4
 -- Sets the color of the entity
 rig:set_color(color: vec3 | vec4)
 -- Sets the color of the bone by index
-rig:set_color(index: int, color: vec3 | vec4)
+rig:set_color(color: vec3 | vec4, index: int)
 ```
 
 > [!WARNING]

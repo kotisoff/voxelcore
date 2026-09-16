@@ -186,7 +186,7 @@ rig:get_color(index: int) -> vec4
 -- Устанавливает цвет сущности
 rig:set_color(color: vec3 | vec4)
 -- Устанавливает цвет кости по индексу
-rig:set_color(index: int, color: vec3 | vec4)
+rig:set_color(color: vec3 | vec4, index: int)
 ```
 
 ## Пользовательские компоненты

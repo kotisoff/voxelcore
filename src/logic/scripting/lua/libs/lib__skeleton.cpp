@@ -167,11 +167,12 @@ static int l_get_color(lua::State* L) {
 
 static int l_set_color(lua::State* L) {
     if (auto skeleton = get_skeleton(L)) {
-        if (lua::isnumber(L, 2)) {
-            auto index = index_range_check(*skeleton, lua::tointeger(L, 2));
-            skeleton->boneTints[index] = to_color(L, 3);
+        auto color = to_color(L, 2);
+        if (lua::isnumber(L, 3)) {
+            auto index = index_range_check(*skeleton, lua::tointeger(L, 3));
+            skeleton->boneTints[index] = color;
         } else {
-            skeleton->tint = to_color(L, 2);
+            skeleton->tint = color;
         }
     }
     return 0;
