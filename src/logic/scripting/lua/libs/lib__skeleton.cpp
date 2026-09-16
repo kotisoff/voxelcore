@@ -156,7 +156,9 @@ static int l_get_color(lua::State* L) {
 
 static int l_set_color(lua::State* L) {
     if (auto skeleton = get_skeleton(L)) {
-        skeleton->tint = lua::tovec3(L, 2);
+        skeleton->tint = lua::objlen(L, 2) > 3
+                             ? lua::tovec4(L, 2)
+                             : glm::vec4(lua::tovec3(L, 2), 1.0f);
     }
     return 0;
 }

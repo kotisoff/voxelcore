@@ -85,7 +85,7 @@ namespace rigging {
         std::unordered_map<std::string, std::string> textures;
         std::vector<ModelReference> modelOverrides;
         bool visible;
-        glm::vec3 tint {1.0f, 1.0f, 1.0f};
+        glm::vec4 tint {1.0f, 1.0f, 1.0f, 1.0f};
 
         util::VecInterpolation<3, float> interpolation {false};
 

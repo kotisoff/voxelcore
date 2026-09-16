@@ -87,7 +87,7 @@ void MainBatch::cube(
     const glm::vec3& size,
     const UVRegion(&texfaces)[6],
     const glm::vec4& lights,
-    const glm::vec3 tints[],
+    const glm::vec4 tints[],
     float emission,
     uint8_t cullingBits
 ) {

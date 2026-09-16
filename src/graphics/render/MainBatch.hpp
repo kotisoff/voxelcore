@@ -17,14 +17,14 @@ class Chunks;
 struct MainBatchVertex {
     glm::vec3 position;
     glm::vec2 uv;
-    glm::vec3 tint;
+    glm::vec4 tint;
     std::array<uint8_t, 4> color;
     std::array<uint8_t, 4> normal;
 
     static constexpr VertexAttribute ATTRIBUTES[] = {
         {VertexAttribute::Type::FLOAT, false, 3},
         {VertexAttribute::Type::FLOAT, false, 2},
-        {VertexAttribute::Type::FLOAT, false, 3},
+        {VertexAttribute::Type::FLOAT, false, 4},
         {VertexAttribute::Type::UNSIGNED_BYTE, true, 4},
         {VertexAttribute::Type::UNSIGNED_BYTE, true, 4},
         {{}, 0}};
@@ -63,7 +63,7 @@ public:
         const glm::vec3& pos,
         const glm::vec2& uv,
         const glm::vec4& light,
-        const glm::vec3& tint,
+        const glm::vec4& tint,
         const glm::vec3& normal,
         float emission
     ) {
@@ -91,7 +91,7 @@ public:
         const glm::vec3& normal,
         const glm::vec2& size,
         const glm::vec4& light,
-        const glm::vec3& tint,
+        const glm::vec4& tint,
         const UVRegion& subregion,
         float emission = 0.0f
     ) {
@@ -152,7 +152,7 @@ public:
         const glm::vec3& size,
         const UVRegion(&texfaces)[6],
         const glm::vec4& lights,
-        const glm::vec3 tints[],
+        const glm::vec4 tints[],
         float emission,
         uint8_t cullingBits = 0xFF
     );
