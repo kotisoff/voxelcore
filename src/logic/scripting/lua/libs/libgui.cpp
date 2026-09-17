@@ -1223,7 +1223,17 @@ static int l_screenshot(lua::State* L) {
     if (engine->isHeadless()) {
         return 0;
     }
-    auto image = engine->getWindow().takeScreenshot();
+    std::unique_ptr<ImageData> image;
+    if (lua::isstring(L, 1)) {
+        auto& gui = engine->getGUI();
+        auto frame = gui.getFrame(lua::require_string(L, 1));
+        if (frame == nullptr) {
+            return 0;
+        }
+        image = frame->takeScreenshot();
+    } else {
+        image = engine->getWindow().takeScreenshot();
+    }
     return lua::newuserdata<lua::LuaCanvas>(L, nullptr, std::move(image));
 }
 
