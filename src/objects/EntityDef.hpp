@@ -40,7 +40,7 @@ struct EntityDef {
     std::string material;
 
     /// @brief Model lighting mode
-    ModelLightingMode lightingMode = ModelLightingMode::BONE_BASED;
+    ModelLightingMode lightingMode = ModelLightingMode::SOLID;
 
     /// @brief Can the entity be interacted with cursor (on_attack, on_use)
     bool selectable = true;
