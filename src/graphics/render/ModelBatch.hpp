@@ -33,6 +33,7 @@ public:
     void draw(
         const glm::mat4& matrix,
         const glm::vec4& tint,
+        const glm::vec3& lightSampleOffset,
         const model::Model* model,
         const TextureNamesMap* varTextures
     );
@@ -66,6 +67,7 @@ private:
         glm::mat4 matrix;
         glm::mat3 rotation;
         glm::vec4 tint;
+        glm::vec3 lightSampleOffset;
         const model::Mesh* mesh;
         const TextureNamesMap* varTextures;
     };

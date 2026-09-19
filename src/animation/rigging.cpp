@@ -177,6 +177,7 @@ void SkeletonConfig::render(
     const Assets& assets,
     ModelBatch& batch,
     Skeleton& skeleton,
+    ModelLightingMode lightingMode,
     const glm::mat3& rotation,
     const glm::vec3& position,
     const glm::vec3& scale
@@ -203,16 +204,24 @@ void SkeletonConfig::render(
         if (auto foundOverride = modelOverride.model.lock()) {
             model = foundOverride.get();
         }
-        if (model) {
-            batch.draw(
-                skeleton.calculated.matrices[i],
-                skeleton.tint * skeleton.boneTints[i],
-                model,
-                &skeleton.textures
-            );
-        } else if (!node->model.name.empty()) {
-            node->model.updateFlag = true;
-        } 
+        if (model == nullptr) {
+            if (!node->model.name.empty()) {
+                node->model.updateFlag = true;
+            } 
+            continue;
+        }
+        batch.draw(
+            skeleton.calculated.matrices[i],
+            skeleton.tint * skeleton.boneTints[i],
+            lightingMode == ModelLightingMode::SOLID
+                ? position - glm::vec3(
+                      skeleton.calculated.matrices[i] *
+                      glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+                  )
+                : glm::vec3(),
+            model,
+            &skeleton.textures
+        );
     }
 }
 
