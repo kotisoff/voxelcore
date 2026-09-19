@@ -100,13 +100,18 @@ void ModelBatch::draw(
 void ModelBatch::draw(
     const glm::mat4& matrix,
     const glm::vec4& tint,
+    const glm::vec3& lightSampleOffset,
     const model::Model* model,
     const TextureNamesMap* varTextures
 ) {
     for (const auto& mesh : model->meshes) {
-        entries.push_back({
-            matrix, extract_rotation(matrix), tint, &mesh, varTextures
-        });
+        entries.push_back(DrawEntry {
+            matrix,
+            extract_rotation(matrix),
+            tint,
+            lightSampleOffset,
+            &mesh,
+            varTextures});
     }
 }
 
@@ -118,6 +123,7 @@ void ModelBatch::render() {
     );
     bool backlight = settings.graphics.backlight.get();
     for (auto& entry : entries) {
+        setLightsOffset(entry.lightSampleOffset);
         draw(
             *entry.mesh,
             entry.matrix,
@@ -126,6 +132,7 @@ void ModelBatch::render() {
             entry.varTextures,
             backlight
         );
+        setLightsOffset(glm::vec3());
     }
     batch->flush();
     entries.clear();

@@ -11,6 +11,7 @@
 #include "typedefs.hpp"
 #include "data/dv_fwd.hpp"
 #include "util/Interpolation.hpp"
+#include "util/EnumMetadata.hpp"
 
 class Assets;
 class ModelBatch;
@@ -18,6 +19,16 @@ class ModelBatch;
 namespace model {
     struct Model;
 }
+
+enum class ModelLightingMode {
+    BONE_BASED,
+    SOLID,
+};
+
+VC_ENUM_METADATA(ModelLightingMode)
+    {"bone-based", ModelLightingMode::BONE_BASED},
+    {"solid", ModelLightingMode::SOLID},
+VC_ENUM_END
 
 namespace rigging {
     struct Skeleton;
@@ -132,6 +143,7 @@ namespace rigging {
             const Assets& assets,
             ModelBatch& batch,
             Skeleton& skeleton,
+            ModelLightingMode lightingMode,
             const glm::mat3& rotation,
             const glm::vec3& position,
             const glm::vec3& scale
