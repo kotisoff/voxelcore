@@ -4,6 +4,7 @@
 
 #define NOMINMAX
 #include <curl/curl.h>
+#include <algorithm>
 
 using namespace network;
 
