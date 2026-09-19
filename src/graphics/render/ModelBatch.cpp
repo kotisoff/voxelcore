@@ -72,7 +72,7 @@ void ModelBatch::draw(
     glm::vec4 lights(1, 1, 1, 0);
     if (mesh.shading) {
         glm::vec3 gpos = matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        gpos += lightsOffset;
+        gpos += lightsOffset + localLightsOffset;
         lights = MainBatch::sampleLight(gpos, chunks, backlight);
     }
     for (size_t i = 0; i < vcount / 3; i++) {
@@ -123,7 +123,7 @@ void ModelBatch::render() {
     );
     bool backlight = settings.graphics.backlight.get();
     for (auto& entry : entries) {
-        setLightsOffset(entry.lightSampleOffset);
+        localLightsOffset = entry.lightSampleOffset;
         draw(
             *entry.mesh,
             entry.matrix,
@@ -132,7 +132,7 @@ void ModelBatch::render() {
             entry.varTextures,
             backlight
         );
-        setLightsOffset(glm::vec3());
+        localLightsOffset = {};
     }
     batch->flush();
     entries.clear();
