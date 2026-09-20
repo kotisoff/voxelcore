@@ -1,3 +1,8 @@
+debug.log("file extension")
+asserts.equals(nil, file.ext("config:test"))
+asserts.equals("cfg", file.ext("config:test.cfg"))
+asserts.equals("gz", file.ext("config:test.cfg.gz"))
+
 debug.log("check initial state")
 assert(file.exists("config:"))
 

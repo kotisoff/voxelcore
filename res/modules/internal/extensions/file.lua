@@ -8,7 +8,7 @@ function file.stem(path)
 end
 
 function file.ext(path)
-    return path:match("%.([^:/\\]+)$")
+    return path:match("[^:/\\.]%.([^.:/\\]+)$")
 end
 
 function file.prefix(path)
