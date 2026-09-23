@@ -49,7 +49,7 @@ local this = {
     INT_BEZIER = 3,
     INT_CUSTOM = 4,
 
-    TRACE_CODEGEN = true,
+    TRACE_CODEGEN = false,
 
     maths = {
         bezier_interpolation = bezier_interpolation
